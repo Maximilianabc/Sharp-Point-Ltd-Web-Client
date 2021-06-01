@@ -24,3 +24,7 @@ ul {
 li {
   margin: 0 0 20px 0;
 }
+
+form {
+  border: "1px solid #ccc";
+}

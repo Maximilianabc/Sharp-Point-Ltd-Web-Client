@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { InputBase, TextField } from '@material-ui/core';
 
@@ -6,10 +6,7 @@ const useStyle = makeStyles((theme) => ({
   root: {
     display: 'flex',
     flexWrap: 'wrap',
-  },
-  margin: {
-    margin: theme.spacing(1),
-  },
+  }
 }));
 
 const useStyleDefault = makeStyles((theme) => ({
@@ -28,11 +25,17 @@ const useStyleDefault = makeStyles((theme) => ({
 	focused: {},
 }));
 
-
 const DefaultInputField = (props) => {
 	const classes = useStyleDefault();
+	const [state, setState] = useState({});
+	const setText = (event) => {
+		setState({text: event.target.value});
+	};
+
 	return (
 		<TextField
+			onChange={setText}
+			value={state.text}
 			InputProps={{ classes, disableUnderline: true }} {...props}
 		/>
 	)
