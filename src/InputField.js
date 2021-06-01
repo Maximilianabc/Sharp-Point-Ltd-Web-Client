@@ -27,7 +27,7 @@ const useStyleDefault = makeStyles((theme) => ({
 
 const DefaultInputField = (props) => {
 	const classes = useStyleDefault();
-	const [state, setState] = useState({});
+	const [state, setState] = useState({ text: "" });
 	const setText = (event) => {
 		setState({text: event.target.value});
 	};
