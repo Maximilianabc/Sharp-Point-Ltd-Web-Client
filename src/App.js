@@ -1,12 +1,12 @@
 import './App.css';
-import { LoginForm } from './Form';
+import { LoginForm, TwoFAForm } from './Form';
 
 function App() {
 
   return (
     <div className="App">
       <header className="App-header">
-        <LoginForm></LoginForm>
+        <LoginForm />
       </header>
     </div>
   );
