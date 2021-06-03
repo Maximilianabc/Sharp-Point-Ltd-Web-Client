@@ -1,5 +1,5 @@
 import './App.css';
-import { LoginForm, TwoFAForm } from './Form';
+import { LoginForm } from '.';
 
 function App() {
 
