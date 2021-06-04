@@ -14,7 +14,6 @@ const postRequest = async (relativePath, payload) => {
 	await fetch(path + relativePath, reqOpt)
 		.then(response => response.json())
 		.then(body => { data = body });
-	console.log(data);
 	return data;
 };
 

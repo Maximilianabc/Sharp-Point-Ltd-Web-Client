@@ -1,10 +1,11 @@
 import styled from 'styled-components';
 import React, { useState } from 'react';
-import { DefaultInputField } from './InputField';
+import { DefaultInputField } from '../Components/InputField';
 import {
 	Button,
 	FormControl,
 	FormHelperText,
+	Slide,
 	withStyles,
 	Zoom
 } from '@material-ui/core';
@@ -17,13 +18,14 @@ import {
 	useDispatch,
 	useSelector
 } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
-const FormList = styled.ul`
+const NoBulletsList = styled.ul`
 	padding: 0;
 	list-style-type: none;
 `;
 
-const FormItems = styled.li`
+const DefaultLI = styled.li`
 	margin: 0 0 2rem 0;
 	self-align: center
 `;
@@ -50,7 +52,9 @@ const LoginForm = (props) => {
 	const handleClick = (event) => {
 		event.preventDefault();
 		setInputErrorText('');
-		if (/^[a-zA-Z0-9]{1,16}$/.test(data.userId)) {
+
+		const userId = data.userId.toUpperCase();
+		if (/^[A-Z0-9]{1,16}$/.test(userId)) {		
 			postRequest('/accessRight/userLogin', data)
 				.then(result => handleResponse(result));
 		} else {
@@ -81,10 +85,11 @@ const LoginForm = (props) => {
 
 	return (
 		!display2FAForm 
-			? <Zoom in={show}>
-					<FormControl autoComplete="off">
-						<FormList>
-							<FormItems>
+			? 
+				<Slide in={show} direction="left" unmountOnExit>
+					<FormControl autoComplete="off" id="login-form">
+						<NoBulletsList>
+							<DefaultLI>
 								<DefaultInputField
 									error={inputErrorText !== ''}
 									id="user-name"
@@ -93,8 +98,8 @@ const LoginForm = (props) => {
 									onChange={(event) => setData({ password: data.password, userId: event.target.value })}
 									helperText={inputErrorText}
 								/>
-							</FormItems>
-							<FormItems>
+							</DefaultLI>
+							<DefaultLI>
 								<DefaultInputField
 									id="password"
 									label="Password"
@@ -102,20 +107,24 @@ const LoginForm = (props) => {
 									variant="filled"
 									onChange={(event) => setData({ password: event.target.value, userId: data.userId })}
 								/>
-							</FormItems>  
-							<FormItems>
-								<Button variant="contained" onClick={handleClick}>LOGIN</Button>
-							</FormItems>
-							<FormItems>
+							</DefaultLI>  
+							<DefaultLI>
+								<Button
+									id="login-button"
+									variant="contained"
+									onClick={handleClick}
+								>LOGIN</Button>
+							</DefaultLI>
+							<DefaultLI>
 								<StyledFormHelperText
 									error={loginErrorText !== ''}
 									id="error-text"
 								>{loginErrorText}
 								</StyledFormHelperText>
-							</FormItems>					
-						</FormList> 
+							</DefaultLI>					
+						</NoBulletsList> 
 					</FormControl>
-				</Zoom>
+				</Slide>
 			: <TwoFAForm/>
 	);
 }
@@ -124,13 +133,18 @@ const TwoFAForm = () => {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [inputErrorText, setInputErrorText] = useState('');
 	const [loginErrorText, setLoginErrorText] = useState('');
+	const [show, setShow] = useState(true);
+	const [slide, setSlide] = useState(false);
+	const [authed, setAuthed] = useState(false);
 	
 	const userId = useSelector(state => state.userId);
-	console.log(userId);
 	const dispatch = useDispatch();
+	const history = useHistory();
 
 	const handleClick = (event) => {
 		event.preventDefault();
+		setLoginErrorText('');
+
 		if (/^[0-9]{6}$/.test(twoFACode)) {
 			const payload = {
 				code: twoFACode,
@@ -147,17 +161,19 @@ const TwoFAForm = () => {
 	const handleResponse = (resdata) => {
 		if (resdata.result_msg === 'SUCCESS') {
 			dispatch(setTokenAction(resdata.data.sessionToken));
-			// redirect to main page
+			setAuthed(true);
+			setShow(false);
+			history.push('/dashboard');
 		} else {
 			setLoginErrorText(resdata.result_msg);
 		}
 	};
 
 	return (
-		<Zoom in={true} style={{ transitionDelay: '250ms' }}>
-			<FormControl autoComplete="off">
-				<FormList>
-					<FormItems>
+		<Zoom in={show} style={{ transitionDelay: '100ms' }} unmountOnExit>
+			<FormControl autoComplete="off" id="2fa-form">
+				<NoBulletsList>
+					<DefaultLI>
 						<DefaultInputField
 							error={inputErrorText !== ''}
 							id="2fa-code"
@@ -166,18 +182,22 @@ const TwoFAForm = () => {
 							onChange={(event) => setTwoFACode(event.target.value)}
 							helperText={inputErrorText}
 						/>
-					</FormItems>
-					<FormItems>
-						<Button variant="contained" onClick={handleClick}>SUBMIT</Button>
-					</FormItems>			
-					<FormItems>
+					</DefaultLI>
+					<DefaultLI>
+						<Button
+							id="submit-button"
+							variant="contained"
+							onClick={handleClick}
+						>SUBMIT</Button>
+					</DefaultLI>			
+					<DefaultLI>
 						<StyledFormHelperText
 							error={loginErrorText !== ''}
 							id="error-text"
 						>{loginErrorText}
 						</StyledFormHelperText>
-					</FormItems>
-				</FormList>
+					</DefaultLI>
+				</NoBulletsList>
 			</FormControl>
 		</Zoom>
 	);

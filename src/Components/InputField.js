@@ -41,6 +41,7 @@ const DefaultInputField = (props) => {
 
 	return (
 		<TextField
+			autoComplete="off"
 			InputProps={{ classes, disableUnderline: true }} {...props}
 			InputLabelProps={{ className: classes.inputHiddenLabel }}
 		/>
