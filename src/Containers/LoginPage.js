@@ -12,7 +12,8 @@ import {
 import {
 	postRequest,
 	loginAction,
-	setTokenAction
+	setTokenAction,
+	setAccountNumAction
 } from '../Util';
 import {
 	useDispatch,
@@ -39,6 +40,7 @@ const StyledFormHelperText = withStyles({
 let display2FAForm = false;
 
 const LoginForm = (props) => {
+	const history = useHistory();
 	const [data, setData] = useState({
 		password: '',
 		userId: '',
@@ -69,7 +71,7 @@ const LoginForm = (props) => {
 					const info = resdata.data;
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
-						// redirect to main page							
+						history.push('/dashboard');											
 					} else if (info.twofaMethod !== undefined && info.twofaMethod === 3) {
 						// need 2FA
 						display2FAForm = true;
@@ -129,13 +131,12 @@ const LoginForm = (props) => {
 	);
 }
 
+let isAE = false;
 const TwoFAForm = () => {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [inputErrorText, setInputErrorText] = useState('');
 	const [loginErrorText, setLoginErrorText] = useState('');
 	const [show, setShow] = useState(true);
-	const [slide, setSlide] = useState(false);
-	const [authed, setAuthed] = useState(false);
 	
 	const userId = useSelector(state => state.userId);
 	const dispatch = useDispatch();
@@ -160,27 +161,81 @@ const TwoFAForm = () => {
 
 	const handleResponse = (resdata) => {
 		if (resdata.result_msg === 'SUCCESS') {
-			dispatch(setTokenAction(resdata.data.sessionToken));
-			setAuthed(true);
-			setShow(false);
-			history.push('/dashboard');
+			const info = resdata.data;
+			console.log(info);
+			dispatch(setTokenAction(info.sessionToken));
+			if (info.isAdmin) {
+				isAE = true;
+				setShow(false);
+			} else {
+				setShow(false);
+				dispatch(setAccountNumAction(userId));
+				history.push('/dashboard');
+			}
 		} else {
 			setLoginErrorText(resdata.result_msg);
 		}
 	};
 
 	return (
+		!isAE
+			?
+				<Zoom in={show} style={{ transitionDelay: '100ms' }} unmountOnExit>
+					<FormControl autoComplete="off" id="2fa-form">
+						<NoBulletsList>
+							<DefaultLI>
+								<DefaultInputField
+									error={inputErrorText !== ''}
+									id="2fa-code"
+									label="Code"
+									variant="filled"
+									onChange={(event) => setTwoFACode(event.target.value)}
+									helperText={inputErrorText}
+								/>
+							</DefaultLI>
+							<DefaultLI>
+								<Button
+									id="submit-button"
+									variant="contained"
+									onClick={handleClick}
+								>SUBMIT</Button>
+							</DefaultLI>			
+							<DefaultLI>
+								<StyledFormHelperText
+									error={loginErrorText !== ''}
+									id="error-text"
+								>{loginErrorText}
+								</StyledFormHelperText>
+							</DefaultLI>
+						</NoBulletsList>
+					</FormControl>
+				</Zoom>
+			: <AccNumForm />
+	);
+};
+
+const AccNumForm = (props) => {
+	const [show, setShow] = useState(true);
+	const [accNum, setAccNum] = useState('');
+	const dispatch = useDispatch();
+	const history = useHistory();
+
+	const handleClick = (event) => {
+		dispatch(setAccountNumAction(accNum));
+		history.push('/dashboard');
+		setShow(false);
+	};
+
+	return (
 		<Zoom in={show} style={{ transitionDelay: '100ms' }} unmountOnExit>
-			<FormControl autoComplete="off" id="2fa-form">
+			<FormControl autoComplete="off" id="accnum-form">
 				<NoBulletsList>
 					<DefaultLI>
 						<DefaultInputField
-							error={inputErrorText !== ''}
-							id="2fa-code"
-							label="Code"
+							id="acc-num"
+							label="Account Number"
 							variant="filled"
-							onChange={(event) => setTwoFACode(event.target.value)}
-							helperText={inputErrorText}
+							onChange={(event) => setAccNum(event.target.value)}
 						/>
 					</DefaultLI>
 					<DefaultLI>
@@ -188,14 +243,7 @@ const TwoFAForm = () => {
 							id="submit-button"
 							variant="contained"
 							onClick={handleClick}
-						>SUBMIT</Button>
-					</DefaultLI>			
-					<DefaultLI>
-						<StyledFormHelperText
-							error={loginErrorText !== ''}
-							id="error-text"
-						>{loginErrorText}
-						</StyledFormHelperText>
+						>OK</Button>
 					</DefaultLI>
 				</NoBulletsList>
 			</FormControl>
