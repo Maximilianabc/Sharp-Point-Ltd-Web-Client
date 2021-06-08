@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   Checkbox, 
@@ -13,9 +13,24 @@ import {
   TablePagination,
   TableRow
 } from '@material-ui/core';
-import { useSelector } from 'react-redux';
-import { StyledTablehead, StyledTableToolbar } from '../Components';
-import { getComparator, stableSort } from '../Util';
+import { useDispatch,useSelector } from 'react-redux';
+import {
+  DefaultAppbar,
+  DefaultDrawer,
+  StyledTablehead,
+  StyledTableToolbar
+} from '../Components';
+import { useHistory } from 'react-router-dom';
+import { 
+  getComparator,
+  stableSort,
+  postRequest,
+  setAccountBalanaceAction,
+  setAccountOrderAction,
+  setAccountPositionAction,
+  setAccountSummaryAction,
+  wsAddress
+} from '../Util';
 
 const headCells = [
   { id: 'id', align: 'left', label: 'ID' },
@@ -35,11 +50,6 @@ const headCells = [
 const createData = (id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract) => {
   return { id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract }
 };
-
-// for testing
-const rows = [
-  createData('CLN1', 'abcdef', '1@67.5000', '1@69.2100', '', '2@68.3550', 69.31, '1910.00USD', 68.83, '', '7.7500', 1000),
-];
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -66,13 +76,25 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StyledTable = (props) => {
+  const { positions } = props;
   const classes = useStyles();
+  const token = useSelector(state => state.sessionToken);
+  const userId = useSelector(state => state.userId);
+
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('id');
   const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sidemenuopened, setSideMenuOpened] = useState(false);
+
+  const handleDrawerOpen = () => {
+    setSideMenuOpened(true);
+  };
+  const handleDrawerClose = () => {
+    setSideMenuOpened(false);
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -81,7 +103,7 @@ const StyledTable = (props) => {
   };
   const handleClickSelectAll = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n.name);
+      const newSelecteds = positions.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -116,17 +138,26 @@ const StyledTable = (props) => {
     setDense(event.target.checked);
   };
   const isSelected = (name) => selected.indexOf(name) !== -1;
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, positions.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
+      <DefaultAppbar
+        title="Dashboard"
+        sidemenuopened={sidemenuopened}
+        handleDrawerOpen={handleDrawerOpen}
+      />
+      <DefaultDrawer
+        sidemenuopened={sidemenuopened}
+        handleDrawerClose={handleDrawerClose}
+      />
       <Paper className={classes.paper}>
         <StyledTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
+            size={dense ? "small" : "medium"}
             aria-label="enhanced table"
           >
             <StyledTablehead
@@ -137,10 +168,10 @@ const StyledTable = (props) => {
               onClickSelectAll={handleClickSelectAll}
               onRequestSort={handleRequestSort}
               numSelected={selected.length}
-              numRow={rows.length}
+              numRow={positions.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(positions, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
@@ -188,9 +219,9 @@ const StyledTable = (props) => {
           </Table>
         </TableContainer>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={rows.length}
+          count={positions.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -203,16 +234,148 @@ const StyledTable = (props) => {
       />
     </div>
   );
+};
 
+const positionsToRows = (positions) => {
+  
+}
+
+const ClientWS = (props) => {
+  const { onReceivePush } = props;
+
+  const token = useSelector(state => state.sessionToken);
+  const accNo = useSelector(state => state.accNo);
+  const positions = useSelector(state => state.position);
+  const address = `${wsAddress}${token}`;
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const ws = useRef(null);
+
+  useEffect(() => {
+      ws.current = new WebSocket(address);
+      ws.current.onopen = () => {
+        ws.current.send(JSON.stringify({
+          "dataMask" : 15,
+          "event" : "subscribe",
+          "accNo" : "*"
+        }));
+        console.log("ws opened");
+      }
+      ws.current.onclose = () => console.log("ws closed");
+      return () => {
+          //ws.current.close();
+      };
+  }, []);
+
+  useEffect(() => {
+      if (!ws.current) return;
+      ws.current.onmessage = e => {
+          handlePushMessage(JSON.parse(e.data));
+          return false;
+      };
+  }, []);
+
+  const handlePushMessage = (message) => {
+    console.log(message);
+    if (message.dataMask === undefined) return;
+    const payload = {
+      sessionToken: token,
+      targetAccNo: accNo
+    };
+    let op = '';
+    switch (message.dataMask) {
+      case 1:
+        op = 'Summary';
+        break;
+      case 2:
+        op = 'Balance';
+        break;
+      case 4:
+        op = 'Position';
+        break;
+      case 8:
+        op = 'Order';
+        break;
+      default:
+        console.log(`unknown data mask ${message.dataMask}`);
+        break;
+    };
+    postRequest(`/account/account${op}`, payload).then(data => {
+      if (data.result_code === "40011") {
+        ws.current.send(JSON.stringify({
+          "dataMask" : 15,
+          "event" : "release"
+        }));
+        ws.current.close();
+        console.log('session expired.');
+        history.push('/');
+        return;
+      }
+      console.log(data.data);
+      switch (message.dataMask) {
+        case 1:
+          dispatch(setAccountSummaryAction(data.data));
+          break;
+        case 2:
+          dispatch(setAccountBalanaceAction(data.data));
+          break;
+        case 4:
+          dispatch(setAccountPositionAction(data.data));
+          onReceivePush(data.data.recordData);
+          break;
+        case 8:
+          dispatch(setAccountOrderAction(data.data));
+          break;
+        default:
+          console.log(`unknown data mask ${message.dataMask}`);
+          break;
+      };
+    });
+  };
+
+  return null;
 };
 
 const Orders = (props) => {
   const token = useSelector(state => state.sessionToken);
   const userId = useSelector(state => state.userId);
+  const [positions, setPositions] = useState([]);
+
+  const positionsToRows = (positions) => {
+    let p = [];
+    if (positions !== undefined) {
+      console.log(positions);
+      Array.prototype.forEach.call(positions, pos => {
+        p.push(createData(
+          pos.prodCode,
+          '', // TODO name?
+          `${pos.psQty}@${pos.previousAvg}`,
+          `${pos.longQty}@${pos.longAvg}`,
+          `${pos.shortQty}@${pos.shortAvg}`,
+          `${pos.netQty}@${pos.netAvg}`,
+          pos.mktPrice,
+          pos.profitLoss,
+          pos.closeQty, // ?
+          pos.totalAmt, //?
+          '',
+          ''  
+        ));
+      });
+    }
+    return p;
+  };
+
+  const onReceivePush = (positions) => {
+    setPositions(positionsToRows(positions));
+  };
+
   return (
-    <Fade in={true}>
-      <StyledTable/>     
-    </Fade>
+    <div>
+      <ClientWS onReceivePush={onReceivePush} />
+      <Fade in={true}>
+        <StyledTable positions={positions}/>     
+      </Fade>
+    </div>
   );
 };
 

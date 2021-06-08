@@ -137,8 +137,8 @@ const LoginForm = (props) => {
 								</NoBulletsList> 
 							</FormControl>
 						</Slide>
-					: <AccNumForm />
-			: <TwoFAForm />
+					: <AccNumForm unmountOnExit/>
+			: <TwoFAForm unmountOnExit/>
 	);
 }
 
@@ -218,7 +218,7 @@ const TwoFAForm = () => {
 						</NoBulletsList>
 					</FormControl>
 				</Zoom>
-			: <AccNumForm />
+			: <AccNumForm unmountOnExit/>
 	);
 };
 
