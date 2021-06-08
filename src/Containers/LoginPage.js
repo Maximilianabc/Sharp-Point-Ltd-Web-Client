@@ -162,6 +162,7 @@ const TwoFAForm = () => {
 				mode: 3,
 				userId: userId
 			};
+			console.log(payload.userId);
 			postRequest('/accessRight/userLogin2FA', payload)
 				.then(result => handleResponse(result));
 		} else {
@@ -226,7 +227,6 @@ const AccNumForm = (props) => {
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
-	let show2FA = false;
 
 	const handleClick = (event) => {
 		dispatch(setAccountNumAction(accNum));

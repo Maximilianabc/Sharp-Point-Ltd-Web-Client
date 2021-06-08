@@ -168,7 +168,6 @@ const ClientWS = (props) => {
   useEffect(() => {
       ws.current = new WebSocket(address);
       ws.current.onopen = () => {
-        console.log(address);
         ws.current.send(JSON.stringify({
           "dataMask" : 15,
           "event" : "subscribe",
