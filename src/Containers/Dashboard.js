@@ -1,49 +1,158 @@
+import clsx from 'clsx';
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  AppBar,
+  Button,
   Drawer,
+  IconButton,
   List,
   ListItem,
-  ListItemText
+  ListItemText,
+  Toolbar,
+  Typography
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme, withStyles } from '@material-ui/core/styles';
 import { Link, useHistory } from 'react-router-dom';
-import { postRequest, setAccountBalanaceAction, setAccountOrderAction, setAccountPositionAction, setAccountSummaryAction, wsAddress } from '../Util';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
+import { 
+  postRequest,
+  setAccountBalanaceAction,
+  setAccountOrderAction,
+  setAccountPositionAction,
+  setAccountSummaryAction,
+  wsAddress
+} from '../Util';
 
-const StyledDrawerList = withStyles({
+const drawerWidth = 240;
+const useStyles = makeStyles((theme) => ({
   root: {
-    width: 250,
+    display: 'flex',
   },
-})(List);
+  appBar: {
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  hide: {
+    display: 'none',
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+  },
+  drawerPaper: {
+    width: drawerWidth,
+  },
+  drawerHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: 'flex-end',
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginLeft: -drawerWidth,
+  },
+  contentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginLeft: 0,
+  },
+}));
 
 const Dashboard = (props) => {
-  const [sideMenuOpened, setSideMenuOpened] = useState(true);
+  const classes = useStyles();
+  const theme = useTheme();
+  const [sidemenuopened, setSideMenuOpened] = useState(false);
 
   const token = useSelector(state => state.sessionToken);
   const userId = useSelector(state => state.userId);
 
-  const toggleDrawer = (event) => {
+  const handleDrawerOpen = () => {
+    setSideMenuOpened(true);
+  };
+
+  const handleDrawerClose = () => {
     setSideMenuOpened(false);
   };
 
   return (
-    <div>
-      <ClientWS />
-      <Drawer
-        anchor="left"
-        open={sideMenuOpened}
-        variant="temporary"
-        ModalProps={{ onBackdropClick: toggleDrawer }}
-        SlideProps={{ timeout: 250 }}
+    <div className={classes.root}>
+      <ClientWS/>
+      <AppBar
+        position="fixed"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: sidemenuopened,
+        })}
       >
-        <StyledDrawerList>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="sidemenuopened drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            className={clsx(classes.menuButton, sidemenuopened && classes.hide)}
+          >
+            <MenuRoundedIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap>
+            Dashboard
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        className={classes.drawer}
+        variant="persistent"
+        anchor="left"
+        sidemenuopened={sidemenuopened ? 1 : 0}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+      >
+        <div className={classes.drawerHeader}>
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </div>
+        <List classes={classes.drawerList}>
           {['Dashboard', 'Profile', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
             <ListItem button key={text} component={Link} to={`/${text.toLowerCase()}/`}>
               <ListItemText primary={text} />
-            </ListItem>
+            </ListItem> 
           ))}
-        </StyledDrawerList>
+        </List>
       </Drawer>
+      <main
+        className={clsx(classes.content, {
+          [classes.contentShift]: sidemenuopened,
+        })}
+      >
+        <div className={classes.drawerHeader} />
+      </main>
     </div>
   );
 };
@@ -52,7 +161,6 @@ const ClientWS = (props) => {
   const token = useSelector(state => state.sessionToken);
   const accNo = useSelector(state => state.accNo);
   const address = `${wsAddress}${token}`;
-  const [isPaused, setPause] = useState(false);
   const dispatch = useDispatch();
   const history = useHistory();
   const ws = useRef(null);
@@ -60,6 +168,7 @@ const ClientWS = (props) => {
   useEffect(() => {
       ws.current = new WebSocket(address);
       ws.current.onopen = () => {
+        console.log(address);
         ws.current.send(JSON.stringify({
           "dataMask" : 15,
           "event" : "subscribe",
@@ -76,12 +185,13 @@ const ClientWS = (props) => {
   useEffect(() => {
       if (!ws.current) return;
       ws.current.onmessage = e => {
-          if (isPaused) return;
           handlePushMessage(JSON.parse(e.data));
+          return false;
       };
-  }, [isPaused]);
+  }, []);
 
   const handlePushMessage = (message) => {
+    console.log(message);
     if (message.dataMask === undefined) return;
     const payload = {
       sessionToken: token,
@@ -107,6 +217,7 @@ const ClientWS = (props) => {
     };
     postRequest(`/account/account${op}`, payload).then(data => {
       console.log(data);
+      console.log(data.result_code);
       if (data.result_code === "40011") {
         ws.current.send(JSON.stringify({
           "dataMask" : 15,
@@ -138,9 +249,7 @@ const ClientWS = (props) => {
   };
 
   return (
-    <button onClick={() => setPause(!isPaused)}>
-        {isPaused ? "Resume" : "Pause"}
-    </button>
+    <div/>
   );
 };
 

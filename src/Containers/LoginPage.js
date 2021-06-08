@@ -38,6 +38,7 @@ const StyledFormHelperText = withStyles({
 })(FormHelperText);
 
 let display2FAForm = false;
+let isAE = false;
 
 const LoginForm = (props) => {
 	const history = useHistory();
@@ -66,12 +67,19 @@ const LoginForm = (props) => {
 
 	const handleResponse = (resdata) => {
 		if (resdata.result_msg !== undefined) {
-			if (resdata.result_msg === 'No Error') {
+			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
 					const info = resdata.data;
+					console.log(info);
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
-						history.push('/dashboard');											
+						if (info.isAdmin) {
+							isAE = true;
+							setShow(false);
+						} else {
+							dispatch(setAccountNumAction(data.userId));
+							history.push('/dashboard');
+						}											
 					} else if (info.twofaMethod !== undefined && info.twofaMethod === 3) {
 						// need 2FA
 						display2FAForm = true;
@@ -86,52 +94,54 @@ const LoginForm = (props) => {
 	};
 
 	return (
-		!display2FAForm 
+		!display2FAForm
 			? 
-				<Slide in={show} direction="left" unmountOnExit>
-					<FormControl autoComplete="off" id="login-form">
-						<NoBulletsList>
-							<DefaultLI>
-								<DefaultInputField
-									error={inputErrorText !== ''}
-									id="user-name"
-									label="User Name"
-									variant="filled"
-									onChange={(event) => setData({ password: data.password, userId: event.target.value })}
-									helperText={inputErrorText}
-								/>
-							</DefaultLI>
-							<DefaultLI>
-								<DefaultInputField
-									id="password"
-									label="Password"
-									type="password"
-									variant="filled"
-									onChange={(event) => setData({ password: event.target.value, userId: data.userId })}
-								/>
-							</DefaultLI>  
-							<DefaultLI>
-								<Button
-									id="login-button"
-									variant="contained"
-									onClick={handleClick}
-								>LOGIN</Button>
-							</DefaultLI>
-							<DefaultLI>
-								<StyledFormHelperText
-									error={loginErrorText !== ''}
-									id="error-text"
-								>{loginErrorText}
-								</StyledFormHelperText>
-							</DefaultLI>					
-						</NoBulletsList> 
-					</FormControl>
-				</Slide>
-			: <TwoFAForm/>
+				!isAE
+					?
+						<Slide in={show} direction="left" unmountOnExit>
+							<FormControl autoComplete="off" id="login-form">
+								<NoBulletsList>
+									<DefaultLI>
+										<DefaultInputField
+											error={inputErrorText !== ''}
+											id="user-name"
+											label="User Name"
+											variant="filled"
+											onChange={(event) => setData({ password: data.password, userId: event.target.value })}
+											helperText={inputErrorText}
+										/>
+									</DefaultLI>
+									<DefaultLI>
+										<DefaultInputField
+											id="password"
+											label="Password"
+											type="password"
+											variant="filled"
+											onChange={(event) => setData({ password: event.target.value, userId: data.userId })}
+										/>
+									</DefaultLI>  
+									<DefaultLI>
+										<Button
+											id="login-button"
+											variant="contained"
+											onClick={handleClick}
+										>LOGIN</Button>
+									</DefaultLI>
+									<DefaultLI>
+										<StyledFormHelperText
+											error={loginErrorText !== ''}
+											id="error-text"
+										>{loginErrorText}
+										</StyledFormHelperText>
+									</DefaultLI>					
+								</NoBulletsList> 
+							</FormControl>
+						</Slide>
+					: <AccNumForm />
+			: <TwoFAForm />
 	);
 }
 
-let isAE = false;
 const TwoFAForm = () => {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [inputErrorText, setInputErrorText] = useState('');
@@ -160,16 +170,13 @@ const TwoFAForm = () => {
 	};
 
 	const handleResponse = (resdata) => {
-		if (resdata.result_msg === 'SUCCESS') {
+		if (resdata.result_code === '0') {
 			const info = resdata.data;
-			console.log(info);
 			dispatch(setTokenAction(info.sessionToken));
 			if (info.isAdmin) {
 				isAE = true;
 				setShow(false);
 			} else {
-				setShow(false);
-				dispatch(setAccountNumAction(userId));
 				history.push('/dashboard');
 			}
 		} else {
@@ -219,11 +226,12 @@ const AccNumForm = (props) => {
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
+	let show2FA = false;
 
 	const handleClick = (event) => {
 		dispatch(setAccountNumAction(accNum));
-		history.push('/dashboard');
 		setShow(false);
+		history.push('/dashboard');
 	};
 
 	return (
