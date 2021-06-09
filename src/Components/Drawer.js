@@ -48,7 +48,7 @@ const DefaultDrawer = (props) => {
         </IconButton>
       </div>
       <List classes={classes.drawerList}>
-        {['Dashboard', 'Profile', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
+        {['Dashboard', 'Profile', 'Positions', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
           <ListItem button key={text} component={Link} to={`/${text.toLowerCase()}/`}>
             <ListItemText primary={text} />
           </ListItem> 

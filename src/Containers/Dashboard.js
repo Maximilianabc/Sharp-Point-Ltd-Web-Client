@@ -16,10 +16,8 @@ const useStyles = makeStyles((theme) => ({
 const Dashboard = (props) => {
   const classes = useStyles();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
-
   const token = useSelector(state => state.sessionToken);
-  const userId = useSelector(state => state.userId);
-
+  
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
   };

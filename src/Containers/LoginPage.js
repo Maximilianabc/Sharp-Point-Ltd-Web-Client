@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DefaultInputField } from '../Components/InputField';
 import {
 	Button,
@@ -19,7 +19,7 @@ import {
 	useDispatch,
 	useSelector
 } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 const NoBulletsList = styled.ul`
 	padding: 0;
@@ -42,6 +42,9 @@ let isAE = false;
 
 const LoginForm = (props) => {
 	const history = useHistory();
+	const dispatch = useDispatch();
+	const location = useLocation();
+
 	const [data, setData] = useState({
 		password: '',
 		userId: '',
@@ -50,7 +53,11 @@ const LoginForm = (props) => {
 	const [inputErrorText, setInputErrorText] = useState('');
 	const [loginErrorText, setLoginErrorText] = useState('');
 
-	const dispatch = useDispatch();
+	useEffect(() => {
+		if (location) {
+			setLoginErrorText(location.state);
+		}
+	}, []);
 
 	const handleClick = (event) => {
 		event.preventDefault();
@@ -70,7 +77,6 @@ const LoginForm = (props) => {
 			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
 					const info = resdata.data;
-					console.log(info);
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
 						if (info.isAdmin) {
@@ -78,6 +84,8 @@ const LoginForm = (props) => {
 							setShow(false);
 						} else {
 							dispatch(setAccountNumAction(data.userId));
+							display2FAForm = false;
+							isAE = false;
 							history.push('/dashboard');
 						}											
 					} else if (info.twofaMethod !== undefined && info.twofaMethod === 3) {
@@ -162,7 +170,6 @@ const TwoFAForm = () => {
 				mode: 3,
 				userId: userId
 			};
-			console.log(payload.userId);
 			postRequest('/accessRight/userLogin2FA', payload)
 				.then(result => handleResponse(result));
 		} else {
@@ -178,6 +185,9 @@ const TwoFAForm = () => {
 				isAE = true;
 				setShow(false);
 			} else {
+				setShow(false);
+				display2FAForm = false;
+				isAE = false;
 				history.push('/dashboard');
 			}
 		} else {
@@ -231,6 +241,8 @@ const AccNumForm = (props) => {
 	const handleClick = (event) => {
 		dispatch(setAccountNumAction(accNum));
 		setShow(false);
+		display2FAForm = false;
+		isAE = false;
 		history.push('/dashboard');
 	};
 

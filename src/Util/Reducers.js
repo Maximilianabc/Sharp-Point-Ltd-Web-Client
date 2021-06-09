@@ -9,11 +9,7 @@ const currentUser = (state = {}, action) => {
         password: action.payload.password
       };
     case actionConsts.LOGOUT:
-      return {
-        ...state,
-        userId: '',
-        password: ''
-      };
+      return undefined;
     case actionConsts.SET_TOKEN:
       return {
         ...state,

@@ -34,47 +34,51 @@ const useStyles = makeStyles({
   }
 });
 
-const createData = () => {
-  return { }
+const createData = (id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract) => {
+  return { id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract }
 };
 
-const Orders = (props) => {
+const Positions = (props) => {
   const token = useSelector(state => state.sessionToken);
   const accNo = useSelector(state => state.accNo);
-  const [wsClose, setWSClose] = useState(false);
-  const [orders, setOrders] = useState([]);
+  const [positions, setPositions] = useState([]);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
-  const hooks = getDispatchSelectCB(opConsts.ORDER);
-  const title = "Orders";
+  const hooks = getDispatchSelectCB(opConsts.POSITION);
+  const title = "Positions";
   const dispatchAction = useRef(null);
+  let wsClose = false;
 
   useEffect(() => {
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let mounted = true;
-    let work;
-    if (mounted) {
-      work = setInterval(() => {
-        AccOperations(hooks.id, payload, () => { setWSClose(true) }, hooks.dispatch).then(data => {
-          if (data !== undefined) {
+    let work = setInterval(() => {
+      AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
+        if (data) {
+          wsClose = data.close;
+          if (!data.close) {
             dispatchAction.current = () => dispatch(data.action);
             onReceivePush(data.data);
           } else {
-            console.log('unknown data');
+            clearInterval(work);
+            wsClose = true;
           }
-        });
-      }, 1000); 
-    }
+        } else {
+          console.log('unknown data');
+          clearInterval(work);
+          wsClose = true;
+        }
+      });
+    }, 1000); 
     return () => {
-      mounted = false;
-      clearInterval(work);
-    }
+      wsClose = true;
+    };
   }, []);
 
+  
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
   };
@@ -82,25 +86,36 @@ const Orders = (props) => {
     setSideMenuOpened(false);
   };
 
-  const ordersToRows = (data) => {
-    let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
-    let o = [];
-    if (orders) {
-      console.log(orders);
-      Array.prototype.forEach.call(orders, order => {
-        o.push(createData(
-          
+  const positionsToRows = (data) => {
+    let positions = data.positions ? data.positions : (data.recordData ? data.recordData : undefined);
+    let p = [];
+    if (positions) {
+      console.log(positions);
+      Array.prototype.forEach.call(positions, pos => {
+        p.push(createData(
+          pos.prodCode,
+          '', // TODO name?
+          `${pos.psQty}@${pos.previousAvg}`,
+          pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
+          pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
+          `${pos.netQty}@${pos.netAvg}`,
+          pos.mktPrice,
+          pos.profitLoss,
+          pos.closeQty, // ?
+          pos.totalAmt, //?
+          '',
+          ''  
         ));
       });
     }
-    return o;
+    return p;
   };
 
-  const onReceivePush = (orders) => {
-    if (orders !== undefined) {
-      setOrders(ordersToRows(orders));
+  const onReceivePush = (positions) => {
+    if (positions !== undefined) {
+      setPositions(positionsToRows(positions));
     } else {
-      console.log('undefined orders');
+      console.log('undefined positions');
     }
   };
 
@@ -117,7 +132,7 @@ const Orders = (props) => {
         handleDrawerClose={handleDrawerClose}
       />
       <StyledTable
-        data={orders}
+        data={positions}
         title={title}
         headerCells={headCells}
       />     
@@ -126,5 +141,5 @@ const Orders = (props) => {
 };
 
 export {
-  Orders
+  Positions
 }

@@ -1,6 +1,16 @@
 import './App.css';
-import { Dashboard, LoginForm, Profile, Orders } from '../Containers';
-import { BrowserRouter, Link, Route, Router, Switch } from 'react-router-dom';
+import {
+  Dashboard,
+  LoginForm,
+  Profile,
+  Positions,
+  Orders,
+  LogOut
+} from '../Containers';
+import {
+  Route,
+  Switch
+} from 'react-router-dom';
 
 function App() {
   return (
@@ -15,8 +25,14 @@ function App() {
         <Route exact path="/profile">
           <Profile />
         </Route>
+        <Route exact path="/positions">
+          <Positions />
+        </Route>
         <Route exact path="/orders">
           <Orders />
+        </Route>
+        <Route exact path="/logout">
+          <LogOut/>
         </Route>
       </Switch>
     </div>
