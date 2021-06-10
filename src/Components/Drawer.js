@@ -49,7 +49,12 @@ const DefaultDrawer = (props) => {
       </div>
       <List classes={classes.drawerList}>
         {['Dashboard', 'Profile', 'Positions', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
-          <ListItem button key={text} component={Link} to={`/${text.toLowerCase()}/`}>
+          <ListItem
+            button
+            key={text}
+            component={Link}
+            to={`/${text.toLowerCase()}/`}
+          >
             <ListItemText primary={text} />
           </ListItem> 
         ))}

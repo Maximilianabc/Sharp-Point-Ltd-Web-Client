@@ -11,6 +11,7 @@ import {
   Route,
   Switch
 } from 'react-router-dom';
+import { ClientWS } from './WebSocket';
 
 function App() {
   return (

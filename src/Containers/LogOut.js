@@ -13,9 +13,7 @@ const LogOut = (props) => {
     const data = {
       sessionToken: token
     };
-    postRequest('/accessRight/userLogout', data).then(response => console.log(response)
-
-    );
+    postRequest('/accessRight/userLogout', data);
     dispatch(logoutAction());
     history.push({ 
       pathname: '/',

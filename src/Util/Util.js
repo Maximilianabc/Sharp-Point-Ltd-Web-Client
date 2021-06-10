@@ -59,7 +59,6 @@ const getDispatchSelectCB = (opConst) => {
 			selectCallback = () => state => state.order;
 			break;
 		default:
-			console.log(`unknown operation const: ${opConst}`);
 			return;
 	};
 	return { id: op, action: actionCallback, select: selectCallback };
@@ -77,8 +76,7 @@ const AccOperations = async (
 		.then(data => {
 			if (data.result_code === "40011") {
 				if (closeWSCallback) {
-					console.log(typeof closeWSCallback);
-					closeWSCallback();
+					closeWSCallback(false);
 				} else {
 					result = { close: true };				
 				}
@@ -86,10 +84,10 @@ const AccOperations = async (
 			}
 			result = {
 				data: data.data,
-				action: () => actionCallback ? actionCallback(data.data) : undefined,
+				action: actionCallback ? actionCallback(data.data) : undefined,
 				close: false
 			};
-		})
+		});
 	return result;
 };
 

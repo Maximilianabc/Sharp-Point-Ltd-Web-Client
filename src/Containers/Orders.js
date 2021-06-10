@@ -63,8 +63,6 @@ const Orders = (props) => {
           if (data !== undefined) {
             dispatchAction.current = () => dispatch(data.action);
             onReceivePush(data.data);
-          } else {
-            console.log('unknown data');
           }
         });
       }, 1000); 

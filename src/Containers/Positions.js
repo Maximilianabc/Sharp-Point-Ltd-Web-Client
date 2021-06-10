@@ -48,7 +48,7 @@ const Positions = (props) => {
   const hooks = getDispatchSelectCB(opConsts.POSITION);
   const title = "Positions";
   const dispatchAction = useRef(null);
-  let wsClose = false;
+  const wsRef = useRef(null);
 
   useEffect(() => {
     const payload = {
@@ -57,24 +57,23 @@ const Positions = (props) => {
     };
     let work = setInterval(() => {
       AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
-        if (data) {
-          wsClose = data.close;
-          if (!data.close) {
+        try {
+          if (data && !data.close) {
             dispatchAction.current = () => dispatch(data.action);
             onReceivePush(data.data);
           } else {
+            wsRef.current.closeExplicit(false);
             clearInterval(work);
-            wsClose = true;
           }
-        } else {
-          console.log('unknown data');
+        } catch (error) {
+          console.error(error);
           clearInterval(work);
-          wsClose = true;
         }
       });
     }, 1000); 
     return () => {
-      wsClose = true;
+      console.log('positions unloaded');
+      clearInterval(work);
     };
   }, []);
 
@@ -90,7 +89,6 @@ const Positions = (props) => {
     let positions = data.positions ? data.positions : (data.recordData ? data.recordData : undefined);
     let p = [];
     if (positions) {
-      console.log(positions);
       Array.prototype.forEach.call(positions, pos => {
         p.push(createData(
           pos.prodCode,
@@ -114,14 +112,12 @@ const Positions = (props) => {
   const onReceivePush = (positions) => {
     if (positions !== undefined) {
       setPositions(positionsToRows(positions));
-    } else {
-      console.log('undefined positions');
     }
   };
 
   return (
     <div className={classes.root}>
-      <ClientWS onReceivePush={onReceivePush} close={wsClose}/>
+      <ClientWS onReceivePush={onReceivePush} ref={wsRef}/>
       <DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}
