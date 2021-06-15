@@ -10,7 +10,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 
-const drawerWidth = 240;
+const drawerWidth: number = 240;
 const useStyles = makeStyles((theme) => ({
   appBar: {
     transition: theme.transitions.create(['margin', 'width'], {
@@ -54,28 +54,33 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DefaultAppbar = (props) => {
-  const { title, sidemenuopened, handleDrawerOpen } = props;
+interface AppbarProps {
+  title: string,
+  sidemenuopened: boolean,
+  handleDrawerOpen: () => void
+}
+
+const DefaultAppbar = (props: AppbarProps) => {
   const classes = useStyles();
   return (
     <AppBar
     position="fixed"
     className={clsx(classes.appBar, {
-      [classes.appBarShift]: sidemenuopened,
+      [classes.appBarShift]: props.sidemenuopened,
     })}
     >
       <Toolbar>
         <IconButton
           color="inherit"
           aria-label="sidemenuopened drawer"
-          onClick={handleDrawerOpen}
+          onClick={props.handleDrawerOpen}
           edge="start"
-          className={clsx(classes.menuButton, sidemenuopened && classes.hide)}
+          className={clsx(classes.menuButton, props.sidemenuopened && classes.hide)}
         >
           <MenuRoundedIcon />
         </IconButton>
         <Typography variant="h6" noWrap>
-          {title}
+          {props.title}
         </Typography>
         <Button color="inherit" className={clsx(classes.logoutButton)}>LogOut</Button>
       </Toolbar>

@@ -6,6 +6,11 @@ import {
   DefaultAppbar,
   DefaultDrawer
 } from '../Components';
+import { SessionToken, State } from '../Util';
+
+interface DashboardProps {
+
+}
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -13,10 +18,10 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const Dashboard = (props) => {
+const Dashboard = (props: DashboardProps) => {
   const classes = useStyles();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
-  const token = useSelector(state => state.sessionToken);
+  const token = useSelector((state: State<SessionToken>) => state.token);
   
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
@@ -38,11 +43,11 @@ const Dashboard = (props) => {
         handleDrawerClose={handleDrawerClose}
       />
       <main
-        className={clsx(classes.content, {
+        /*className={clsx(classes.content, {
           [classes.contentShift]: sidemenuopened,
-        })}
+        })}*/
       >
-        <div className={classes.drawerHeader} />
+        <div /*className={classes.drawerHeader} *//>
       </main>
     </div>
   );

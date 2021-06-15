@@ -6,13 +6,17 @@ import {
   DefaultDrawer
 } from '../Components';
 
+interface ProfileProps {
+
+}
+
 const useStyles = makeStyles({
   root: {
     width: '100%',
   }
 });
 
-const Profile = (props) => {
+const Profile = (props: ProfileProps) => {
   const [wsClose, setWSClose] = useState(false);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();

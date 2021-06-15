@@ -10,7 +10,7 @@ import {
 import { 
   getDispatchSelectCB,
   AccOperations,
-  opConsts
+  OPConsts
 } from '../Util';
 
 const headCells = [
@@ -34,50 +34,45 @@ const useStyles = makeStyles({
   }
 });
 
-const createData = (id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract) => {
-  return { id, optName, prev, daylong, dayshort, net, mkt, pl, prevClose, optVal, fx, contract }
+const createData = () => {
+  return { }
 };
 
-const Positions = (props) => {
+const Orders = (props) => {
   const token = useSelector(state => state.sessionToken);
   const accNo = useSelector(state => state.accNo);
-  const [positions, setPositions] = useState([]);
+  const [wsClose, setWSClose] = useState(false);
+  const [orders, setOrders] = useState([]);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
-  const hooks = getDispatchSelectCB(opConsts.POSITION);
-  const title = "Positions";
+  const hooks = getDispatchSelectCB(OPConsts.ORDER);
+  const title = "Orders";
   const dispatchAction = useRef(null);
-  const wsRef = useRef(null);
 
   useEffect(() => {
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let work = setInterval(() => {
-      AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
-        try {
-          if (data && !data.close) {
+    let mounted = true;
+    let work;
+    if (mounted) {
+      work = setInterval(() => {
+        AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
+          if (data !== undefined) {
             dispatchAction.current = () => dispatch(data.action);
             onReceivePush(data.data);
-          } else {
-            wsRef.current.closeExplicit(false);
-            clearInterval(work);
           }
-        } catch (error) {
-          console.error(error);
-          clearInterval(work);
-        }
-      });
-    }, 1000); 
+        });
+      }, 1000); 
+    }
     return () => {
-      console.log('positions unloaded');
+      mounted = false;
       clearInterval(work);
-    };
+    }
   }, []);
 
-  
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
   };
@@ -85,43 +80,31 @@ const Positions = (props) => {
     setSideMenuOpened(false);
   };
 
-  const positionsToRows = (data) => {
-    let positions = data.positions ? data.positions : (data.recordData ? data.recordData : undefined);
-    let p = [];
-    if (positions) {
-      Array.prototype.forEach.call(positions, pos => {
-        p.push(createData(
-          pos.prodCode,
-          '', // TODO name?
-          `${pos.psQty}@${pos.previousAvg}`,
-          pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
-          pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
-          `${pos.netQty}@${pos.netAvg}`,
-          pos.mktPrice,
-          pos.profitLoss,
-          pos.closeQty, // ?
-          pos.totalAmt, //?
-          '',
-          ''  
+  const ordersToRows = (data) => {
+    let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
+    let o = [];
+    if (orders) {
+      console.log(orders);
+      Array.prototype.forEach.call(orders, order => {
+        o.push(createData(
+          
         ));
       });
     }
-    return p;
+    return o;
   };
 
-  const onReceivePush = (positions) => {
-    if (positions !== undefined) {
-      setPositions(positionsToRows(positions));
+  const onReceivePush = (orders) => {
+    if (orders !== undefined) {
+      setOrders(ordersToRows(orders));
+    } else {
+      console.log('undefined orders');
     }
   };
 
   return (
     <div className={classes.root}>
-      <ClientWS
-        onReceivePush={onReceivePush}
-        operation={opConsts.POSITION}
-        ref={wsRef}
-      />
+      <ClientWS onReceivePush={onReceivePush} close={wsClose}/>
       <DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}
@@ -132,7 +115,7 @@ const Positions = (props) => {
         handleDrawerClose={handleDrawerClose}
       />
       <StyledTable
-        data={positions}
+        data={orders}
         title={title}
         headerCells={headCells}
       />     
@@ -141,5 +124,5 @@ const Positions = (props) => {
 };
 
 export {
-  Positions
+  Orders
 }

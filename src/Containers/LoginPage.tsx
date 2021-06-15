@@ -13,13 +13,28 @@ import {
 	postRequest,
 	loginAction,
 	setTokenAction,
-	setAccountNumAction
+	setAccountNumAction,
+	Response,
+	State,
+	UserInfo
 } from '../Util';
 import {
 	useDispatch,
 	useSelector
 } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
+
+interface LoginPageProps {
+
+}
+
+interface TwoFAFormProps {
+
+}
+
+interface AccNameFormProps {
+
+}
 
 const NoBulletsList = styled.ul`
 	padding: 0;
@@ -40,10 +55,10 @@ const StyledFormHelperText = withStyles({
 let display2FAForm = false;
 let isAE = false;
 
-const LoginForm = (props) => {
+const LoginForm = (props: LoginPageProps) => {
 	const history = useHistory();
 	const dispatch = useDispatch();
-	const location = useLocation();
+	const location = useLocation<string>();
 
 	const [data, setData] = useState({
 		password: '',
@@ -59,7 +74,7 @@ const LoginForm = (props) => {
 		}
 	}, []);
 
-	const handleClick = (event) => {
+	const handleClick = (event: MouseEvent) => {
 		event.preventDefault();
 		setInputErrorText('');
 
@@ -72,7 +87,7 @@ const LoginForm = (props) => {
 		}
 	};
 
-	const handleResponse = (resdata) => {
+	const handleResponse = (resdata: Response) => {
 		if (resdata.result_msg !== undefined) {
 			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
@@ -115,7 +130,7 @@ const LoginForm = (props) => {
 											id="user-name"
 											label="User Name"
 											variant="filled"
-											onChange={(event) => setData({ password: data.password, userId: event.target.value })}
+											onChange={(event: MouseEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
 											helperText={inputErrorText}
 										/>
 									</DefaultLI>
@@ -125,7 +140,7 @@ const LoginForm = (props) => {
 											label="Password"
 											type="password"
 											variant="filled"
-											onChange={(event) => setData({ password: event.target.value, userId: data.userId })}
+											onChange={(event: MouseEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
 										/>
 									</DefaultLI>  
 									<DefaultLI>
@@ -150,17 +165,17 @@ const LoginForm = (props) => {
 	);
 }
 
-const TwoFAForm = () => {
+const TwoFAForm = (props: TwoFAFormProps) => {
 	const [twoFACode, setTwoFACode] = useState('');
 	const [inputErrorText, setInputErrorText] = useState('');
 	const [loginErrorText, setLoginErrorText] = useState('');
 	const [show, setShow] = useState(true);
 	
-	const userId = useSelector(state => state.userId);
+	const userId = useSelector((state: State<UserInfo>) => state.userId);
 	const dispatch = useDispatch();
 	const history = useHistory();
 
-	const handleClick = (event) => {
+	const handleClick = (event: MouseEvent) => {
 		event.preventDefault();
 		setLoginErrorText('');
 
@@ -177,7 +192,7 @@ const TwoFAForm = () => {
 		}
 	};
 
-	const handleResponse = (resdata) => {
+	const handleResponse = (resdata: Response) => {
 		if (resdata.result_code === '0') {
 			const info = resdata.data;
 			dispatch(setTokenAction(info.sessionToken));
@@ -207,7 +222,7 @@ const TwoFAForm = () => {
 									id="2fa-code"
 									label="Code"
 									variant="filled"
-									onChange={(event) => setTwoFACode(event.target.value)}
+									onChange={(event: MouseEvent) => setTwoFACode((event?.target as HTMLInputElement)?.value)}
 									helperText={inputErrorText}
 								/>
 							</DefaultLI>
@@ -232,13 +247,13 @@ const TwoFAForm = () => {
 	);
 };
 
-const AccNumForm = (props) => {
+const AccNumForm = (props: AccNameFormProps) => {
 	const [show, setShow] = useState(true);
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
 
-	const handleClick = (event) => {
+	const handleClick = (event: MouseEvent) => {
 		dispatch(setAccountNumAction(accNum));
 		setShow(false);
 		display2FAForm = false;

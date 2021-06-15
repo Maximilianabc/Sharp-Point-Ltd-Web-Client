@@ -2,6 +2,10 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField } from '@material-ui/core';
 
+interface DefaultInputFieldProps {
+
+}
+
 const useStyleDefault = makeStyles((theme) => ({
 	root: {
 		border: "1px solid white",
@@ -36,7 +40,7 @@ const useStyleDefault = makeStyles((theme) => ({
 	}
 }));
 
-const DefaultInputField = (props) => {
+const DefaultInputField = (props: DefaultInputFieldProps) => {
 	const classes = useStyleDefault();
 
 	return (

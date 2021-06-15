@@ -27,16 +27,20 @@ import {
   stableSort,
 } from '../Util';
 
+interface StyledTableheadProps {
+  classes: any,
+  headerCells: any[],
+  order,
+  orderBy,
+  onClickSelectAll,
+  onRequestSort,
+  numSelected,
+  numRow 
+}
+
 const StyledTablehead = (props) => {
   const {
-    classes,
-    headerCells,
-    order,
-    orderBy,
-    onClickSelectAll,
-    onRequestSort,
-    numSelected,
-    numRow 
+
   } = props;
 
   const createSortHandler = (property) => (event) => {

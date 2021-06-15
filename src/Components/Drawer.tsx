@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 
-const drawerWidth = 240;
+const drawerWidth: number = 240;
 const useStyles = makeStyles((theme) => ({
   drawer: {
     width: drawerWidth,
@@ -29,8 +29,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const DefaultDrawer = (props) => {
-  const { sidemenuopened, handleDrawerClose } = props;
+interface DrawerProps {
+  sidemenuopened: boolean,
+  handleDrawerClose: () => void
+}
+
+const DefaultDrawer = (props: DrawerProps) => {
   const theme = useTheme();
   const classes = useStyles();
 
@@ -39,15 +43,15 @@ const DefaultDrawer = (props) => {
         className={classes.drawer}
         variant="persistent"
         anchor="left"
-        open={sidemenuopened}
+        open={props.sidemenuopened}
         classes={{paper: classes.drawerPaper}}
     >
       <div className={classes.drawerHeader}>
-        <IconButton onClick={handleDrawerClose}>
+        <IconButton onClick={props.handleDrawerClose}>
           {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
       </div>
-      <List classes={classes.drawerList}>
+      <List>
         {['Dashboard', 'Profile', 'Positions', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
           <ListItem
             button

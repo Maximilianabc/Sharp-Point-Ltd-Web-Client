@@ -4,22 +4,28 @@ import { useHistory } from 'react-router-dom';
 import { 
   wsAddress,
   getDispatchSelectCB,
-  AccOperations
+  AccOperations,
+  SessionToken,
+  State,
+  Name
 } from '../Util';
 
-const ClientWS = forwardRef((props, ref) => {
-  const { onReceivePush, operation } = props;
+interface WebSocketProps {
+  onReceivePush: (data: any) => void, 
+  operation: number
+}
 
-  const token = useSelector(state => state.sessionToken);
-  const accNo = useSelector(state => state.accNo);
+const ClientWS = forwardRef((props: WebSocketProps, ref) => {
+
+  const token = useSelector((state: State<SessionToken>) => state.token);
+  const accNo = useSelector((state: State<Name>) => state.accName);
   const address = `${wsAddress}${token}`;
   const dispatch = useDispatch();
   const history = useHistory();
-  const ws = useRef(null);
-  const dispatchAction = useRef(null);
+  const ws = useRef(new WebSocket(address));
 
   useEffect(() => {
-    ws.current = new WebSocket(address);
+    //ws.current = new WebSocket(address);
     ws.current.onopen = () => {
       ws.current.send(JSON.stringify({
         "dataMask" : 15,
@@ -41,29 +47,29 @@ const ClientWS = forwardRef((props, ref) => {
   }, []);
 
   useImperativeHandle(ref, () => ({
-    closeExplicit: (normal) => {
+    closeExplicit: (normal: boolean) => {
       console.log('close explicit');
       closeSocket(normal);
     }
   }));
 
-  const handlePushMessage = (message) => {
-    if (message.dataMask === undefined || message.dataMask !== operation) return;
+  const handlePushMessage = (message: any) => {
+    if (message.dataMask === undefined || message.dataMask !== props.operation) return;
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
     const closeWSCallback = () => closeSocket(false);
     const hooks = getDispatchSelectCB(message.dataMask);
-    AccOperations(hooks.id, payload, closeWSCallback, hooks.dispatch).then(data => {
+    AccOperations(hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
       if (data !== undefined) {
-        dispatchAction.current = () => dispatch(data.action);
-        onReceivePush(data.data);
+        dispatch(data.action);
+        props.onReceivePush(data.data);
       }
     });
   };
 
-  const closeSocket = (normal) => {
+  const closeSocket = (normal: boolean) => {
     if (!ws.current || ws.current.readyState !== 1) return;
     ws.current.send(JSON.stringify({
       "dataMask" : 15,

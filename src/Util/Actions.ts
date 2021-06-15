@@ -1,4 +1,9 @@
-const actionConsts = {
+interface ActionData {
+  type: string,
+  payload?: any
+}
+
+const actionConsts: Record<string, string> = {
   LOGIN2FA: 'LOGIN2FA',
   LOGOUT: 'LOGOUT',
   SET_TOKEN: 'SET_TOKEN',
@@ -11,69 +16,69 @@ const actionConsts = {
   SET_DONE_TRADE: 'SET_DONE_TRADE'
 };
 
-const loginAction = (data) => {
+const loginAction = (data: any): ActionData => {
   return {
     type: actionConsts.LOGIN2FA,
     payload: data
   }
 };
 
-const logoutAction = () => {
+const logoutAction = (): ActionData => {
   return {
     type: actionConsts.LOGOUT
   }
 };
 
-const setTokenAction = (token) => {
+const setTokenAction = (token: string): ActionData => {
   return {
     type: actionConsts.SET_TOKEN,
     payload: token
   };
 };
 
-const setAccountNumAction = (accNo) => {
+const setAccountNumAction = (accNo: string): ActionData => {
   return {
     type: actionConsts.SET_ACC_NUM,
     payload: accNo
   };
 }
 
-const setAccountBalanaceAction = (balance) => {
+const setAccountBalanaceAction = (balance: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_BAL,
     payload: balance
   }
 };
 
-const setAccountInfoAction = (info) => {
+const setAccountInfoAction = (info: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_INFO,
     payload: info
   };
 };
 
-const setAccountOrderAction = (order) => {
+const setAccountOrderAction = (order: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_ORDER,
     payload: order
   };
 };
 
-const setAccountPositionAction = (position) => {
+const setAccountPositionAction = (position: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_POS,
     payload: position
   };
 };
 
-const setAccountSummaryAction = (summary) => {
+const setAccountSummaryAction = (summary: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_SUM,
     payload: summary
   };
 };
 
-const setDoneTradeReportAction = (doneTrade) => {
+const setDoneTradeReportAction = (doneTrade: any): ActionData => {
   return {
     type: actionConsts.SET_DONE_TRADE,
     payload: doneTrade
@@ -92,4 +97,8 @@ export {
   setAccountSummaryAction,
   setAccountBalanaceAction,
   setDoneTradeReportAction
-}
+};
+export type {
+  ActionData
+};
+
