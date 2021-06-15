@@ -117,7 +117,11 @@ const Positions = (props) => {
 
   return (
     <div className={classes.root}>
-      <ClientWS onReceivePush={onReceivePush} ref={wsRef}/>
+      <ClientWS
+        onReceivePush={onReceivePush}
+        operation={opConsts.POSITION}
+        ref={wsRef}
+      />
       <DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}

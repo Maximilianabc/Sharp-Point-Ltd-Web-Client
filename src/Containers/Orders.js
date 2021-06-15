@@ -59,7 +59,7 @@ const Orders = (props) => {
     let work;
     if (mounted) {
       work = setInterval(() => {
-        AccOperations(hooks.id, payload, () => { setWSClose(true) }, hooks.dispatch).then(data => {
+        AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
           if (data !== undefined) {
             dispatchAction.current = () => dispatch(data.action);
             onReceivePush(data.data);

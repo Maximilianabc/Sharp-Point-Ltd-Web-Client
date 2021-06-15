@@ -8,7 +8,7 @@ import {
 } from '../Util';
 
 const ClientWS = forwardRef((props, ref) => {
-  const { onReceivePush } = props;
+  const { onReceivePush, operation } = props;
 
   const token = useSelector(state => state.sessionToken);
   const accNo = useSelector(state => state.accNo);
@@ -29,7 +29,7 @@ const ClientWS = forwardRef((props, ref) => {
       console.log('opened');
     }
     ws.current.onclose = () => console.log('closed');
-    return () => closeSocket(true)
+    return () => closeSocket(true);
   }, []);
 
   useEffect(() => {
@@ -48,15 +48,14 @@ const ClientWS = forwardRef((props, ref) => {
   }));
 
   const handlePushMessage = (message) => {
-    if (message.dataMask === undefined) return;
-
+    if (message.dataMask === undefined || message.dataMask !== operation) return;
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
-    const closeWSCallback = closeSocket(false);
+    const closeWSCallback = () => closeSocket(false);
     const hooks = getDispatchSelectCB(message.dataMask);
-    AccOperations(hooks.id, payload, message.dataMask, closeWSCallback, hooks.dispatch).then(data => {
+    AccOperations(hooks.id, payload, closeWSCallback, hooks.dispatch).then(data => {
       if (data !== undefined) {
         dispatchAction.current = () => dispatch(data.action);
         onReceivePush(data.data);
@@ -65,7 +64,7 @@ const ClientWS = forwardRef((props, ref) => {
   };
 
   const closeSocket = (normal) => {
-    if (!ws.current) return;
+    if (!ws.current || ws.current.readyState !== 1) return;
     ws.current.send(JSON.stringify({
       "dataMask" : 15,
       "event" : "release"

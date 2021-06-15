@@ -72,6 +72,7 @@ const AccOperations = async (
 	) => {
 	
 	let result;
+	console.log(`wscb: ${closeWSCallback}`);
 	await postRequest(`/account/account${op}`, payload)
 		.then(data => {
 			if (data.result_code === "40011") {
