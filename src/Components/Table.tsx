@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { lighten, makeStyles } from '@material-ui/core/styles';
@@ -22,7 +22,7 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { 
+import {
   getComparator,
   stableSort,
 } from '../Util';
@@ -30,21 +30,28 @@ import {
 interface StyledTableheadProps {
   classes: any,
   headerCells: any[],
-  order,
-  orderBy,
-  onClickSelectAll,
-  onRequestSort,
-  numSelected,
-  numRow 
+  order: 'asc' | 'desc',
+  orderBy: string,
+  onClickSelectAll: (event: React.ChangeEvent) => void,
+  onRequestSort: (event: React.MouseEvent, property: any) => void,
+  numSelected: number,
+  numRow: number
 }
 
-const StyledTablehead = (props) => {
-  const {
+interface StyledTableToolbarProps {
+  title: string,
+  numSelected: number
+}
 
-  } = props;
+interface StyledTableProps {
+  data: any,
+  title: string,
+  headerCells: any[]
+}
 
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
+const StyledTablehead = (props: StyledTableheadProps) => {
+  const createSortHandler = (property: string) => (event: React.MouseEvent) => {
+    props.onRequestSort(event, property);
   };
 
   return (
@@ -52,26 +59,26 @@ const StyledTablehead = (props) => {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox 
-            indeterminate={numSelected > 0 && numSelected < numRow}
-            checked={numRow > 0 && numSelected === numRow}
-            onChange={onClickSelectAll}
+            indeterminate={props.numSelected > 0 && props.numSelected < props.numRow}
+            checked={props.numRow > 0 && props.numSelected === props.numRow}
+            onChange={props.onClickSelectAll}
           />
         </TableCell>
-        {headerCells.map((cell) => (
+        {props.headerCells.map((cell: any) => (
             <TableCell
               key={cell.id}
               align={cell.align}
-              sortDirection={orderBy === cell.id ? order : 'asc'}
+              sortDirection={props.orderBy === cell.id ? props.order : 'asc'}
             >
               <TableSortLabel
-                active={orderBy === cell.id}
-                direction={orderBy === cell.id ? order : 'asc'}
+                active={props.orderBy === cell.id}
+                direction={props.orderBy === cell.id ? props.order : 'asc'}
                 onClick={createSortHandler(cell.id)}
               >
                 {cell.label}
-                {orderBy === cell.id ? (
-                  <span className={classes.visuallyHidden}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                {props.orderBy === cell.id ? (
+                  <span className={props.classes.visuallyHidden}>
+                    {props.order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                   </span>
                 ) : null}
               </TableSortLabel>
@@ -112,27 +119,25 @@ const useStylesToolbar = makeStyles((theme) => ({
   },
 }));
 
-const StyledTableToolbar = (props) => {
-  const { title } = props;
+const StyledTableToolbar = (props: StyledTableToolbarProps) => {
   const classes = useStylesToolbar();
-  const numSelected = props;
 
   return (
     <Toolbar
       className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
+        [classes.highlight]: props.numSelected > 0,
       })}
     >
-      {numSelected > 0 ? (
+      {props.numSelected > 0 ? (
         <Typography color="inherit" variant="subtitle1" component="div">
-          {numSelected} selected
+          {props.numSelected} selected
         </Typography>
       ) : (
         <Typography variant="h6" id="tableTitle" component="div">
-          {title}
+          {props.title}
         </Typography>
       )}
-      {numSelected > 0 ? (
+      {props.numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton aria-label="delete">
             <DeleteIcon />
@@ -174,33 +179,31 @@ const useStylesTable = makeStyles((theme) => ({
   },
 }));
 
-const StyledTable = (props) => {
-  const { data, title, headerCells } = props;
+const StyledTable = (props: StyledTableProps) => {
   const classes = useStylesTable();
-
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('id');
-  const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState<any[]>([]);
   const [page, setPage] = useState(0);
   const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const handleRequestSort = (event, property) => {
+  const handleRequestSort = (event: React.MouseEvent, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
-  const handleClickSelectAll = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = data.map((n) => n.name);
+  const handleClickSelectAll = (event: React.ChangeEvent) => {
+    if ((event?.target as HTMLInputElement)?.checked) {
+      const newSelecteds = props.data.map((n: any) => n.name);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
-  const handleClick = (event, name) => {
+  const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, name: string) => {
     const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
+    let newSelected: any[] = [];
 
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, name);
@@ -216,25 +219,25 @@ const StyledTable = (props) => {
     }
     setSelected(newSelected);
   };
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
   };
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    setRowsPerPage(parseInt((event?.target as HTMLInputElement)?.value, 10));
     setPage(0);
   };
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
+  const handleChangeDense = (event: ChangeEvent, checked: boolean) => {
+    setDense((event?.target as HTMLInputElement)?.checked);
   };
-  const isSelected = (name) => selected.indexOf(name) !== -1;
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+  const isSelected = (name: string) => selected.indexOf(name) !== -1;
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.data.length - page * rowsPerPage);
 
   return (
     <div>
       <Paper className={classes.paper}>
         <StyledTableToolbar
           numSelected={selected.length}
-          title={title}
+          title={props.title}
         />
         <TableContainer>
           <Table
@@ -245,16 +248,16 @@ const StyledTable = (props) => {
           >
             <StyledTablehead
               classes={classes}
-              headerCells={headerCells}
+              headerCells={props.headerCells}
               order={order}
               orderBy={orderBy}
               onClickSelectAll={handleClickSelectAll}
               onRequestSort={handleRequestSort}
               numSelected={selected.length}
-              numRow={data.length}
+              numRow={props.data.length}
             />
             <TableBody>
-              {stableSort(data, getComparator(order, orderBy))
+              {stableSort(props.data, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
@@ -263,7 +266,7 @@ const StyledTable = (props) => {
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.name)}
+                      onClick={(event: React.MouseEvent<HTMLTableRowElement>) => handleClick(event, row.name)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -279,10 +282,10 @@ const StyledTable = (props) => {
                       <TableCell component="th" id={labelId} scope="row" padding="none">
                         {row.id}
                       </TableCell>
-                      <TableCell align="right">{row.optName}</TableCell>
+                      <TableCell align="right">{row.name}</TableCell>
                       <TableCell align="right">{row.prev}</TableCell>
-                      <TableCell align="right">{row.daylong}</TableCell>
-                      <TableCell align="right">{row.dayshort}</TableCell>
+                      <TableCell align="right">{row.dayLong}</TableCell>
+                      <TableCell align="right">{row.dayShort}</TableCell>
                       <TableCell align="right">{row.net}</TableCell>
                       <TableCell align="right">{row.mkt}</TableCell>
                       <TableCell align="right">{row.pl}</TableCell>
@@ -304,7 +307,7 @@ const StyledTable = (props) => {
         <TablePagination
           rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={data.length}
+          count={props.data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}

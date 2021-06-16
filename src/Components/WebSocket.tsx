@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { 
@@ -16,18 +16,17 @@ interface WebSocketProps {
 }
 
 const ClientWS = forwardRef((props: WebSocketProps, ref) => {
-
   const token = useSelector((state: State<SessionToken>) => state.token);
   const accNo = useSelector((state: State<Name>) => state.accName);
   const address = `${wsAddress}${token}`;
   const dispatch = useDispatch();
   const history = useHistory();
-  const ws = useRef(new WebSocket(address));
+  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    //ws.current = new WebSocket(address);
+    ws.current = new WebSocket(address);
     ws.current.onopen = () => {
-      ws.current.send(JSON.stringify({
+      ws.current!.send(JSON.stringify({
         "dataMask" : 15,
         "event" : "subscribe",
         "accNo" : "*"
@@ -48,7 +47,6 @@ const ClientWS = forwardRef((props: WebSocketProps, ref) => {
 
   useImperativeHandle(ref, () => ({
     closeExplicit: (normal: boolean) => {
-      console.log('close explicit');
       closeSocket(normal);
     }
   }));
@@ -63,7 +61,7 @@ const ClientWS = forwardRef((props: WebSocketProps, ref) => {
     const hooks = getDispatchSelectCB(message.dataMask);
     AccOperations(hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
       if (data !== undefined) {
-        dispatch(data.action);
+        dispatch(data.actionData);
         props.onReceivePush(data.data);
       }
     });

@@ -10,8 +10,16 @@ import {
 import { 
   getDispatchSelectCB,
   AccOperations,
-  OPConsts
+  OPConsts,
+  State,
+  SessionToken,
+  Name,
+  AccOrderRecord
 } from '../Util';
+
+interface OrdersProps {
+
+}
 
 const headCells = [
   { id: 'id', align: 'left', label: 'ID' },
@@ -38,17 +46,16 @@ const createData = () => {
   return { }
 };
 
-const Orders = (props) => {
-  const token = useSelector(state => state.sessionToken);
-  const accNo = useSelector(state => state.accNo);
-  const [wsClose, setWSClose] = useState(false);
-  const [orders, setOrders] = useState([]);
+const Orders = (props: OrdersProps) => {
+  const token = useSelector((state: State<SessionToken>) => state.token);
+  const accNo = useSelector((state: State<Name>) => state.accName);
+  const [orders, setOrders] = useState<AccOrderRecord[]>([]);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
   const hooks = getDispatchSelectCB(OPConsts.ORDER);
   const title = "Orders";
-  const dispatchAction = useRef(null);
+  const wsRef = useRef(null);
 
   useEffect(() => {
     const payload = {
@@ -56,12 +63,12 @@ const Orders = (props) => {
       targetAccNo: accNo
     };
     let mounted = true;
-    let work;
+    let work: NodeJS.Timeout;
     if (mounted) {
       work = setInterval(() => {
-        AccOperations(hooks.id, payload, undefined, hooks.dispatch).then(data => {
+        AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
           if (data !== undefined) {
-            dispatchAction.current = () => dispatch(data.action);
+            dispatch(data.actionData);
             onReceivePush(data.data);
           }
         });
@@ -80,11 +87,9 @@ const Orders = (props) => {
     setSideMenuOpened(false);
   };
 
-  const ordersToRows = (data) => {
-    let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
-    let o = [];
+  const ordersToRows = (orders: any) => {
+    let o: AccOrderRecord[] = [];
     if (orders) {
-      console.log(orders);
       Array.prototype.forEach.call(orders, order => {
         o.push(createData(
           
@@ -94,17 +99,22 @@ const Orders = (props) => {
     return o;
   };
 
-  const onReceivePush = (orders) => {
-    if (orders !== undefined) {
-      setOrders(ordersToRows(orders));
-    } else {
-      console.log('undefined orders');
+  const onReceivePush = (data: any) => {
+    if (data !== undefined) {
+      let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
+      if (orders) {
+        setOrders(ordersToRows(orders));
+      }
     }
   };
 
   return (
     <div className={classes.root}>
-      <ClientWS onReceivePush={onReceivePush} close={wsClose}/>
+      <ClientWS
+        onReceivePush={onReceivePush}
+        operation={OPConsts.ORDER}
+        ref={wsRef}
+      />
       <DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}

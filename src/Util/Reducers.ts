@@ -1,4 +1,4 @@
-import { Reducer } from 'react';
+import persistCombineReducers from 'redux-persist/lib/persistCombineReducers';
 import { actionConsts, ActionData } from './Actions';
 import { SortOrder } from './Util';
 

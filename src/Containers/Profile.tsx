@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
-  ClientWS,
   DefaultAppbar,
   DefaultDrawer
 } from '../Components';
@@ -17,7 +16,6 @@ const useStyles = makeStyles({
 });
 
 const Profile = (props: ProfileProps) => {
-  const [wsClose, setWSClose] = useState(false);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();
   const title = "Profile";
@@ -30,7 +28,6 @@ const Profile = (props: ProfileProps) => {
   };
   return (
     <div className={classes.root}>
-      <ClientWS onReceivePush={() => {}} close={wsClose}/>
       <DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}

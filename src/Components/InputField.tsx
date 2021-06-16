@@ -1,9 +1,11 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField } from '@material-ui/core';
+import { BaseTextFieldProps } from '@material-ui/core';
 
-interface DefaultInputFieldProps {
-
+interface DefaultInputFieldProps extends BaseTextFieldProps {
+	variant?: any,
+	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
 }
 
 const useStyleDefault = makeStyles((theme) => ({

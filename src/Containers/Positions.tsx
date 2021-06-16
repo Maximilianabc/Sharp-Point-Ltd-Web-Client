@@ -14,9 +14,7 @@ import {
   State,
   SessionToken,
   Name,
-  Position,
-  AccPositionRecord,
-  Result
+  AccPositionRecord
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -66,13 +64,12 @@ const Positions: React.FC = (props: PositionProps) => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
-            dispatch(data.action);
+            dispatch(data.actionData);
             onReceivePush(data.data);
           } else {
-            /*
             if (wsRef && wsRef.current) {
-              wsRef!.current!.closeExplicit(false);
-            }*/
+              //wsRef!.current!.closeExplicit(false);
+            }
             history.push({
               pathname: '/logout',
               state: 'Session expired. Please login again.'
@@ -86,7 +83,6 @@ const Positions: React.FC = (props: PositionProps) => {
       });
     }, 1000); 
     return () => {
-      console.log('positions unloaded');
       clearInterval(work);
     };
   }, []);
@@ -103,7 +99,7 @@ const Positions: React.FC = (props: PositionProps) => {
     let p: AccPositionRecord[] = [];
     if (positions) {
       Array.prototype.forEach.call(positions, pos => {
-        positions.push({
+        p.push({
           id: pos.prodCode,
           name: '', // TODO name?
           prev: `${pos.psQty}@${pos.previousAvg}`,

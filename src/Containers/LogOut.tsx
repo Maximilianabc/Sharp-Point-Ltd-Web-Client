@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router";
-import { logoutAction, postRequest } from "../Util";
+import { logoutAction, postRequest, SessionToken, State } from "../Util";
 
-const LogOut = (props) => {
-  const token = useSelector(state => state.sessionToken);
+const LogOut = () => {
+  const token = useSelector((state: State<SessionToken>) => state.token);
   const history = useHistory();
   const dispatch = useDispatch();
   const location = useLocation();

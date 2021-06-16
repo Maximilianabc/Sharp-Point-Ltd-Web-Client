@@ -35,21 +35,19 @@ interface Response {
 }
 interface Result {
 	data?: any,
-	action: ActionCallback,
+	actionData: ActionData,
 	closeSocket: boolean
 }
 interface StoreCallbacks {
 	id: string,
-	select: () => void;
-	action: (d: any) => void;
+	select: any;
+	action: (d: any) => ActionData;
 }
 
-type SortOrder = 'ASC' | 'DSC';
-type StringOrNumberTuple = [string, string] | [number, number];
+type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
-type Comparator = (tuple: StringOrNumberTuple) => ComparatorIndicator;
+type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
-type ActionCallback = (action: ActionData) => void;
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
 	const path = `http://${serverIP}:${port}/apiCustomer`;
@@ -69,7 +67,8 @@ const postRequest = async (relativePath: string, payload: any): Promise<any> => 
 
 const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 	let op = '';
-	let actionCallback, selectCallback;
+	let actionCallback: (d: any) => ActionData
+	let selectCallback: any;
 
 	switch (opConst) {
 		case 1:
@@ -93,7 +92,7 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 			selectCallback = () => (state: State<Account<Order>>) => state.orders;
 			break;
 		default:
-			throw `unknown operation const ${opConst}`;
+			throw new Error(`unknown operation const ${opConst}`);
 	};
 	return { id: op, action: actionCallback, select: selectCallback };
 };
@@ -102,7 +101,7 @@ const AccOperations = async (
 		op?: string,
 		payload?: any,
 		closeWSCallback?: WebSocketCallback,
-		actionCallback?: (d: any) => void
+		actionCallback?: (d: any) => ActionData
 	): Promise<Result | undefined> => {
 	
 	let result;
@@ -119,7 +118,7 @@ const AccOperations = async (
 			if (actionCallback) {
 				result = {
 					data: data?.data,
-					action: () => actionCallback(data?.data),
+					actionData: actionCallback(data?.data),
 					close: false
 				};
 			} else {
@@ -132,17 +131,17 @@ const AccOperations = async (
 	return result;
 };
 
-const descComparator = ([a, b]: StringOrNumberTuple) => b < a ? -1 : (b > a ? 1 : 0);
+const descComparator = ([a, b]: any, orderBy: string): ComparatorIndicator => b[orderBy] < a[orderBy] ? -1 : (b[orderBy] > a[orderBy] ? 1 : 0);
 
-const getComparator = (order: SortOrder) => 
-	order === 'DSC'
-    ? ([a, b]: StringOrNumberTuple) => descComparator([a, b] as StringOrNumberTuple)
-    : ([a, b]: StringOrNumberTuple) => -descComparator([a, b] as StringOrNumberTuple);
+const getComparator = (order: SortOrder, orderBy: string): Comparator => 
+	order === 'desc'
+    ? ([a, b]: any) => descComparator([a, b], orderBy) as ComparatorIndicator
+    : ([a, b]: any) => -descComparator([a, b], orderBy) as ComparatorIndicator;
 
-const stableSort = (array: string[] | number[], comparator: Comparator) => {
+const stableSort = (array: any[], comparator: Comparator): any[] => {
 	const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
-    const order = comparator([a[0], b[0]] as StringOrNumberTuple);
+    const order = comparator([a[0], b[0]]);
     if (order !== 0) return order;
     return ((a[1]) as number) - ((b[1]) as number);
   });

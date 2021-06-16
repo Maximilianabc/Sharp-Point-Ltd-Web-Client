@@ -23,17 +23,18 @@ import {
 	useSelector
 } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
+import { FormControlProps } from '@material-ui/core';
 
-interface LoginPageProps {
-
-}
-
-interface TwoFAFormProps {
+interface LoginPageProps extends FormControlProps {
 
 }
 
-interface AccNameFormProps {
+interface TwoFAFormProps extends FormControlProps {
 
+}
+
+interface AccNameFormProps extends FormControlProps {
+	
 }
 
 const NoBulletsList = styled.ul`
@@ -60,7 +61,7 @@ const LoginForm = (props: LoginPageProps) => {
 	const dispatch = useDispatch();
 	const location = useLocation<string>();
 
-	const [data, setData] = useState({
+	const [data, setData] = useState<UserInfo>({
 		password: '',
 		userId: '',
 	});
@@ -74,7 +75,7 @@ const LoginForm = (props: LoginPageProps) => {
 		}
 	}, []);
 
-	const handleClick = (event: MouseEvent) => {
+	const handleClick = (event: React.MouseEvent) => {
 		event.preventDefault();
 		setInputErrorText('');
 
@@ -91,6 +92,7 @@ const LoginForm = (props: LoginPageProps) => {
 		if (resdata.result_msg !== undefined) {
 			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
+					dispatch(loginAction(data));
 					const info = resdata.data;
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
@@ -106,7 +108,6 @@ const LoginForm = (props: LoginPageProps) => {
 					} else if (info.twofaMethod !== undefined && info.twofaMethod === 3) {
 						// need 2FA
 						display2FAForm = true;
-						dispatch(loginAction(data));
 						setShow(false);
 					}
 				}
@@ -122,7 +123,7 @@ const LoginForm = (props: LoginPageProps) => {
 				!isAE
 					?
 						<Slide in={show} direction="left" unmountOnExit>
-							<FormControl autoComplete="off" id="login-form">
+							<FormControl id="login-form">
 								<NoBulletsList>
 									<DefaultLI>
 										<DefaultInputField
@@ -130,7 +131,7 @@ const LoginForm = (props: LoginPageProps) => {
 											id="user-name"
 											label="User Name"
 											variant="filled"
-											onChange={(event: MouseEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
+											onChange={(event: React.ChangeEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
 											helperText={inputErrorText}
 										/>
 									</DefaultLI>
@@ -140,7 +141,7 @@ const LoginForm = (props: LoginPageProps) => {
 											label="Password"
 											type="password"
 											variant="filled"
-											onChange={(event: MouseEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
+											onChange={(event: React.ChangeEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
 										/>
 									</DefaultLI>  
 									<DefaultLI>
@@ -160,8 +161,8 @@ const LoginForm = (props: LoginPageProps) => {
 								</NoBulletsList> 
 							</FormControl>
 						</Slide>
-					: <AccNumForm unmountOnExit/>
-			: <TwoFAForm unmountOnExit/>
+					: <AccNumForm/>
+			: <TwoFAForm/>
 	);
 }
 
@@ -175,7 +176,9 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 	const dispatch = useDispatch();
 	const history = useHistory();
 
-	const handleClick = (event: MouseEvent) => {
+	useEffect(() => console.log(userId), []);
+	
+	const handleClick = (event: React.MouseEvent) => {
 		event.preventDefault();
 		setLoginErrorText('');
 
@@ -214,7 +217,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 		!isAE
 			?
 				<Zoom in={show} style={{ transitionDelay: '100ms' }} unmountOnExit>
-					<FormControl autoComplete="off" id="2fa-form">
+					<FormControl id="2fa-form">
 						<NoBulletsList>
 							<DefaultLI>
 								<DefaultInputField
@@ -222,7 +225,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 									id="2fa-code"
 									label="Code"
 									variant="filled"
-									onChange={(event: MouseEvent) => setTwoFACode((event?.target as HTMLInputElement)?.value)}
+									onChange={(event: React.ChangeEvent) => setTwoFACode((event?.target as HTMLInputElement)?.value)}
 									helperText={inputErrorText}
 								/>
 							</DefaultLI>
@@ -243,7 +246,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 						</NoBulletsList>
 					</FormControl>
 				</Zoom>
-			: <AccNumForm unmountOnExit/>
+			: <AccNumForm/>
 	);
 };
 
@@ -252,8 +255,10 @@ const AccNumForm = (props: AccNameFormProps) => {
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
+	const userId = useSelector((state: State<UserInfo>) => state.userId);
+	useEffect(() => console.log(userId), []);
 
-	const handleClick = (event: MouseEvent) => {
+	const handleClick = (event: React.MouseEvent) => {
 		dispatch(setAccountNumAction(accNum));
 		setShow(false);
 		display2FAForm = false;
@@ -263,7 +268,7 @@ const AccNumForm = (props: AccNameFormProps) => {
 
 	return (
 		<Zoom in={show} style={{ transitionDelay: '100ms' }} unmountOnExit>
-			<FormControl autoComplete="off" id="accnum-form">
+			<FormControl id="accnum-form">
 				<NoBulletsList>
 					<DefaultLI>
 						<DefaultInputField
