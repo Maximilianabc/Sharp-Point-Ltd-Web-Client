@@ -11,10 +11,8 @@ import {
   getDispatchSelectCB,
   AccOperations,
   OPConsts,
-  State,
-  SessionToken,
-  Name,
-  AccOrderRecord
+  AccOrderRecord,
+  UserState
 } from '../Util';
 
 interface OrdersProps {
@@ -47,8 +45,8 @@ const createData = () => {
 };
 
 const Orders = (props: OrdersProps) => {
-  const token = useSelector((state: State<SessionToken>) => state.token);
-  const accNo = useSelector((state: State<Name>) => state.accName);
+  const token = useSelector((state: UserState) => state.token);
+  const accNo = useSelector((state: UserState) => state.accName);
   const [orders, setOrders] = useState<AccOrderRecord[]>([]);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();

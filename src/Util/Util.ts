@@ -6,12 +6,7 @@ import {
 	setAccountSummaryAction
 } from "./Actions";
 import {
-	State,
-	Account,
-	Summary,
-	Balance,
-	Position,
-	Order
+	UserState
 } from './Reducers';
 
 const serverIP = "192.168.123.136";
@@ -74,22 +69,22 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 		case 1:
 			op = 'Summary';        		
 			actionCallback = (d: any) => setAccountSummaryAction(d);
-			selectCallback = () => (state: State<Account<Summary>>) => state.summary;
+			selectCallback = () => (state: UserState) => state.summary;
 			break;
 		case 2:
 			op = 'Balance';
 			actionCallback = (d: any) => setAccountBalanaceAction(d);
-			selectCallback = () => (state: State<Account<Balance>>) => state.balance;
+			selectCallback = () => (state: UserState) => state.balance;
 			break;
 		case 4:
 			op = 'Position';
 			actionCallback = (d: any) => setAccountPositionAction(d);
-			selectCallback = () => (state: State<Account<Position>>) => state.positions;
+			selectCallback = () => (state: UserState) => state.position;
 			break;
 		case 8:
 			op = 'Order';
 			actionCallback = (d: any) => setAccountOrderAction(d);
-			selectCallback = () => (state: State<Account<Order>>) => state.orders;
+			selectCallback = () => (state: UserState) => state.order;
 			break;
 		default:
 			throw new Error(`unknown operation const ${opConst}`);

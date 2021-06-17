@@ -1,15 +1,27 @@
-import persistCombineReducers from 'redux-persist/lib/persistCombineReducers';
 import { actionConsts, ActionData } from './Actions';
 import { SortOrder } from './Util';
 
-type State<T extends StateTypes> = T & { prev: State<T> | unknown };
-type StateTypes = Empty | UserTypes | Account<Details> | unknown
+interface UserState {
+  userId?: string,
+  token?: string,
+  accName?: string,
+  info?: Account<Info>,
+  summary?: Account<Summary>,
+  balance?: Account<Balance>,
+  position?: Account<Position>,
+  clearTrade?: Account<ClearTrade>,
+  cash?: Account<Cash>,
+  order?: Account<Order>,
+  doneTrade?: Account<DoneTrade>
+}
+
+type StateContentTypes = Empty | UserTypes | Account<Details> | unknown;
 
 interface Empty { }
 
-type UserTypes = UserInfo | SessionToken | Name;
-interface UserInfo {
-  userId: string,
+type UserTypes = UserId | SessionToken | Name;
+interface UserId {
+  userId: string
   password: string
 }
 interface SessionToken {
@@ -47,7 +59,7 @@ interface AccInfoRecord {
   avgNetOptValue: string
 }
 interface Info {
-  info: AccInfoRecord[]
+  data: AccInfoRecord[]
 }
 interface AccSummaryRecord {
   accClass: string,
@@ -79,13 +91,13 @@ interface AccSummaryRecord {
   tradeLimit: number
 }
 interface Summary {
-  summary: AccSummaryRecord[]
+  data: AccSummaryRecord[]
 }
 interface AccBalanceRecord {
 
 }
 interface Balance {
-  balance: AccBalanceRecord[]
+  data: AccBalanceRecord[]
 }
 interface AccPositionRecord {
   id: string,
@@ -102,7 +114,7 @@ interface AccPositionRecord {
   contract: string
 }
 interface Position {
-  positions: AccPositionRecord[]
+  data: AccPositionRecord[]
 }
 interface AccClearTradeRecord {
   id: string,
@@ -121,7 +133,7 @@ interface AccClearTradeRecord {
   logNumber: number
 }
 interface ClearTrade {
-  trades: AccClearTradeRecord[]
+  data: AccClearTradeRecord[]
 }
 interface AccCashRecord {
   ccy: string,
@@ -135,13 +147,13 @@ interface AccCashRecord {
   cashBaseCcy: string
 }
 interface Cash {
-  cash: AccCashRecord[]
+  data: AccCashRecord[]
 }
 interface AccOrderRecord {
 
 }
 interface Order {
-  orders: AccOrderRecord[]
+  data: AccOrderRecord[]
 }
 interface AccDoneTradeRecord {
   accNo: string,
@@ -170,95 +182,106 @@ interface AccDoneTradeRecord {
   tradeTimeStr: string
 }
 interface DoneTrade {
-  doneTradeReports: AccDoneTradeRecord[]
+  data: AccDoneTradeRecord[]
 }
 
-const currentUser = (state: State<Empty> = { prev: undefined }, action: ActionData): State<StateTypes> => {
+const currentUser = (state: UserState = {}, action: ActionData): UserState => {
   switch (action.type) {
     case actionConsts.LOGIN2FA:
       return {
-        prev: state,
+        ...state,
         userId: action.payload.userId,
-        password: action.payload.password
-      } as State<UserInfo>;
+      };
     case actionConsts.LOGOUT:
-      return {} as State<Empty>;
+      return {};
     case actionConsts.SET_TOKEN:
       return {
-        prev: state,
+        ...state,
         token: action.payload
-      } as State<SessionToken>;
+      };
     case actionConsts.SET_ACC_NUM:
       return {
         ...state,
         accName: action.payload
-      } as State<Name>;
+      };
     case actionConsts.SET_ACC_BAL:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        balance: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<Balance>>;
+        ...state,
+        balance: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<Balance>
+      };
     case actionConsts.SET_ACC_INFO:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        info: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<Info>>;
+        ...state,
+        info: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<Info>
+      };
     case actionConsts.SET_ACC_ORDER:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        orders: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<Order>>;
+        ...state,
+        order: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<Order>
+      };
     case actionConsts.SET_ACC_POS:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        positions: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<Position>>;
+        ...state,
+        position: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<Position>
+        };
     case actionConsts.SET_ACC_SUM:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        summary: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<Summary>>;
+        ...state,
+        summary: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<Summary>
+      };
     case actionConsts.SET_DONE_TRADE:
       return {
-        prev: state,
-        limit: action.payload.limit,
-        page: action.payload.page,
-        doneTradeReports: action.payload.recordData,
-        sort: action.payload.sort,
-        sortBy: action.payload.sortBy,
-        total: action.payload.total,
-        totalPage: action.payload.totalPage
-      } as State<Account<DoneTrade>>;
+        ...state,
+        doneTrade: {
+          limit: action.payload.limit,
+          page: action.payload.page,
+          data: action.payload.recordData,
+          sort: action.payload.sort,
+          sortBy: action.payload.sortBy,
+          total: action.payload.total,
+          totalPage: action.payload.totalPage
+        } as Account<DoneTrade>
+      };
     default:
       return state;
   }
@@ -268,10 +291,10 @@ export {
   currentUser
 };  
 export type {
-  State,
-  StateTypes,
+  UserState,
+  StateContentTypes as StateTypes,
   UserTypes,
-  UserInfo,
+  UserId as UserInfo,
   SessionToken,
   Name,
   Account,

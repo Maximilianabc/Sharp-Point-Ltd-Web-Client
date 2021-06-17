@@ -15,8 +15,9 @@ import {
 	setTokenAction,
 	setAccountNumAction,
 	Response,
-	State,
-	UserInfo
+	UserInfo,
+	store,
+	UserState
 } from '../Util';
 import {
 	useDispatch,
@@ -172,12 +173,12 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 	const [loginErrorText, setLoginErrorText] = useState('');
 	const [show, setShow] = useState(true);
 	
-	const userId = useSelector((state: State<UserInfo>) => state.userId);
+	const userId = useSelector((state: UserState) => state.userId);
 	const dispatch = useDispatch();
 	const history = useHistory();
 
 	useEffect(() => console.log(userId), []);
-	
+
 	const handleClick = (event: React.MouseEvent) => {
 		event.preventDefault();
 		setLoginErrorText('');
@@ -255,8 +256,6 @@ const AccNumForm = (props: AccNameFormProps) => {
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
-	const userId = useSelector((state: State<UserInfo>) => state.userId);
-	useEffect(() => console.log(userId), []);
 
 	const handleClick = (event: React.MouseEvent) => {
 		dispatch(setAccountNumAction(accNum));

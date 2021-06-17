@@ -11,9 +11,7 @@ import {
   getDispatchSelectCB,
   AccOperations,
   OPConsts,
-  State,
-  SessionToken,
-  Name,
+  UserState,
   AccPositionRecord
 } from '../Util';
 import { useHistory } from 'react-router';
@@ -44,8 +42,8 @@ const useStyles = makeStyles({
 });
 
 const Positions: React.FC = (props: PositionProps) => {
-  const token = useSelector((state: State<SessionToken>) => state.token);
-  const accNo = useSelector((state: State<Name>) => state.accName);
+  const token = useSelector((state: UserState) => state.token);
+  const accNo = useSelector((state: UserState) => state.accName);
   const [positions, setPositions] = useState<AccPositionRecord[]>([]);
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();

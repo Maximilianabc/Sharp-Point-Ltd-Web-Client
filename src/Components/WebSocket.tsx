@@ -5,9 +5,7 @@ import {
   wsAddress,
   getDispatchSelectCB,
   AccOperations,
-  SessionToken,
-  State,
-  Name
+  UserState
 } from '../Util';
 
 interface WebSocketProps {
@@ -16,8 +14,8 @@ interface WebSocketProps {
 }
 
 const ClientWS = forwardRef((props: WebSocketProps, ref) => {
-  const token = useSelector((state: State<SessionToken>) => state.token);
-  const accNo = useSelector((state: State<Name>) => state.accName);
+  const token = useSelector((state: UserState) => state.token);
+  const accNo = useSelector((state: UserState) => state.accName);
   const address = `${wsAddress}${token}`;
   const dispatch = useDispatch();
   const history = useHistory();

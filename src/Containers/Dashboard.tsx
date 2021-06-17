@@ -1,15 +1,13 @@
 import clsx from 'clsx';
 import { useState } from 'react';
-import { ReactReduxContext, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   DefaultAppbar,
   DefaultDrawer
 } from '../Components';
-import { SessionToken, State, UserInfo } from '../Util';
+import { SessionToken, UserState } from '../Util';
 import { Typography } from '@material-ui/core/';
-import { useEffect } from 'react';
-import { useContext } from 'react';
 
 interface DashboardProps {
 
@@ -41,8 +39,8 @@ const useStyles = makeStyles((theme) => ({
 const Dashboard = (props: DashboardProps) => {
   const classes = useStyles();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
-  const userId = useSelector((state: State<UserInfo>) => state.userId);
-  const token = useSelector((state: State<SessionToken>) => state.token);
+  const userId = useSelector((state: any) => {console.log(state); return state.userId;});
+  const token = useSelector((state: UserState) => state.token);
 
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
