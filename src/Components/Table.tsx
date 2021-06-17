@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import Color, { rgb } from 'color';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
   Checkbox,
@@ -22,6 +23,7 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 import {
   getComparator,
   stableSort,
@@ -162,9 +164,13 @@ const useStylesTable = makeStyles((theme) => ({
   paper: {
     width: '100%',
     marginBottom: theme.spacing(2),
+    backgroundColor: 'transparent'
   },
   table: {
     minWidth: 750,
+  },
+  cell: {
+    color: rgb(255, 255, 255).alpha(0.6).string()
   },
   visuallyHidden: {
     border: 0,
@@ -273,26 +279,32 @@ const StyledTable = (props: StyledTableProps) => {
                       key={row.id}
                       selected={isItemSelected}
                     >
-                      <TableCell padding="checkbox">
+                      <TableCell padding="checkbox" className={classes.cell}>
                         <Checkbox
                           checked={isItemSelected}
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
                       </TableCell>
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
+                      <TableCell
+                        className={classes.cell}
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                      >
                         {row.id}
                       </TableCell>
-                      <TableCell align="right">{row.name}</TableCell>
-                      <TableCell align="right">{row.prev}</TableCell>
-                      <TableCell align="right">{row.dayLong}</TableCell>
-                      <TableCell align="right">{row.dayShort}</TableCell>
-                      <TableCell align="right">{row.net}</TableCell>
-                      <TableCell align="right">{row.mkt}</TableCell>
-                      <TableCell align="right">{row.pl}</TableCell>
-                      <TableCell align="right">{row.prevClose}</TableCell>
-                      <TableCell align="right">{row.optVal}</TableCell>
-                      <TableCell align="right">{row.fx}</TableCell>
-                      <TableCell align="right">{row.contract}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.name}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.prev}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.dayLong}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.dayShort}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.net}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.mkt}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.pl}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.prevClose}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.optVal}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.fx}</TableCell>
+                      <TableCell align="right" className={classes.cell}>{row.contract}</TableCell>
                     </TableRow>
                   );
                 })}

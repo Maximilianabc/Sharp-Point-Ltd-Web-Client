@@ -4,9 +4,10 @@ import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   DefaultAppbar,
-  DefaultDrawer
+  DefaultDrawer,
+  ScrollableTabsButtonAuto
 } from '../Components';
-import { SessionToken, UserState } from '../Util';
+import { UserState } from '../Util';
 import { Typography } from '@material-ui/core/';
 
 interface DashboardProps {
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
     marginLeft: -drawerWidth,
+    top: 200
   },
   contentShift: {
     transition: theme.transitions.create('margin', {
@@ -33,7 +35,9 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     marginLeft: 0,
-  }
+    top: '10%'
+  },
+  toolbar: theme.mixins.toolbar
 }));
 
 const Dashboard = (props: DashboardProps) => {
@@ -80,9 +84,10 @@ const Dashboard = (props: DashboardProps) => {
           [classes.contentShift]: sidemenuopened,
         })}
       >
-        <div /*className={classes.drawerHeader} *//>
-        <Typography variant="h1" gutterBottom>Welcome to Sharp Point Trading Platform.</Typography>
-        <Typography variant="h2" gutterBottom>{`Good ${getTimePhrase()}, ${userId}.`}</Typography>
+          <div className={classes.toolbar} />
+          <Typography variant="h3" gutterBottom>Welcome to Sharp Point Trading Platform.</Typography>
+          <Typography variant="h4" gutterBottom>{`Good ${getTimePhrase()}, ${userId}.`}</Typography>
+          <ScrollableTabsButtonAuto/>
       </main>
     </div>
   );

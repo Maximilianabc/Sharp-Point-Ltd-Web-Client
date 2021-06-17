@@ -41,7 +41,7 @@ const useStyles = makeStyles({
   }
 });
 
-const Positions: React.FC = (props: PositionProps) => {
+const Positions = (props: PositionProps): JSX.Element => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const [positions, setPositions] = useState<AccPositionRecord[]>([]);
@@ -132,7 +132,7 @@ const Positions: React.FC = (props: PositionProps) => {
         operation={OPConsts.POSITION}
         ref={wsRef}
       />
-      <DefaultAppbar
+      {/*<DefaultAppbar
         title={title}
         sidemenuopened={sidemenuopened}
         handleDrawerOpen={handleDrawerOpen}
@@ -140,7 +140,7 @@ const Positions: React.FC = (props: PositionProps) => {
       <DefaultDrawer
         sidemenuopened={sidemenuopened}
         handleDrawerClose={handleDrawerClose}
-      />
+      />*/}
       <StyledTable
         data={positions}
         title={title}
