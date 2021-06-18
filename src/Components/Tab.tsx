@@ -1,108 +1,133 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
-import { Fragment } from 'react';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import {
+  AppBar,
+  Box,
+  Tabs,
+  Tab,
+  Typography
+} from '@material-ui/core';
+import SwipeableViews from 'react-swipeable-views';
 
 interface DefaultTabPanelProps {
-  children?: React.ReactNode;
+  title?: string,
+  children?: JSX.Element | never[],
   value: number,
-  index: number
+  index: number,
+  dir: string
+}
+
+interface TabControlProps {
+  children: JSX.Element
 }
 
 const DefaultTabPanel = (props: DefaultTabPanelProps) => {
-  const { children, value, index, ...other } = props;
+  const { title, children, value, index, ...other } = props;
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
       id={`scrollable-auto-tabpanel-${index}`}
-      aria-labelledby={`scrollable-auto-tab-${index}`}
       {...other}
     >
-      {value === index && (
+      {/*{(value === index && (
         <Box p={3}>
-          <Typography><Fragment>{children}</Fragment></Typography>
+          <Typography><Fragment>{title}</Fragment></Typography>
         </Box>
-      )}
+      ))}*/}
+      {children}
     </div>
   );
 }
 
-function a11yProps(index: number) {
-  return {
-    id: `scrollable-auto-tab-${index}`,
-    'aria-controls': `scrollable-auto-tabpanel-${index}`,
-  };
-}
-
-const useStyles = makeStyles((theme) => ({
+const useStylesTabControl = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
     width: '100%',
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: 'transparent',
   },
+  tabcontrol: {
+    color: '#ffffff',
+    backgroundColor: '#282C34',
+    borderBottom: '2px solid rgba(255, 255, 255, 0.6)',
+  },
+  indicator: {
+    backgroundColor: '#bb86fc'
+  },
+  tab: {
+    fontSize: '1.5rem',
+    fontWeight: 300,
+    letterSpacing: '0.15rem',
+    padding: '6px 24px'
+  }
 }));
 
-const ScrollableTabsButtonAuto = () => {
-  const classes = useStyles();
+const DefaultTabControl = (props: TabControlProps) => {
+  const { children } = props;
+  const classes = useStylesTabControl();
+  const theme = useTheme();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    console.log(value);
     setValue(newValue);
+  };
+
+  const handleChangeIndex = (index: number) => {
+    setValue(index);
   };
 
   return (
     <div className={classes.root}>
-      <AppBar position="static" color="default">
+      <AppBar position="static" color="inherit" elevation={0}>
         <Tabs
+          classes={{ indicator: classes.indicator }}
+          className={classes.tabcontrol}
           value={value}
           onChange={handleChange}
-          indicatorColor="primary"
-          textColor="primary"
           variant="scrollable"
           scrollButtons="auto"
-          aria-label="scrollable auto tabs example"
         >
-          <Tab label="Summary" {...a11yProps(0)} />
-          <Tab label="Positions" {...a11yProps(1)} />
-          <Tab label="Orders" {...a11yProps(2)} />
-          <Tab label="Cash" {...a11yProps(3)} />
-          <Tab label="Clear Trade" {...a11yProps(4)} />
-          <Tab label="Ref. Fx Rate" {...a11yProps(5)} />
-          <Tab label="Trade Blotter" {...a11yProps(6)} />
+          <Tab label="Summary" className={classes.tab}/>
+          <Tab label="Positions" className={classes.tab}/>
+          <Tab label="Orders" className={classes.tab}/>
+          <Tab label="Cash" className={classes.tab}/>
+          <Tab label="Clear Trade" className={classes.tab}/>
+          <Tab label="Ref. Fx Rate" className={classes.tab}/>
+          <Tab label="Trade Blotter" className={classes.tab}/>
         </Tabs>
       </AppBar>
-      <DefaultTabPanel value={value} index={0}>
-        Summary
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={1}>
-        Positions
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={2}>
-        Orders
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={3}>
-        Cash
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={4}>
-        Clear Trade
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={5}>
-        Ref. Fx Rate
-      </DefaultTabPanel>
-      <DefaultTabPanel value={value} index={6}>
-        Trade Blotter
-      </DefaultTabPanel>
+      <SwipeableViews
+        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+        index={value}
+        onChangeIndex={handleChangeIndex}
+      >
+        <DefaultTabPanel value={value} index={0} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={1} dir={theme.direction}>     
+          {children}
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={2} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={3} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={4} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={5} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+        <DefaultTabPanel value={value} index={6} dir={theme.direction}>
+          
+        </DefaultTabPanel>
+      </SwipeableViews>
     </div>
   );
 }
 
 export {
   DefaultTabPanel,
-  ScrollableTabsButtonAuto
+  DefaultTabControl
 }

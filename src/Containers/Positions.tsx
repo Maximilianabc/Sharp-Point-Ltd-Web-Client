@@ -3,8 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
   ClientWS,
-  DefaultAppbar,
-  DefaultDrawer,
   StyledTable
 } from '../Components';
 import { 
@@ -45,7 +43,6 @@ const Positions = (props: PositionProps): JSX.Element => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const [positions, setPositions] = useState<AccPositionRecord[]>([]);
-  const [sidemenuopened, setSideMenuOpened] = useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -84,14 +81,6 @@ const Positions = (props: PositionProps): JSX.Element => {
       clearInterval(work);
     };
   }, []);
-
-  
-  const handleDrawerOpen = () => {
-    setSideMenuOpened(true);
-  };
-  const handleDrawerClose = () => {
-    setSideMenuOpened(false);
-  };
 
   const positionsToRows = (positions: any): AccPositionRecord[] => {
     let p: AccPositionRecord[] = [];
@@ -132,15 +121,6 @@ const Positions = (props: PositionProps): JSX.Element => {
         operation={OPConsts.POSITION}
         ref={wsRef}
       />
-      {/*<DefaultAppbar
-        title={title}
-        sidemenuopened={sidemenuopened}
-        handleDrawerOpen={handleDrawerOpen}
-      />
-      <DefaultDrawer
-        sidemenuopened={sidemenuopened}
-        handleDrawerClose={handleDrawerClose}
-      />*/}
       <StyledTable
         data={positions}
         title={title}

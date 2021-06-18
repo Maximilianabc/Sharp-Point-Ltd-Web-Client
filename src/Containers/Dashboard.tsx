@@ -5,19 +5,25 @@ import { makeStyles } from '@material-ui/core/styles';
 import {
   DefaultAppbar,
   DefaultDrawer,
-  ScrollableTabsButtonAuto
+  DefaultTabControl
 } from '../Components';
 import { UserState } from '../Util';
-import { Typography } from '@material-ui/core/';
+import { Typography, Box } from '@material-ui/core/';
+import { Positions } from './Positions';
 
 interface DashboardProps {
 
 }
 
 const drawerWidth = 240;
-const useStyles = makeStyles((theme) => ({
+const useStylesDashboard = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    minWidth: '90%'
+  },
+  welcomeMessage: {
+    fontWeight: 300,
+    marginBottom: '2rem'
   },
   content: {
     flexGrow: 1,
@@ -41,9 +47,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Dashboard = (props: DashboardProps) => {
-  const classes = useStyles();
+  const classes = useStylesDashboard();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
-  const userId = useSelector((state: any) => {console.log(state); return state.userId;});
+  const userId = useSelector((state: any) => state.userId);
   const token = useSelector((state: UserState) => state.token);
 
   const handleDrawerOpen = () => {
@@ -85,9 +91,25 @@ const Dashboard = (props: DashboardProps) => {
         })}
       >
           <div className={classes.toolbar} />
-          <Typography variant="h3" gutterBottom>Welcome to Sharp Point Trading Platform.</Typography>
-          <Typography variant="h4" gutterBottom>{`Good ${getTimePhrase()}, ${userId}.`}</Typography>
-          <ScrollableTabsButtonAuto/>
+          <Typography
+            className={classes.welcomeMessage}
+            variant="h3"
+            align="left"
+          >
+            Welcome to Sharp Point Trading Platform.
+          </Typography>
+          <Typography
+            className={classes.welcomeMessage}
+            variant="h4"
+            align="left"
+          >
+            {`Good ${getTimePhrase()}, ${userId}.`}
+          </Typography>
+          <Box height={720} width={1}>
+            <DefaultTabControl>
+              <Positions/>
+            </DefaultTabControl>
+          </Box>
       </main>
     </div>
   );

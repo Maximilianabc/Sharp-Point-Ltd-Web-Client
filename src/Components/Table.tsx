@@ -23,7 +23,6 @@ import {
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
-import { fade } from '@material-ui/core/styles/colorManipulator';
 import {
   getComparator,
   stableSort,
@@ -51,9 +50,35 @@ interface StyledTableProps {
   headerCells: any[]
 }
 
+const useStylesTablehead = makeStyles((theme) => ({
+  root :{
+    '&:hover': {
+      color: rgb(255, 255, 255).alpha(0.8).string(),
+    },
+    '&$active': {
+      color: rgb(255, 255, 255).string(),
+    }
+  },
+  active: {
+    color: rgb(255, 255, 255).string()
+  }
+}));
+
 const StyledTablehead = (props: StyledTableheadProps) => {
+  const {
+    classes,
+    headerCells,
+    order,
+    orderBy,
+    onClickSelectAll,
+    onRequestSort,
+    numSelected,
+    numRow
+  } = props;
+
+  const labelClasses = useStylesTablehead();
   const createSortHandler = (property: string) => (event: React.MouseEvent) => {
-    props.onRequestSort(event, property);
+    onRequestSort(event, property);
   };
 
   return (
@@ -61,26 +86,32 @@ const StyledTablehead = (props: StyledTableheadProps) => {
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox 
-            indeterminate={props.numSelected > 0 && props.numSelected < props.numRow}
-            checked={props.numRow > 0 && props.numSelected === props.numRow}
-            onChange={props.onClickSelectAll}
+            className={classes.cell}
+            indeterminate={numSelected > 0 && numSelected < numRow}
+            checked={numRow > 0 && numSelected === numRow}
+            onChange={onClickSelectAll}
           />
         </TableCell>
-        {props.headerCells.map((cell: any) => (
+        {headerCells.map((cell: any) => (
             <TableCell
+              className={classes.cell}
               key={cell.id}
               align={cell.align}
-              sortDirection={props.orderBy === cell.id ? props.order : 'asc'}
+              sortDirection={orderBy === cell.id ? order : 'asc'}
             >
               <TableSortLabel
-                active={props.orderBy === cell.id}
-                direction={props.orderBy === cell.id ? props.order : 'asc'}
+                classes={{
+                  root: labelClasses.root,
+                  active: labelClasses.active
+                }}
+                active={orderBy === cell.id}
+                direction={orderBy === cell.id ? order : 'asc'}
                 onClick={createSortHandler(cell.id)}
               >
                 {cell.label}
-                {props.orderBy === cell.id ? (
-                  <span className={props.classes.visuallyHidden}>
-                    {props.order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                {orderBy === cell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                   </span>
                 ) : null}
               </TableSortLabel>
@@ -122,24 +153,28 @@ const useStylesToolbar = makeStyles((theme) => ({
 }));
 
 const StyledTableToolbar = (props: StyledTableToolbarProps) => {
+  const {
+    title,
+    numSelected
+  } = props;
   const classes = useStylesToolbar();
 
   return (
     <Toolbar
       className={clsx(classes.root, {
-        [classes.highlight]: props.numSelected > 0,
+        [classes.highlight]: numSelected > 0,
       })}
     >
-      {props.numSelected > 0 ? (
+      {numSelected > 0 ? (
         <Typography color="inherit" variant="subtitle1" component="div">
-          {props.numSelected} selected
+          {numSelected} selected
         </Typography>
       ) : (
         <Typography variant="h6" id="tableTitle" component="div">
-          {props.title}
+          {title}
         </Typography>
       )}
-      {props.numSelected > 0 ? (
+      {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton aria-label="delete">
             <DeleteIcon />
@@ -166,11 +201,25 @@ const useStylesTable = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     backgroundColor: 'transparent'
   },
+  container: {
+    border: '1px solid rgba(255, 255, 255, 0.6)'
+  },
   table: {
-    minWidth: 750,
+    minWidth: 750
+  },
+  row: {
+    borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
   },
   cell: {
-    color: rgb(255, 255, 255).alpha(0.6).string()
+    color: rgb(255, 255, 255).alpha(0.6).string(),
+    font: '1rem roboto'
+  },
+  active: {},
+  icon: {
+    color: rgb(255, 255, 255).string()
+  },
+  pagination: {
+    color: '#FFFFFF'
   },
   visuallyHidden: {
     border: 0,
@@ -186,6 +235,11 @@ const useStylesTable = makeStyles((theme) => ({
 }));
 
 const StyledTable = (props: StyledTableProps) => {
+  const {
+    data,
+    title,
+    headerCells
+  } = props;
   const classes = useStylesTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('id');
@@ -201,7 +255,7 @@ const StyledTable = (props: StyledTableProps) => {
   };
   const handleClickSelectAll = (event: React.ChangeEvent) => {
     if ((event?.target as HTMLInputElement)?.checked) {
-      const newSelecteds = props.data.map((n: any) => n.name);
+      const newSelecteds = data.map((n: any) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -236,16 +290,12 @@ const StyledTable = (props: StyledTableProps) => {
     setDense((event?.target as HTMLInputElement)?.checked);
   };
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.data.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
   return (
     <div>
-      <Paper className={classes.paper}>
-        <StyledTableToolbar
-          numSelected={selected.length}
-          title={props.title}
-        />
-        <TableContainer>
+      <Paper className={classes.paper} elevation={0}>
+        <TableContainer className={classes.container}>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
@@ -254,16 +304,16 @@ const StyledTable = (props: StyledTableProps) => {
           >
             <StyledTablehead
               classes={classes}
-              headerCells={props.headerCells}
+              headerCells={headerCells}
               order={order}
               orderBy={orderBy}
               onClickSelectAll={handleClickSelectAll}
               onRequestSort={handleRequestSort}
               numSelected={selected.length}
-              numRow={props.data.length}
+              numRow={data.length}
             />
             <TableBody>
-              {stableSort(props.data, getComparator(order, orderBy))
+              {stableSort(data, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
@@ -272,6 +322,7 @@ const StyledTable = (props: StyledTableProps) => {
                   return (
                     <TableRow
                       hover
+                      className={classes.row}
                       onClick={(event: React.MouseEvent<HTMLTableRowElement>) => handleClick(event, row.name)}
                       role="checkbox"
                       aria-checked={isItemSelected}
@@ -281,6 +332,7 @@ const StyledTable = (props: StyledTableProps) => {
                     >
                       <TableCell padding="checkbox" className={classes.cell}>
                         <Checkbox
+                          className={classes.cell}
                           checked={isItemSelected}
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
@@ -310,16 +362,17 @@ const StyledTable = (props: StyledTableProps) => {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  <TableCell colSpan={6} />
+                  {/*<TableCell className={classes.cell} colSpan={headerCells.length + 1} />*/}
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
+          className={classes.pagination}
           rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
-          count={props.data.length}
+          count={data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
