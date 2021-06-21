@@ -18,7 +18,7 @@ interface DefaultTabPanelProps {
 }
 
 interface TabControlProps {
-  children: JSX.Element
+  children: JSX.Element[]
 }
 
 const DefaultTabPanel = (props: DefaultTabPanelProps) => {
@@ -102,16 +102,16 @@ const DefaultTabControl = (props: TabControlProps) => {
         onChangeIndex={handleChangeIndex}
       >
         <DefaultTabPanel value={value} index={0} dir={theme.direction}>
-          
+          {children[0]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={1} dir={theme.direction}>     
-          {children}
+          {children[1]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={2} dir={theme.direction}>
-          
+          {children[2]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={3} dir={theme.direction}>
-          
+          {children[3]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={4} dir={theme.direction}>
           

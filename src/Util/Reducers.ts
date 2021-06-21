@@ -94,7 +94,15 @@ interface Summary {
   data: AccSummaryRecord[]
 }
 interface AccBalanceRecord {
-
+  ccy: string,
+  cashBf: number,
+  unsettle: number,
+  todayIO: number,
+  withdrawReq: number,
+  cash: number,
+  unpresented: number,
+  fx: number,
+  cashBaseCcy: string
 }
 interface Balance {
   data: AccBalanceRecord[]

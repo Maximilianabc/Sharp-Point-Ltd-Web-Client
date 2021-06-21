@@ -337,33 +337,25 @@ const StyledTable = (props: StyledTableProps) => {
                           inputProps={{ 'aria-labelledby': labelId }}
                         />
                       </TableCell>
-                      <TableCell
-                        className={classes.cell}
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        padding="none"
-                      >
-                        {row.id}
-                      </TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.name}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.prev}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.dayLong}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.dayShort}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.net}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.mkt}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.pl}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.prevClose}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.optVal}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.fx}</TableCell>
-                      <TableCell align="right" className={classes.cell}>{row.contract}</TableCell>
+                      {Object.entries(row).map((key: [string, any], index) => {
+                        return (
+                          <TableCell
+                          component={index === 0 ? "th" : undefined}
+                          scope={index === 0 ? "row" : undefined}
+                          padding={index === 0 ? "none" : undefined}
+                          className={classes.cell}
+                          align={index === 0 ? "left" : "right"}
+                          id={`${labelId}-${key[0]}`}
+                          >
+                            {key[1]}
+                          </TableCell>
+                        )
+                      })}
                     </TableRow>
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
-                  {/*<TableCell className={classes.cell} colSpan={headerCells.length + 1} />*/}
-                </TableRow>
+                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}/>
               )}
             </TableBody>
           </Table>

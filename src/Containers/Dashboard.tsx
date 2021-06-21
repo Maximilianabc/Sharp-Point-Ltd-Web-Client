@@ -10,6 +10,7 @@ import {
 import { UserState } from '../Util';
 import { Typography, Box } from '@material-ui/core/';
 import { Positions } from './Positions';
+import { Cash } from './Cash';
 
 interface DashboardProps {
 
@@ -107,7 +108,10 @@ const Dashboard = (props: DashboardProps) => {
           </Typography>
           <Box height={720} width={1}>
             <DefaultTabControl>
+              <div/>
               <Positions/>
+              <div/>
+              <Cash/>
             </DefaultTabControl>
           </Box>
       </main>

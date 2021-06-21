@@ -115,7 +115,7 @@ const Positions = (props: PositionProps): JSX.Element => {
   };
 
   return (
-    <div className={classes.root}>
+    <div id = {title.toLowerCase()} className={classes.root}>
       <ClientWS
         onReceivePush={onReceivePush}
         operation={OPConsts.POSITION}

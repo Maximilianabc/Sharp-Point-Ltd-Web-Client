@@ -24,14 +24,16 @@ enum OPConsts {
 
 // TODO: replace any with push message json format
 interface Response {
-	data: any
+	data: any,
+	log_message: string,
 	result_code: string,
-	result_msg: string
+	result_msg: string,
+	timeStamp: number
 }
 interface Result {
 	data?: any,
-	actionData: ActionData,
-	closeSocket: boolean
+	actionData?: ActionData,
+	closeSocket?: boolean
 }
 interface StoreCallbacks {
 	id: string,
@@ -106,7 +108,7 @@ const AccOperations = async (
 				if (closeWSCallback) {
 					closeWSCallback(false);
 				} else {
-					result = { close: true };				
+					result = { closeSocket: true } as Result;				
 				}
 				return;
 			}
@@ -114,12 +116,12 @@ const AccOperations = async (
 				result = {
 					data: data?.data,
 					actionData: actionCallback(data?.data),
-					close: false
+					closeSocket: false
 				};
 			} else {
 				result = {
 					data: data?.data,
-					close: false
+					closeSocket: false
 				};
 			}
 		});
