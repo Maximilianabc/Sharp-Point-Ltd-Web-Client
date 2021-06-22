@@ -50,6 +50,16 @@ interface StyledTableProps {
   headerCells: any[]
 }
 
+interface StyledVerticalTableProps {
+  data: any,
+  title: string,
+  headerCells: any[]
+}
+
+interface TableColumnProps {
+  data: [any, any]
+}
+
 const useStylesTablehead = makeStyles((theme) => ({
   root :{
     '&:hover': {
@@ -84,14 +94,6 @@ const StyledTablehead = (props: StyledTableheadProps) => {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox 
-            className={classes.cell}
-            indeterminate={numSelected > 0 && numSelected < numRow}
-            checked={numRow > 0 && numSelected === numRow}
-            onChange={onClickSelectAll}
-          />
-        </TableCell>
         {headerCells.map((cell: any) => (
             <TableCell
               className={classes.cell}
@@ -212,7 +214,21 @@ const useStylesTable = makeStyles((theme) => ({
   },
   cell: {
     color: rgb(255, 255, 255).alpha(0.6).string(),
-    font: '1rem roboto'
+    font: '1rem roboto',
+    paddingLeft: '0.3rem',
+    paddingRight: '0.3rem'
+  },
+  cellNeg: {
+    color: rgb(255, 0, 0).alpha(0.6).string(),
+    font: '1rem roboto',
+    paddingLeft: '0.3rem',
+    paddingRight: '0.3rem'
+  },
+  cellPos: {
+    color: rgb(0, 255, 0).alpha(0.6).string(),
+    font: '1rem roboto',
+    paddingLeft: '0.3rem',
+    paddingRight: '0.3rem'
   },
   active: {},
   icon: {
@@ -245,7 +261,6 @@ const StyledTable = (props: StyledTableProps) => {
   const [orderBy, setOrderBy] = useState('id');
   const [selected, setSelected] = useState<any[]>([]);
   const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleRequestSort = (event: React.MouseEvent, property: string) => {
@@ -286,9 +301,6 @@ const StyledTable = (props: StyledTableProps) => {
     setRowsPerPage(parseInt((event?.target as HTMLInputElement)?.value, 10));
     setPage(0);
   };
-  const handleChangeDense = (event: ChangeEvent, checked: boolean) => {
-    setDense((event?.target as HTMLInputElement)?.checked);
-  };
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
@@ -299,7 +311,7 @@ const StyledTable = (props: StyledTableProps) => {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
+            size="medium"
             aria-label="enhanced table"
           >
             <StyledTablehead
@@ -330,20 +342,16 @@ const StyledTable = (props: StyledTableProps) => {
                       key={row.id}
                       selected={isItemSelected}
                     >
-                      <TableCell padding="checkbox" className={classes.cell}>
-                        <Checkbox
-                          className={classes.cell}
-                          checked={isItemSelected}
-                          inputProps={{ 'aria-labelledby': labelId }}
-                        />
-                      </TableCell>
                       {Object.entries(row).map((key: [string, any], index) => {
                         return (
                           <TableCell
                           component={index === 0 ? "th" : undefined}
                           scope={index === 0 ? "row" : undefined}
                           padding={index === 0 ? "none" : undefined}
-                          className={classes.cell}
+                          className={clsx(classes.cell, {
+                            [classes.cellNeg]: !isNaN(+key[1]) && +key[1] < 0,
+                            [classes.cellPos]: !isNaN(+key[1]) && +key[1] > 0
+                          })}
                           align={index === 0 ? "left" : "right"}
                           id={`${labelId}-${key[0]}`}
                           >
@@ -355,7 +363,7 @@ const StyledTable = (props: StyledTableProps) => {
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}/>
+                <TableRow style={{ height: 53 * emptyRows }}/>
               )}
             </TableBody>
           </Table>
@@ -371,16 +379,103 @@ const StyledTable = (props: StyledTableProps) => {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </div>
   );
+};
+
+const TableColumn = (props: TableColumnProps) => {
+  const { data } = props;
+  return (
+    <TableRow>
+      <TableCell>{data[0]}</TableCell>
+      <TableCell>{data[1]}</TableCell>
+    </TableRow>
+  );
+};
+
+const StyledVerticalTable = (props: StyledVerticalTableProps) => {
+  const {
+    data,
+    title,
+    headerCells
+  } = props;
+  const classes = useStylesTable();
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [orderBy, setOrderBy] = useState('id');
+  const [selected, setSelected] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [columnsPerPage, setColumnsPerPage] = useState(3);
+  const emptyColumns = columnsPerPage - Math.min(columnsPerPage, data.length - page * columnsPerPage);
+  const isSelected = (name: string) => selected.indexOf(name) !== -1;
+
+  return (
+    <div>
+    <TableContainer className={classes.container}>
+      <Table
+        className={classes.table}
+        aria-labelledby="tableTitle"
+        size="medium"
+        aria-label="enhanced table"
+      >
+        <TableHead>
+          <TableBody>
+            {stableSort(data, getComparator(order, orderBy))
+              .slice(page * columnsPerPage, page * columnsPerPage + columnsPerPage)
+              .map((row, index) => {
+                const isItemSelected = isSelected(row.name);
+                const labelId = `enhanced-table-checkbox-${index}`;
+
+                return (
+                  <TableRow
+                    hover
+                    className={classes.row}
+                    role="checkbox"
+                    aria-checked={isItemSelected}
+                    tabIndex={-1}
+                    key={row.id}
+                    selected={isItemSelected}
+                  >
+                    {/*<TableCell padding="checkbox" className={classes.cell}>
+                      <Checkbox
+                        className={classes.cell}
+                        checked={isItemSelected}
+                        inputProps={{ 'aria-labelledby': labelId }}
+                      /}
+                      </TableCell>*/}
+                    {Object.entries(row).map((key: [string, any], index) => {
+                      return (
+                        <TableCell
+                        component={index === 0 ? "th" : undefined}
+                        scope={index === 0 ? "row" : undefined}
+                        padding={index === 0 ? "none" : undefined}
+                        className={clsx(classes.cell, {
+                          [classes.cellNeg]: !isNaN(+key[1]) && +key[1] < 0,
+                          [classes.cellPos]: !isNaN(+key[1]) && +key[1] > 0
+                        })}
+                        align={index === 0 ? "left" : "right"}
+                        id={`${labelId}-${key[0]}`}
+                        >
+                          {key[1]}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                );
+              })}
+            {emptyColumns > 0 && (
+              <TableRow style={{ height: 53 * emptyColumns }}/>
+            )}
+          </TableBody>
+        </TableHead>
+      </Table>
+    </TableContainer>
+  </div>
+  )
 };
 
 export {
   StyledTablehead,
   StyledTableToolbar,
-  StyledTable
+  StyledTable,
+  StyledVerticalTable
 }

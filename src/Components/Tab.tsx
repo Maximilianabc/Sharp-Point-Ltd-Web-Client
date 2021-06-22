@@ -68,7 +68,6 @@ const DefaultTabControl = (props: TabControlProps) => {
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    console.log(value);
     setValue(newValue);
   };
 
@@ -114,7 +113,7 @@ const DefaultTabControl = (props: TabControlProps) => {
           {children[3]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={4} dir={theme.direction}>
-          
+          {children[4]}
         </DefaultTabPanel>
         <DefaultTabPanel value={value} index={5} dir={theme.direction}>
           

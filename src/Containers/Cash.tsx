@@ -31,7 +31,7 @@ const headCells = [
 
 const useStyles = makeStyles({
   root: {
-    width: '100%',
+    width: 'calc(100% - 2px)',
   }
 });
 
@@ -50,7 +50,7 @@ const Cash = (props: CashProps) => {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let work = setInterval(() => {
+    const workFunction = () => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           console.log(data);
@@ -72,7 +72,9 @@ const Cash = (props: CashProps) => {
           clearInterval(work);
         }
       });
-    }, 30000); 
+    };
+    workFunction();
+    let work = setInterval(workFunction, 30000); 
     return () => {
       clearInterval(work);
     };

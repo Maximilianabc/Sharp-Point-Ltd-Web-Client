@@ -3,7 +3,8 @@ import {
 	setAccountBalanaceAction,
 	setAccountOrderAction,
 	setAccountPositionAction,
-	setAccountSummaryAction
+	setAccountSummaryAction,
+	setDoneTradeReportAction
 } from "./Actions";
 import {
 	UserState
@@ -19,7 +20,9 @@ enum OPConsts {
 	BALANCE = 2,
 	POSITION = 4,
 	ORDER = 8,
-	ALL = SUMMARY | BALANCE | POSITION | ORDER
+	DONE_TRADE = 16,
+	SINGLE = SUMMARY | BALANCE | POSITION | ORDER,
+	REPORT = DONE_TRADE
 };
 
 // TODO: replace any with push message json format
@@ -88,6 +91,9 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 			actionCallback = (d: any) => setAccountOrderAction(d);
 			selectCallback = () => (state: UserState) => state.order;
 			break;
+		case 16:
+			actionCallback = (d: any) => setDoneTradeReportAction(d);
+			break;
 		default:
 			throw new Error(`unknown operation const ${opConst}`);
 	};
@@ -128,6 +134,15 @@ const AccOperations = async (
 	return result;
 };
 
+const reportOperations = async (
+	op?: string,
+	payload?: any,
+	closeWSCallback?: WebSocketCallback,
+	actionCallback?: (d: any) => ActionData
+): Promise<Result | undefined> => {
+	return undefined;
+};
+
 const descComparator = ([a, b]: any, orderBy: string): ComparatorIndicator => b[orderBy] < a[orderBy] ? -1 : (b[orderBy] > a[orderBy] ? 1 : 0);
 
 const getComparator = (order: SortOrder, orderBy: string): Comparator => 
@@ -151,6 +166,7 @@ export {
 	postRequest,
 	getDispatchSelectCB,
 	AccOperations,
+	reportOperations,
 	descComparator,
 	getComparator,
 	stableSort

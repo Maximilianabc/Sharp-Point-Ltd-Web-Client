@@ -35,7 +35,7 @@ const headCells = [
 
 const useStyles = makeStyles({
   root: {
-    width: '100%',
+    width: 'calc(100% - 2px)',
   }
 });
 

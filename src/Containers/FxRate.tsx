@@ -9,18 +9,18 @@ import {
   AccOperations,
   OPConsts,
   UserState,
-  AccSummaryRecord,
-  AccInfoRecord
+  AccDoneTradeRecord,
+  FxRate
 } from '../Util';
 import { useHistory } from 'react-router';
 
-interface ProfileProps {
+interface ClearTradeProps {
 
 }
 
 const headCells = [
-  { id: 'items', align: 'left', label: 'Items' },
-  { id: 'values', align: 'right', label: 'Values' },
+  { id: 'ccy', align: 'left', label: 'Ccy' },
+  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate' }
 ];
 
 const useStyles = makeStyles({
@@ -29,16 +29,16 @@ const useStyles = makeStyles({
   }
 });
 
-const Profile = (props: ProfileProps) => {
+const Fx = (props: ClearTradeProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<AccInfoRecord[]>([]);
+  const [fx, setFx] = useState<FxRate[]>([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
-  const hooks = getDispatchSelectCB(OPConsts.BALANCE);
-  const title = 'Summary';
-
+  const hooks = getDispatchSelectCB(OPConsts.DONE_TRADE);
+  const title = 'Fx';
+  /*
   useEffect(() => {
     const payload = {
       sessionToken: token,
@@ -52,9 +52,6 @@ const Profile = (props: ProfileProps) => {
             dispatch(data.actionData);
             onReceivePush(data.data);
           } else {
-            //if (wsRef && wsRef.current) {
-              //wsRef!.current!.closeExplicit(false);
-            //}
             history.push({
               pathname: '/logout',
               state: 'Session expired. Please login again.'
@@ -70,53 +67,28 @@ const Profile = (props: ProfileProps) => {
     return () => {
       clearInterval(work);
     };
-  }, []);
-
-  const summaryToRows = (summary: any): AccInfoRecord[] => {
-    let s: AccInfoRecord[] = [];
-    if (summary) {
-      Array.prototype.forEach.call(summary, sum => {
-        s.push({
-          buyingPower: '?',
-          nav: sum.nav,
-          commodityPL: sum.totalPL,
-          currentIMargin: sum.iMargin,
-          currentMMargin: sum.mMargin,
-          mLevel: sum.mLevel,
-          prjOvnMargin: '?',
-          maxMargin: '?',
-          marginCall: sum.marginCall,
-          cashBalance: sum.cashBalance,
-          transactionAmt: '?',
-          lockupAmt: '?',
-          period: sum.marginPeriod,
-          creditLimit: sum.creditLimit,
-          avgNetOptValue: '?'
-        });
-      });
-    }
-    return s;
-  };
+  }, []);*/
 
   const onReceivePush = (data: any) => {
     if (data !== undefined) {
-      let summary = data.summary ? data.summary : (data.recordData ? data.recordData : undefined);
-      if (summary) {
-        setSummary(summaryToRows(summary));
+      let fx = data.fx ? data.fx : (data.recordData ? data.recordData : undefined);
+      if (fx) {
+        //setDoneTrade(doneTradeToRows(fx));
       }
     }
   };
+
   return (
     <div id={title.toLowerCase()}>
       <StyledTable
-          data={summary}
+          data={fx}
           title={title}
           headerCells={headCells}
       />  
-    </div>
+    </div>   
   );
 };
 
 export {
-  Profile
-};
+  Fx
+}

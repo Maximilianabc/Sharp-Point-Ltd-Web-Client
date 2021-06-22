@@ -164,33 +164,27 @@ interface Order {
   data: AccOrderRecord[]
 }
 interface AccDoneTradeRecord {
-  accNo: string,
-  accOrderNo: number,
-  aeCode: string,
-  avgPrice: number,
-  buySell: string,
-  counterParty: number,
-  decInPrc: number,
-  doneTradeDate: number,
-  doneTradeTime: number,
-  extOrderNo: string,
+  id: string,
+  name: string,
+  bQty: number,
+  sQty: number,
+  tradePrc: number,
+  tradeNum: number,
+  status: string,
   initiator: string,
-  instCode: string,
+  ref: string,
+  time: string,
+  orderPrc: number,
   orderNo: number,
-  prodCode: string,
-  recNo: number,
-  status: number,
-  systemId: string,
-  totalTrdPrc: number,
-  tradeDateStr: string,
-  tradeNo: number,
-  tradePrice: number,
-  tradeQty: number,
-  tradeTime: number,
-  tradeTimeStr: string
+  extOrder: string,
+  logNum: string
 }
 interface DoneTrade {
   data: AccDoneTradeRecord[]
+}
+interface FxRate {
+  ccy: string,
+  rate: string
 }
 
 const currentUser = (state: UserState = {}, action: ActionData): UserState => {
@@ -315,6 +309,7 @@ export type {
   Cash,
   Order,
   DoneTrade,
+  FxRate,
   AccInfoRecord,
   AccSummaryRecord,
   AccBalanceRecord,

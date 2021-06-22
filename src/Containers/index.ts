@@ -5,3 +5,5 @@ export * from './Positions';
 export * from './Orders';
 export * from './LogOut';
 export * from './Cash';
+export * from './ClearTrade';
+export * from './FxRate';
