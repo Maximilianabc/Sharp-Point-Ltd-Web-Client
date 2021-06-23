@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  StyledTable
+  StyledVerticalTable
 } from '../Components';
 import { 
   getDispatchSelectCB,
   AccOperations,
   OPConsts,
   UserState,
-  AccSummaryRecord,
-  AccInfoRecord
+  AccSummaryRecord
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -19,8 +18,23 @@ interface ProfileProps {
 }
 
 const headCells = [
-  { id: 'items', align: 'left', label: 'Items' },
-  { id: 'values', align: 'right', label: 'Values' },
+  { id: 'buying-power', align: 'left', label: 'Buying Power' },
+  { id: 'nav', align: 'right', label: 'NAV' },
+  { id: 'commodity-pl', align: 'right', label: 'Commodity P/L' },
+  { id: 'current-i-margin', align: 'right', label: 'Current I. Margin' },
+  { id: 'current-m-margin', align: 'right', label: 'Current M. Margin' },
+  { id: 'm-level', align: 'right', label: 'M. Level' },
+  { id: 'prj-ovn-margin', align: 'right', label: 'Prj. Ovn. Margin' },
+  { id: 'max-margin', align: 'right', label: 'Max Margin' },
+  { id: 'margin-call', align: 'right', label: 'Margin Call' },
+  { id: 'cash-bal', align: 'right', label: 'Cash Balance' },
+  { id: 'transact-amt', align: 'right', label: 'Transaction Amt.' },
+  { id: 'lockup-amt', align: 'right', label: 'Lockup Amt.' },
+  { id: 'period', align: 'right', label: 'Period' },
+  { id: 'credit-limit', align: 'right', label: 'Credit Limit' },
+  { id: 'av-net-opt-val', align: 'right', label: 'Av. Net Opt. Value' },
+  { id: 'ctrl-lvl', align: 'right', label: 'Ctrl Level'},
+  { id: 'margin-class', align: 'right', label: 'Mgn Class'},
 ];
 
 const useStyles = makeStyles({
@@ -32,11 +46,10 @@ const useStyles = makeStyles({
 const Profile = (props: ProfileProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<AccInfoRecord[]>([]);
-  const classes = useStyles();
+  const [summary, setSummary] = useState<AccSummaryRecord>({});
   const dispatch = useDispatch();
   const history = useHistory();
-  const hooks = getDispatchSelectCB(OPConsts.BALANCE);
+  const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
   const title = 'Summary';
 
   useEffect(() => {
@@ -44,10 +57,9 @@ const Profile = (props: ProfileProps) => {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let work = setInterval(() => {
+    const workFunction = () => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
-          console.log(data);
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
@@ -66,49 +78,48 @@ const Profile = (props: ProfileProps) => {
           clearInterval(work);
         }
       });
-    }, 30000); 
+    };
+    workFunction();
+    let work = setInterval(workFunction, 30000); 
     return () => {
       clearInterval(work);
     };
   }, []);
 
-  const summaryToRows = (summary: any): AccInfoRecord[] => {
-    let s: AccInfoRecord[] = [];
-    if (summary) {
-      Array.prototype.forEach.call(summary, sum => {
-        s.push({
-          buyingPower: '?',
-          nav: sum.nav,
-          commodityPL: sum.totalPL,
-          currentIMargin: sum.iMargin,
-          currentMMargin: sum.mMargin,
-          mLevel: sum.mLevel,
-          prjOvnMargin: '?',
-          maxMargin: '?',
-          marginCall: sum.marginCall,
-          cashBalance: sum.cashBalance,
-          transactionAmt: '?',
-          lockupAmt: '?',
-          period: sum.marginPeriod,
-          creditLimit: sum.creditLimit,
-          avgNetOptValue: '?'
-        });
-      });
+  const summaryToTable = (sum: any): AccSummaryRecord => {
+    let s: AccSummaryRecord = {};
+    if (sum) {
+      s = {
+        buyingPower: '?',
+        nav: `${sum.nav?.toFixed(2)} HKD`,
+        commodityPL: `${sum.totalPl?.toFixed(2)} HKD`,
+        currentIMargin: `${sum.iMargin?.toFixed(2)} HKD`,
+        currentMMargin: `${sum.mMargin?.toFixed(2)} HKD`,
+        mLevel: `${sum.mLevel?.toFixed(2)} HKD`,
+        prjOvnMargin: '?',
+        maxMargin: '?',
+        marginCall: `${sum.marginCall?.toFixed(2)} HKD`,
+        cashBalance: `${sum.cashBal?.toFixed(2)} HKD`,
+        transactionAmt: '?',
+        lockupAmt: '?',
+        period: sum.marginPeriod,
+        creditLimit: `${sum.creditLimit?.toFixed(2)} HKD`,
+        avgNetOptValue: '?',
+        ctrlLevel: '?',
+        marginClass: '?'
+      };
     }
     return s;
   };
 
   const onReceivePush = (data: any) => {
     if (data !== undefined) {
-      let summary = data.summary ? data.summary : (data.recordData ? data.recordData : undefined);
-      if (summary) {
-        setSummary(summaryToRows(summary));
-      }
+      setSummary(summaryToTable(data));
     }
   };
   return (
     <div id={title.toLowerCase()}>
-      <StyledTable
+      <StyledVerticalTable
           data={summary}
           title={title}
           headerCells={headCells}

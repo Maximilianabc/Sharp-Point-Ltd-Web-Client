@@ -41,27 +41,29 @@ type Account<U extends Details> = U & {
   totalPage: number
 };
 
-interface AccInfoRecord {
-  buyingPower: string,
-  nav: string,
-  commodityPL: string,
-  currentIMargin: string,
-  currentMMargin: string,
-  mLevel: string,
-  prjOvnMargin: string,
-  maxMargin: string,
-  marginCall: string,
-  cashBalance: string,
-  transactionAmt: string,
-  lockupAmt: string,
-  period: string,
-  creditLimit: string,
-  avgNetOptValue: string
+interface AccSummaryRecord {
+  buyingPower?: string,
+  nav?: string,
+  commodityPL?: string,
+  currentIMargin?: string,
+  currentMMargin?: string,
+  mLevel?: string,
+  prjOvnMargin?: string,
+  maxMargin?: string,
+  marginCall?: string,
+  cashBalance?: string,
+  transactionAmt?: string,
+  lockupAmt?: string,
+  period?: string,
+  creditLimit?: string,
+  avgNetOptValue?: string,
+  ctrlLevel?: string,
+  marginClass?: string
 }
 interface Info {
-  data: AccInfoRecord[]
+  data: AccSummaryRecord[]
 }
-interface AccSummaryRecord {
+interface AccInfoRecord {
   accClass: string,
   accName: string,
   accNameUtf: string,
@@ -91,17 +93,17 @@ interface AccSummaryRecord {
   tradeLimit: number
 }
 interface Summary {
-  data: AccSummaryRecord[]
+  data: AccInfoRecord[]
 }
 interface AccBalanceRecord {
   ccy: string,
-  cashBf: number,
-  unsettle: number,
-  todayIO: number,
-  withdrawReq: number,
-  cash: number,
-  unpresented: number,
-  fx: number,
+  cashBf: string,
+  unsettle: string,
+  todayIO: string,
+  withdrawReq: string,
+  cash: string,
+  unpresented: string,
+  fx: string,
   cashBaseCcy: string
 }
 interface Balance {

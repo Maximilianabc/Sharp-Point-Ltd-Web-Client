@@ -27,6 +27,7 @@ import {
   getComparator,
   stableSort,
 } from '../Util';
+import { useEffect } from 'react';
 
 interface StyledTableheadProps {
   classes: any,
@@ -56,10 +57,6 @@ interface StyledVerticalTableProps {
   headerCells: any[]
 }
 
-interface TableColumnProps {
-  data: [any, any]
-}
-
 const useStylesTablehead = makeStyles((theme) => ({
   root :{
     '&:hover': {
@@ -80,10 +77,7 @@ const StyledTablehead = (props: StyledTableheadProps) => {
     headerCells,
     order,
     orderBy,
-    onClickSelectAll,
     onRequestSort,
-    numSelected,
-    numRow
   } = props;
 
   const labelClasses = useStylesTablehead();
@@ -97,7 +91,6 @@ const StyledTablehead = (props: StyledTableheadProps) => {
         {headerCells.map((cell: any) => (
             <TableCell
               className={classes.cell}
-              key={cell.id}
               align={cell.align}
               sortDirection={orderBy === cell.id ? order : 'asc'}
             >
@@ -201,7 +194,7 @@ const useStylesTable = makeStyles((theme) => ({
   paper: {
     width: '100%',
     marginBottom: theme.spacing(2),
-    backgroundColor: 'transparent'
+    backgroundColor: '#282c34'
   },
   container: {
     border: '1px solid rgba(255, 255, 255, 0.6)'
@@ -214,21 +207,15 @@ const useStylesTable = makeStyles((theme) => ({
   },
   cell: {
     color: rgb(255, 255, 255).alpha(0.6).string(),
-    font: '1rem roboto',
-    paddingLeft: '0.3rem',
-    paddingRight: '0.3rem'
+    font: '1rem roboto'
   },
   cellNeg: {
     color: rgb(255, 0, 0).alpha(0.6).string(),
-    font: '1rem roboto',
-    paddingLeft: '0.3rem',
-    paddingRight: '0.3rem'
+    font: '1rem roboto'
   },
   cellPos: {
     color: rgb(0, 255, 0).alpha(0.6).string(),
-    font: '1rem roboto',
-    paddingLeft: '0.3rem',
-    paddingRight: '0.3rem'
+    font: '1rem roboto'
   },
   active: {},
   icon: {
@@ -329,7 +316,6 @@ const StyledTable = (props: StyledTableProps) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
-                  const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
@@ -339,7 +325,6 @@ const StyledTable = (props: StyledTableProps) => {
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.id}
                       selected={isItemSelected}
                     >
                       {Object.entries(row).map((key: [string, any], index) => {
@@ -347,13 +332,12 @@ const StyledTable = (props: StyledTableProps) => {
                           <TableCell
                           component={index === 0 ? "th" : undefined}
                           scope={index === 0 ? "row" : undefined}
-                          padding={index === 0 ? "none" : undefined}
                           className={clsx(classes.cell, {
                             [classes.cellNeg]: !isNaN(+key[1]) && +key[1] < 0,
                             [classes.cellPos]: !isNaN(+key[1]) && +key[1] > 0
                           })}
                           align={index === 0 ? "left" : "right"}
-                          id={`${labelId}-${key[0]}`}
+                          id={`${key[0]}-${index}`}
                           >
                             {key[1]}
                           </TableCell>
@@ -383,16 +367,6 @@ const StyledTable = (props: StyledTableProps) => {
   );
 };
 
-const TableColumn = (props: TableColumnProps) => {
-  const { data } = props;
-  return (
-    <TableRow>
-      <TableCell>{data[0]}</TableCell>
-      <TableCell>{data[1]}</TableCell>
-    </TableRow>
-  );
-};
-
 const StyledVerticalTable = (props: StyledVerticalTableProps) => {
   const {
     data,
@@ -405,8 +379,8 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
   const [selected, setSelected] = useState<any[]>([]);
   const [page, setPage] = useState(0);
   const [columnsPerPage, setColumnsPerPage] = useState(3);
-  const emptyColumns = columnsPerPage - Math.min(columnsPerPage, data.length - page * columnsPerPage);
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
+  const dataEntries: [string, any][] = Object.entries(data);
 
   return (
     <div>
@@ -417,56 +391,38 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
         size="medium"
         aria-label="enhanced table"
       >
-        <TableHead>
-          <TableBody>
-            {stableSort(data, getComparator(order, orderBy))
-              .slice(page * columnsPerPage, page * columnsPerPage + columnsPerPage)
-              .map((row, index) => {
-                const isItemSelected = isSelected(row.name);
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    hover
-                    className={classes.row}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                  >
-                    {/*<TableCell padding="checkbox" className={classes.cell}>
-                      <Checkbox
-                        className={classes.cell}
-                        checked={isItemSelected}
-                        inputProps={{ 'aria-labelledby': labelId }}
-                      /}
-                      </TableCell>*/}
-                    {Object.entries(row).map((key: [string, any], index) => {
+        <TableHead />
+        <TableBody>
+          {
+            [...Array(Math.ceil(dataEntries.length / 3))].map((_, index) => {
+              return (
+                <TableRow>
+                  {
+                    [...Array(6).keys()].map((_, i) => {
+                      const loop = 3 * index + Math.floor(i / 2);
+                      const d = dataEntries[loop];
                       return (
-                        <TableCell
-                        component={index === 0 ? "th" : undefined}
-                        scope={index === 0 ? "row" : undefined}
-                        padding={index === 0 ? "none" : undefined}
-                        className={clsx(classes.cell, {
-                          [classes.cellNeg]: !isNaN(+key[1]) && +key[1] < 0,
-                          [classes.cellPos]: !isNaN(+key[1]) && +key[1] > 0
-                        })}
-                        align={index === 0 ? "left" : "right"}
-                        id={`${labelId}-${key[0]}`}
-                        >
-                          {key[1]}
-                        </TableCell>
-                      )
-                    })}
-                  </TableRow>
-                );
-              })}
-            {emptyColumns > 0 && (
-              <TableRow style={{ height: 53 * emptyColumns }}/>
-            )}
-          </TableBody>
-        </TableHead>
+                        d 
+                        ? <TableCell 
+                            id={i % 2 === 0 ? `${headerCells[loop].id}-item` : `${headerCells[loop].id}-value`}
+                            align="left"
+                            className={i % 2 === 0 ? classes.cell : clsx(classes.cell, {
+                              [classes.cellNeg]: !isNaN(+d[1]) && +d[1] < 0,
+                              [classes.cellPos]: !isNaN(+d[1]) && +d[1] > 0,
+                            })}
+                            style={i % 2 === 0 ? undefined : {borderRight: '1px solid rgba(255, 255, 255, 0.6)'}}
+                          >
+                            {i % 2 == 0 ? headerCells[loop].label : d[1]}
+                          </TableCell>
+                        : null
+                      );
+                    })
+                  }
+                </TableRow>
+              );
+            })
+          }
+        </TableBody>
       </Table>
     </TableContainer>
   </div>

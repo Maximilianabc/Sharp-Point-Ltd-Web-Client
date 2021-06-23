@@ -92,7 +92,9 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 			selectCallback = () => (state: UserState) => state.order;
 			break;
 		case 16:
+			op = 'doneTrade';
 			actionCallback = (d: any) => setDoneTradeReportAction(d);
+			selectCallback = () => (state: UserState) => state.doneTrade;
 			break;
 		default:
 			throw new Error(`unknown operation const ${opConst}`);
@@ -106,7 +108,6 @@ const AccOperations = async (
 		closeWSCallback?: WebSocketCallback,
 		actionCallback?: (d: any) => ActionData
 	): Promise<Result | undefined> => {
-	
 	let result;
 	await postRequest(`/account/account${op}`, payload)
 		.then((data?: Response) => {
@@ -134,13 +135,38 @@ const AccOperations = async (
 	return result;
 };
 
+// TODO merge it with AccOperations later
 const reportOperations = async (
 	op?: string,
 	payload?: any,
 	closeWSCallback?: WebSocketCallback,
 	actionCallback?: (d: any) => ActionData
 ): Promise<Result | undefined> => {
-	return undefined;
+	let result;
+	await postRequest(`/reporting/${op}`, payload)
+		.then((data?: Response) => {
+			if (data?.result_code === "40011") {
+				if (closeWSCallback) {
+					closeWSCallback(false);
+				} else {
+					result = { closeSocket: true } as Result;				
+				}
+				return;
+			}
+			if (actionCallback) {
+				result = {
+					data: data?.data,
+					actionData: actionCallback(data?.data),
+					closeSocket: false
+				};
+			} else {
+				result = {
+					data: data?.data,
+					closeSocket: false
+				};
+			}
+		});
+	return result;
 };
 
 const descComparator = ([a, b]: any, orderBy: string): ComparatorIndicator => b[orderBy] < a[orderBy] ? -1 : (b[orderBy] > a[orderBy] ? 1 : 0);

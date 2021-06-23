@@ -39,7 +39,6 @@ const Cash = (props: CashProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const [balance, setBalance] = useState<AccBalanceRecord[]>([]);
-  const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.BALANCE);
@@ -53,7 +52,6 @@ const Cash = (props: CashProps) => {
     const workFunction = () => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
-          console.log(data);
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
@@ -80,19 +78,20 @@ const Cash = (props: CashProps) => {
     };
   }, []);
 
+  const zero = 0;
   const balanceToRows = (balance: any): AccBalanceRecord[] => {
     let b: AccBalanceRecord[] = [];
     if (balance) {
       Array.prototype.forEach.call(balance, bal => {
         b.push({
           ccy: bal.ccy,
-          cashBf: bal.cashBf, // TODO name?
-          unsettle: bal.notYetValue, // ?
-          todayIO: bal.todayOut, //?
-          withdrawReq: 0, //?
-          cash: bal.cash,
-          unpresented: bal.unpresented,
-          fx: 0, // ?
+          cashBf: bal.cashBf.toFixed(2), // TODO name?
+          unsettle: bal.notYetValue.toFixed(2), // ?
+          todayIO: bal.todayOut.toFixed(2), //?
+          withdrawReq: zero.toFixed(2), //?
+          cash: bal.cash.toFixed(2),
+          unpresented: bal.unpresented.toFixed(2),
+          fx: zero.toFixed(2), // ?
           cashBaseCcy: `${bal.ccy}`
         });
       });

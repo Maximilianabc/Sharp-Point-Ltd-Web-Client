@@ -9,7 +9,8 @@ import {
   AccOperations,
   OPConsts,
   UserState,
-  AccDoneTradeRecord
+  AccDoneTradeRecord,
+  reportOperations
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -49,14 +50,14 @@ const ClearTrade = (props: ClearTradeProps) => {
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.DONE_TRADE);
   const title = 'ClearTrade';
-  /*
+  
   useEffect(() => {
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let work = setInterval(() => {
-      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+    const workFunction = () => {
+      reportOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           console.log(data);
           if (data && !data.closeSocket) {
@@ -74,11 +75,13 @@ const ClearTrade = (props: ClearTradeProps) => {
           clearInterval(work);
         }
       });
-    }, 30000); 
+    }
+    workFunction();
+    let work = setInterval(workFunction, 30000); 
     return () => {
       clearInterval(work);
     };
-  }, []);*/
+  }, []);
 
   const doneTradeToRows = (doneTrade: any): AccDoneTradeRecord[] => {
     let b: AccDoneTradeRecord[] = [];
