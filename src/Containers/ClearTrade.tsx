@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  ClientWS,
   StyledTable
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  AccOperations,
   OPConsts,
   UserState,
-  AccDoneTradeRecord,
-  reportOperations
+  ClearTradeRecord,
+  reportOperations,
+  store
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -44,12 +45,13 @@ const useStyles = makeStyles({
 const ClearTrade = (props: ClearTradeProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [doneTrade, setDoneTrade] = useState<AccDoneTradeRecord[]>([]);
+  const [doneTrade, setDoneTrade] = useState<ClearTradeRecord[]>([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.DONE_TRADE);
   const title = 'ClearTrade';
+  const wsRef = useRef(null);
   
   useEffect(() => {
     const payload = {
@@ -59,7 +61,6 @@ const ClearTrade = (props: ClearTradeProps) => {
     const workFunction = () => {
       reportOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
-          console.log(data);
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
@@ -83,8 +84,8 @@ const ClearTrade = (props: ClearTradeProps) => {
     };
   }, []);
 
-  const doneTradeToRows = (doneTrade: any): AccDoneTradeRecord[] => {
-    let b: AccDoneTradeRecord[] = [];
+  const doneTradeToRows = (doneTrade: any): ClearTradeRecord[] => {
+    let b: ClearTradeRecord[] = [];
     if (doneTrade) {
       Array.prototype.forEach.call(doneTrade, done => {
         b.push({
@@ -92,16 +93,16 @@ const ClearTrade = (props: ClearTradeProps) => {
           name: '?',
           bQty: done.buySell === 'B' ? done.tradeQty : 0,
           sQty: done.buySell === 'S' ? done.tradeQty : 0,
-          tradePrc: done.tradePrc,
-          tradeNum: done.tradeNo,
+          tradePrice: done.tradePrc,
+          tradeNumber: done.tradeNo,
           status: done.status,
           initiator: done.initiator,
           ref: '?',
           time: done.tradeTimeStr,
-          orderPrc: 0,
-          orderNo: done.orderNo,
+          orderPrice: 0,
+          orderNumber: done.orderNo,
           extOrder: done.extOrderNo,
-          logNum: '?'
+          logNumber: '?'
         });
       });
     }
@@ -119,6 +120,11 @@ const ClearTrade = (props: ClearTradeProps) => {
 
   return (
     <div id={title.toLowerCase()}>
+      <ClientWS
+        onReceivePush={onReceivePush}
+        operation={OPConsts.DONE_TRADE}
+        ref={wsRef}
+      />
       <StyledTable
           data={doneTrade}
           title={title}

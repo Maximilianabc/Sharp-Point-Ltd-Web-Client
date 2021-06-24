@@ -14,6 +14,7 @@ const serverIP = "192.168.123.136";
 const port = "99";
 const wsPort = "12000";
 const wsAddress = `ws://${serverIP}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
+const path = `http://${serverIP}:${port}/apiCustomer`;
 
 enum OPConsts {
 	SUMMARY = 1,
@@ -44,13 +45,76 @@ interface StoreCallbacks {
 	action: (d: any) => ActionData;
 }
 
+interface SummaryRecord {
+  buyingPower?: string,
+  nav?: string,
+  commodityPL?: string,
+  currentIMargin?: string,
+  currentMMargin?: string,
+  mLevel?: string,
+  prjOvnMargin?: string,
+  maxMargin?: string,
+  marginCall?: string,
+  cashBalance?: string,
+  transactionAmt?: string,
+  lockupAmt?: string,
+  period?: string,
+  creditLimit?: string,
+  avgNetOptValue?: string,
+  ctrlLevel?: string,
+  marginClass?: string
+}
+
+interface BalanceRecord {
+  ccy: string,
+  cashBf: string,
+  unsettle: string,
+  todayIO: string,
+  withdrawReq: string,
+  cash: string,
+  unpresented: string,
+  fx: string,
+  cashBaseCcy: string
+}
+
+interface PositionRecord {
+  id: string,
+  name: string,
+  prev: string,
+  dayLong: string,
+  dayShort: string,
+  net: string,
+  mkt: string,
+  pl: string,
+  prevClose: string,
+  optVal: string,
+  fx: number,
+  contract: string
+}
+
+interface ClearTradeRecord {
+  id: string,
+  name: string,
+  bQty: number,
+  sQty: number,
+  tradePrice: number,
+  tradeNumber: number,
+  status: string,
+  initiator: string,
+  ref: string,
+  time: string,
+  orderPrice: number,
+  orderNumber: number,
+  extOrder: string,
+  logNumber: number | string
+}
+
 type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
-	const path = `http://${serverIP}:${port}/apiCustomer`;
 	const reqOpt = {
 		method: 'POST',
 		headers: {
@@ -59,7 +123,7 @@ const postRequest = async (relativePath: string, payload: any): Promise<any> => 
 		body: JSON.stringify(payload)
 	};
 	let data;
-	await fetch(path + relativePath, reqOpt)
+	await fetch(`${path}${relativePath}`, reqOpt)
 		.then(response => response.json())
 		.then(body => { data = body });
 	return data;
@@ -169,6 +233,17 @@ const reportOperations = async (
 	return result;
 };
 
+const stayAlive = async (payload: any) => {
+	await postRequest(`/accessRight/sessionTokenHeartbeat`, payload)
+		.then(data => {
+			if(data.result_code === 0) {
+				console.log('alive');
+			}
+		})
+};
+
+const genRandomHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+
 const descComparator = ([a, b]: any, orderBy: string): ComparatorIndicator => b[orderBy] < a[orderBy] ? -1 : (b[orderBy] > a[orderBy] ? 1 : 0);
 
 const getComparator = (order: SortOrder, orderBy: string): Comparator => 
@@ -186,6 +261,34 @@ const stableSort = (array: any[], comparator: Comparator): any[] => {
   return stabilizedThis.map((el) => el[0]);
 };
 
+const getCurrencyString = (val: number | undefined, includeCurrency: boolean = true): string => {
+	//console.log(val);
+	return val !== undefined
+		? `${val.toLocaleString(undefined, { 
+					minimumFractionDigits: 2,
+					maximumFractionDigits: 2
+				})}${includeCurrency ? ' HKD' : ''}`
+		: '';
+};
+
+const getControlLevelString = (lvl: 0 | 1 | 2 | 3 | 4): string => {
+	switch (lvl)
+	{
+		case 0:
+			return 'Normal';
+		case 1:
+			return 'Trade Disable';
+		case 2:
+			return 'Client Suspend';
+		case 3:
+			return 'Frozen Account';
+		case 4:
+			return 'Client Only';
+		default:
+			throw new Error(`unknown control level: ${lvl}`);
+	}
+};
+
 export {
 	wsAddress,
 	OPConsts, 
@@ -195,11 +298,19 @@ export {
 	reportOperations,
 	descComparator,
 	getComparator,
-	stableSort
+	stableSort,
+	stayAlive,
+	genRandomHex,
+	getCurrencyString,
+	getControlLevelString
 };
 export type {
 	SortOrder,
 	Response,
-	Result
+	Result,
+	SummaryRecord,
+	BalanceRecord,
+	PositionRecord,
+	ClearTradeRecord
 };
 

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  ClientWS,
   StyledTable
 } from '../Components';
 import { 
@@ -9,7 +10,8 @@ import {
   AccOperations,
   OPConsts,
   UserState,
-  AccBalanceRecord
+  BalanceRecord,
+  getCurrencyString
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -38,11 +40,12 @@ const useStyles = makeStyles({
 const Cash = (props: CashProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [balance, setBalance] = useState<AccBalanceRecord[]>([]);
+  const [balance, setBalance] = useState<BalanceRecord[]>([]);
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.BALANCE);
   const title = 'Cash';
+  const wsRef = useRef(null);
 
   useEffect(() => {
     const payload = {
@@ -79,20 +82,20 @@ const Cash = (props: CashProps) => {
   }, []);
 
   const zero = 0;
-  const balanceToRows = (balance: any): AccBalanceRecord[] => {
-    let b: AccBalanceRecord[] = [];
+  const balanceToRows = (balance: any): BalanceRecord[] => {
+    let b: BalanceRecord[] = [];
     if (balance) {
       Array.prototype.forEach.call(balance, bal => {
         b.push({
           ccy: bal.ccy,
-          cashBf: bal.cashBf.toFixed(2), // TODO name?
-          unsettle: bal.notYetValue.toFixed(2), // ?
-          todayIO: bal.todayOut.toFixed(2), //?
-          withdrawReq: zero.toFixed(2), //?
-          cash: bal.cash.toFixed(2),
-          unpresented: bal.unpresented.toFixed(2),
-          fx: zero.toFixed(2), // ?
-          cashBaseCcy: `${bal.ccy}`
+          cashBf: getCurrencyString(bal.cashBf, false),
+          unsettle: getCurrencyString(bal.notYetValue, false), // ?
+          todayIO: getCurrencyString(bal.todayOut, false), //?
+          withdrawReq: getCurrencyString(zero, false), //?
+          cash: getCurrencyString(bal.cash, false),
+          unpresented: getCurrencyString(bal.unpresented, false),
+          fx: getCurrencyString(zero, false), // ?
+          cashBaseCcy: `HKD`
         });
       });
     }
@@ -110,6 +113,11 @@ const Cash = (props: CashProps) => {
 
   return (
     <div id={title.toLowerCase()}>
+      <ClientWS
+        onReceivePush={onReceivePush}
+        operation={OPConsts.BALANCE}
+        ref={wsRef}
+      />
       <StyledTable
           data={balance}
           title={title}

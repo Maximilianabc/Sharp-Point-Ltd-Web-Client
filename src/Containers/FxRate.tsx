@@ -47,7 +47,6 @@ const Fx = (props: ClearTradeProps) => {
     let work = setInterval(() => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
-          console.log(data);
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);

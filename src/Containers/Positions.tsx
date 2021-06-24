@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
@@ -10,7 +10,7 @@ import {
   AccOperations,
   OPConsts,
   UserState,
-  AccPositionRecord
+  PositionRecord
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles({
 const Positions = (props: PositionProps): JSX.Element => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [positions, setPositions] = useState<AccPositionRecord[]>([]);
+  const [positions, setPositions] = useState<PositionRecord[]>([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -55,16 +55,13 @@ const Positions = (props: PositionProps): JSX.Element => {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let work = setInterval(() => {
+    const workFunction = () => {
       AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
           } else {
-            if (wsRef && wsRef.current) {
-              //wsRef!.current!.closeExplicit(false);
-            }
             history.push({
               pathname: '/logout',
               state: 'Session expired. Please login again.'
@@ -76,14 +73,16 @@ const Positions = (props: PositionProps): JSX.Element => {
           clearInterval(work);
         }
       });
-    }, 1000); 
+    };
+    workFunction();
+    let work = setInterval(workFunction, 5000); 
     return () => {
       clearInterval(work);
     };
   }, []);
 
-  const positionsToRows = (positions: any): AccPositionRecord[] => {
-    let p: AccPositionRecord[] = [];
+  const positionsToRows = (positions: any): PositionRecord[] => {
+    let p: PositionRecord[] = [];
     if (positions) {
       Array.prototype.forEach.call(positions, pos => {
         p.push({

@@ -93,7 +93,12 @@ const LoginForm = (props: LoginPageProps) => {
 		if (resdata.result_msg !== undefined) {
 			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
-					dispatch(loginAction(data));
+					const actionData: UserInfo & { authed: boolean } = {
+						userId: data.userId,
+						password: data.password,
+						authed: true
+					};
+					dispatch(loginAction(actionData));
 					const info = resdata.data;
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
@@ -177,8 +182,6 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 	const dispatch = useDispatch();
 	const history = useHistory();
 
-	useEffect(() => console.log(userId), []);
-
 	const handleClick = (event: React.MouseEvent) => {
 		event.preventDefault();
 		setLoginErrorText('');
@@ -207,6 +210,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 				setShow(false);
 				display2FAForm = false;
 				isAE = false;
+				dispatch(setAccountNumAction(userId as string));
 				history.push('/dashboard');
 			}
 		} else {

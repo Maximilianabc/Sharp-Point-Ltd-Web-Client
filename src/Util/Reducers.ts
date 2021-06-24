@@ -2,6 +2,7 @@ import { actionConsts, ActionData } from './Actions';
 import { SortOrder } from './Util';
 
 interface UserState {
+  authed?: boolean,
   userId?: string,
   token?: string,
   accName?: string,
@@ -42,23 +43,48 @@ type Account<U extends Details> = U & {
 };
 
 interface AccSummaryRecord {
-  buyingPower?: string,
-  nav?: string,
-  commodityPL?: string,
-  currentIMargin?: string,
-  currentMMargin?: string,
-  mLevel?: string,
-  prjOvnMargin?: string,
-  maxMargin?: string,
-  marginCall?: string,
-  cashBalance?: string,
-  transactionAmt?: string,
-  lockupAmt?: string,
-  period?: string,
-  creditLimit?: string,
-  avgNetOptValue?: string,
-  ctrlLevel?: string,
+  accNo?: string
+  accmktName?: string
+  accmktType?: string
+  acmastNo?: string
+  active?: number
+  aeCode?: string
+  avFund?: number
+  baseCcy?: string
+  cashBal?: number
+  cashBf?: number
+  cliId?: string
+  creditLimit?: number
+  ctrlLevel?: number
+  imargin?: number
+  imarginLevel?: number
+  loanLimit?: number
+  loanMkt?: number
+  loanToMa?: number
+  loanToMv?: number
+  marginCall?: number
   marginClass?: string
+  marginPeriod?: number
+  marketValue?: number
+  maxLoanLimit?: number
+  mlevel?: number
+  mmargin?: number
+  nav?: number
+  netEquity?: number
+  notYetValue?: number
+  posLoanLimit?: number
+  posTodayTrans?: number
+  rawMargin?: number
+  rawMarginLevel?: number
+  todayCash?: number
+  todayTrans?: number
+  totalCash?: number
+  totalEquity?: number
+  totalFee?: number
+  totalPl?: number
+  tradeLimit?: number
+  tradingLimit?: number
+  unpresented?: number
 }
 interface Info {
   data: AccSummaryRecord[]
@@ -96,51 +122,75 @@ interface Summary {
   data: AccInfoRecord[]
 }
 interface AccBalanceRecord {
-  ccy: string,
-  cashBf: string,
-  unsettle: string,
-  todayIO: string,
-  withdrawReq: string,
-  cash: string,
-  unpresented: string,
-  fx: string,
-  cashBaseCcy: string
+  accNo?: string
+  cash?: number
+  cashBf?: number
+  ccy?: string
+  notYetValue?: number
+  sesSeqNo?: number
+  todayCash?: number
+  todayOut?: number
+  unpresented?: number
+  unpresentedBf?: number
 }
 interface Balance {
   data: AccBalanceRecord[]
 }
 interface AccPositionRecord {
-  id: string,
-  name: string,
-  prev: string,
-  dayLong: string,
-  dayShort: string,
-  net: string,
-  mkt: string,
-  pl: string,
-  prevClose: string,
-  optVal: string,
-  fx: number,
-  contract: string
+  accNo?: string
+  aeCode?: string
+  closeQty?: number
+  decInPrc?: number
+  instCode?: string
+  longAvg?: number
+  longQty?: number
+  longShort?: string
+  longTotalAmt?: number
+  netAvg?: number
+  netLongQty?: number
+  netQty?: number
+  netShortQty?: number
+  netTotalAmt?: number
+  previousAvg?: number
+  prodCode?: string
+  profitLoss?: number
+  psQty?: number
+  psTotalAmt?: number
+  qty?: number
+  shortAvg?: number
+  shortQty?: number
+  shortTotalAmt?: number
+  totalAmt?: number
+  updateTime?: number
 }
 interface Position {
   data: AccPositionRecord[]
 }
 interface AccClearTradeRecord {
-  id: string,
-  name: string,
-  bQty: number,
-  sQty: number,
-  tradePrice: number,
-  tradeNumber: number,
-  status: string,
-  initiator: string,
-  ref: string,
-  time: string,
-  orderPrice: number,
-  orderNumber: number,
-  extOrder: string,
-  logNumber: number
+  accNo?: string
+  accOrderNo?: number
+  aeCode?: string
+  avgPrice?: number
+  buySell?: string
+  counterParty?: string
+  decInPrc?: number
+  doneTradeDate?: number
+  doneTradeTime?: number
+  extOrderNo?: string
+  initiator?: string
+  instCode?: string
+  orderNo?: number
+  prodCode?: string
+  recNo?: number
+  status?: number
+  systemId?: string
+  totalTrdPrc?: number
+  tradeDateStr?: string
+  tradeNo?: number
+  tradePrice?: number
+  tradeQty?: number
+  tradeTime?: number
+  tradeTimeStr?: string
 }
 interface ClearTrade {
   data: AccClearTradeRecord[]
@@ -195,6 +245,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
       return {
         ...state,
         userId: action.payload.userId,
+        authed: action.payload.authed
       };
     case actionConsts.LOGOUT:
       return {};

@@ -24,6 +24,7 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import {
+  genRandomHex,
   getComparator,
   stableSort,
 } from '../Util';
@@ -93,6 +94,7 @@ const StyledTablehead = (props: StyledTableheadProps) => {
               className={classes.cell}
               align={cell.align}
               sortDirection={orderBy === cell.id ? order : 'asc'}
+              key={genRandomHex(16)}
             >
               <TableSortLabel
                 classes={{
@@ -102,6 +104,7 @@ const StyledTablehead = (props: StyledTableheadProps) => {
                 active={orderBy === cell.id}
                 direction={orderBy === cell.id ? order : 'asc'}
                 onClick={createSortHandler(cell.id)}
+                key={genRandomHex(16)}
               >
                 {cell.label}
                 {orderBy === cell.id ? (
@@ -326,18 +329,23 @@ const StyledTable = (props: StyledTableProps) => {
                       aria-checked={isItemSelected}
                       tabIndex={-1}
                       selected={isItemSelected}
+                      key={genRandomHex(16)}
                     >
                       {Object.entries(row).map((key: [string, any], index) => {
+                        const n = key !== undefined && key[1] !== undefined
+                                ? +(key[1].toString().replace(/\,/gi,''))
+                                : NaN;
                         return (
                           <TableCell
-                          component={index === 0 ? "th" : undefined}
-                          scope={index === 0 ? "row" : undefined}
-                          className={clsx(classes.cell, {
-                            [classes.cellNeg]: !isNaN(+key[1]) && +key[1] < 0,
-                            [classes.cellPos]: !isNaN(+key[1]) && +key[1] > 0
-                          })}
-                          align={index === 0 ? "left" : "right"}
-                          id={`${key[0]}-${index}`}
+                            component={index === 0 ? "th" : undefined}
+                            scope={index === 0 ? "row" : undefined}
+                            className={clsx(classes.cell, {
+                              [classes.cellNeg]: !isNaN(n) && n < 0,
+                              [classes.cellPos]: !isNaN(n) && n > 0
+                            })}
+                            align={index === 0 ? "left" : "right"}
+                            id={`${key[0]}-${index}`}
+                            key={genRandomHex(16)}
                           >
                             {key[1]}
                           </TableCell>
@@ -374,8 +382,6 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
     headerCells
   } = props;
   const classes = useStylesTable();
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState('id');
   const [selected, setSelected] = useState<any[]>([]);
   const [page, setPage] = useState(0);
   const [columnsPerPage, setColumnsPerPage] = useState(3);
@@ -396,21 +402,25 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
           {
             [...Array(Math.ceil(dataEntries.length / 3))].map((_, index) => {
               return (
-                <TableRow>
+                <TableRow key={genRandomHex(16)}>
                   {
                     [...Array(6).keys()].map((_, i) => {
                       const loop = 3 * index + Math.floor(i / 2);
                       const d = dataEntries[loop];
+                      const n = d !== undefined && d[1] !== undefined
+                              ? +(d[1].toString().replace(/\,/gi,''))
+                              : NaN;
                       return (
                         d 
                         ? <TableCell 
                             id={i % 2 === 0 ? `${headerCells[loop].id}-item` : `${headerCells[loop].id}-value`}
                             align="left"
                             className={i % 2 === 0 ? classes.cell : clsx(classes.cell, {
-                              [classes.cellNeg]: !isNaN(+d[1]) && +d[1] < 0,
-                              [classes.cellPos]: !isNaN(+d[1]) && +d[1] > 0,
+                              [classes.cellNeg]: !isNaN(n) && n < 0,
+                              [classes.cellPos]: !isNaN(n) && n > 0,
                             })}
                             style={i % 2 === 0 ? undefined : {borderRight: '1px solid rgba(255, 255, 255, 0.6)'}}
+                            key={genRandomHex(16)}
                           >
                             {i % 2 == 0 ? headerCells[loop].label : d[1]}
                           </TableCell>

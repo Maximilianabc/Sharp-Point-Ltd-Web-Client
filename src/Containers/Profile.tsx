@@ -9,7 +9,9 @@ import {
   AccOperations,
   OPConsts,
   UserState,
-  AccSummaryRecord
+  SummaryRecord,
+  getControlLevelString,
+  getCurrencyString
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -46,7 +48,7 @@ const useStyles = makeStyles({
 const Profile = (props: ProfileProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<AccSummaryRecord>({});
+  const [summary, setSummary] = useState<SummaryRecord>({});
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
@@ -86,26 +88,26 @@ const Profile = (props: ProfileProps) => {
     };
   }, []);
 
-  const summaryToTable = (sum: any): AccSummaryRecord => {
-    let s: AccSummaryRecord = {};
+  const summaryToTable = (sum: any): SummaryRecord => {
+    let s: SummaryRecord = {};
     if (sum) {
       s = {
         buyingPower: '?',
-        nav: `${sum.nav?.toFixed(2)} HKD`,
-        commodityPL: `${sum.totalPl?.toFixed(2)} HKD`,
-        currentIMargin: `${sum.iMargin?.toFixed(2)} HKD`,
-        currentMMargin: `${sum.mMargin?.toFixed(2)} HKD`,
-        mLevel: `${sum.mLevel?.toFixed(2)} HKD`,
+        nav: getCurrencyString(sum.nav),
+        commodityPL:getCurrencyString(sum.totalPl),
+        currentIMargin: getCurrencyString(sum.iMargin),
+        currentMMargin: getCurrencyString(sum.mMargin),
+        mLevel: getCurrencyString(sum.mLevel),
         prjOvnMargin: '?',
         maxMargin: '?',
-        marginCall: `${sum.marginCall?.toFixed(2)} HKD`,
-        cashBalance: `${sum.cashBal?.toFixed(2)} HKD`,
+        marginCall: getCurrencyString(sum.marginCall),
+        cashBalance: getCurrencyString(sum.cashBal),
         transactionAmt: '?',
         lockupAmt: '?',
         period: sum.marginPeriod,
-        creditLimit: `${sum.creditLimit?.toFixed(2)} HKD`,
+        creditLimit: getCurrencyString(sum.creditLimit),
         avgNetOptValue: '?',
-        ctrlLevel: '?',
+        ctrlLevel: getControlLevelString(sum.ctrlLevel),
         marginClass: '?'
       };
     }

@@ -12,8 +12,13 @@ import {
   Switch
 } from 'react-router-dom';
 import { useIdleTimer } from 'react-idle-timer';
+import { useSelector } from 'react-redux';
+import { stayAlive, UserState } from '../Util';
 
 function App() {
+  const authed = useSelector((state: UserState) => state.authed);
+  const token = useSelector((state: UserState) => state.token);
+
   const handleOnIdle = (event: any) => {
     //console.log('user is idle', event)
     //console.log('last active', getLastActiveTime())
@@ -25,7 +30,11 @@ function App() {
   }
 
   const handleOnAction = (event: any) => {
-    //console.log('user did something', event)
+    if (authed && token) {
+      stayAlive({
+        sessionToken: token
+      });
+    }
   }
 
   const { getRemainingTime, getLastActiveTime } = useIdleTimer({
