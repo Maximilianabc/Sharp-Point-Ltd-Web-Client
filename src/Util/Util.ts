@@ -281,6 +281,8 @@ const getPeriodString = (period: number): string => {
 	switch (period) {
 		case 1:
 			return 'Overnight';
+		case -1:
+			return 'Mixed';
 		default:
 			return '?';
 	}

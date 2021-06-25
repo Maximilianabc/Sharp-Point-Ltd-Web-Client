@@ -19,8 +19,8 @@ interface ClearTradeProps {
 }
 
 const headCells = [
-  { id: 'ccy', align: 'left', label: 'Ccy' },
-  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate' }
+  { id: 'ccy', align: 'left', label: 'Ccy', colorMode: 'ignore' },
+  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignore' }
 ];
 
 const useStyles = makeStyles({

@@ -19,18 +19,18 @@ interface PositionProps {
 }
 
 const headCells = [
-  { id: 'id', align: 'left', label: 'ID' },
-  { id: 'name', align: 'right', label: 'Name' },
-  { id: 'prev', align: 'right', label: 'Prev.' },
-  { id: 'day-long', align: 'right', label: 'Day Long' },
-  { id: 'day-short', align: 'right', label: 'Day Short' },
-  { id: 'net', align: 'right', label: 'Net' },
-  { id: 'market-price', align: 'right', label: 'Mkt.Prc' },
-  { id: 'profit-loss', align: 'right', label: 'P/L' },
-  { id: 'prev-close', align: 'right', label: 'Prv Close' },
-  { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val' },
-  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate' },
-  { id: 'contract', align: 'right', label: 'Contract' }
+  { id: 'id', align: 'left', label: 'ID', colorMode: 'ignore' },
+  { id: 'name', align: 'right', label: 'Name', colorMode: 'ignore' },
+  { id: 'prev', align: 'right', label: 'Prev.', colorMode: 'ignore' },
+  { id: 'day-long', align: 'right', label: 'Day Long', colorMode: 'ignore' },
+  { id: 'day-short', align: 'right', label: 'Day Short', colorMode: 'ignore' },
+  { id: 'net', align: 'right', label: 'Net', colorMode: 'ignore' },
+  { id: 'market-price', align: 'right', label: 'Mkt.Prc', colorMode: 'normal' },
+  { id: 'profit-loss', align: 'right', label: 'P/L', colorMode: 'normal' },
+  { id: 'prev-close', align: 'right', label: 'Prv Close', colorMode: 'normal' },
+  { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val', colorMode: 'normal' },
+  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignore' },
+  { id: 'contract', align: 'right', label: 'Contract', colorMode: 'ignore' }
 ];
 
 const useStyles = makeStyles({

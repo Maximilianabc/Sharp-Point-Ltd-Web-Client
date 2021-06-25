@@ -20,15 +20,15 @@ interface CashProps {
 }
 
 const headCells = [
-  { id: 'ccy', align: 'left', label: 'Ccy' },
-  { id: 'cash-bf', align: 'right', label: 'Cash Bf.' },
-  { id: 'unsettled', align: 'right', label: 'Unsettle' },
-  { id: 'today-in-out', align: 'right', label: 'Today In/Out' },
-  { id: 'withdrawl-req', align: 'right', label: 'Withdrawal Req.' },
-  { id: 'cash', align: 'right', label: 'Cash' },
-  { id: 'unpresented', align: 'right', label: 'Unpresented' },
-  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate' },
-  { id: 'case-base-ccy', align: 'right', label: 'Cash (Base ccy)' }
+  { id: 'ccy', align: 'left', label: 'Ccy', colorMode: 'ignore' },
+  { id: 'cash-bf', align: 'right', label: 'Cash Bf.', colorMode: 'normal' },
+  { id: 'unsettled', align: 'right', label: 'Unsettle', colorMode: 'revert' },
+  { id: 'today-in-out', align: 'right', label: 'Today In/Out', colorMode: 'normal' },
+  { id: 'withdrawl-req', align: 'right', label: 'Withdrawal Req.', colorMode: 'normal' },
+  { id: 'cash', align: 'right', label: 'Cash', colorMode: 'normal' },
+  { id: 'unpresented', align: 'right', label: 'Unpresented', colorMode: 'normal' },
+  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignore' },
+  { id: 'case-base-ccy', align: 'right', label: 'Cash (Base ccy)', colorMode: 'ignore' }
 ];
 
 const useStyles = makeStyles({

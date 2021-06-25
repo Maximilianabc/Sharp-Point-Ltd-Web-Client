@@ -213,8 +213,9 @@ const useStylesTable = makeStyles((theme) => ({
     font: '1rem roboto'
   },
   cellNeg: {
-    color: rgb(255, 0, 0).alpha(0.6).string(),
-    font: '1rem roboto'
+    color: rgb(255, 40, 0).alpha(1).string(),
+    font: '1rem roboto',
+    fontWeight: 500
   },
   cellPos: {
     color: rgb(0, 255, 0).alpha(0.6).string(),
@@ -319,7 +320,6 @@ const StyledTable = (props: StyledTableProps) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   const isItemSelected = isSelected(row.name);
-
                   return (
                     <TableRow
                       hover
@@ -335,13 +335,15 @@ const StyledTable = (props: StyledTableProps) => {
                         const n = key !== undefined && key[1] !== undefined
                                 ? +(key[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
                                 : NaN;
+                        const normal = headerCells[index].colorMode === 'normal';
+                        const revert = headerCells[index].colorMode === 'revert';
                         return (
                           <TableCell
                             component={index === 0 ? "th" : undefined}
                             scope={index === 0 ? "row" : undefined}
                             className={clsx(classes.cell, {
-                              [classes.cellNeg]: !isNaN(n) && n < 0,
-                              [classes.cellPos]: !isNaN(n) && n > 0
+                              [classes.cellNeg]: !isNaN(n) && ((n < 0 && normal) || (n > 0 && revert)),
+                              [classes.cellPos]: !isNaN(n) && ((n > 0 && normal) || (n < 0 && revert)),
                             })}
                             align={index === 0 ? "left" : "right"}
                             id={`${key[0]}-${index}`}

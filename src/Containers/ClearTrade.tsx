@@ -21,20 +21,20 @@ interface ClearTradeProps {
 }
 
 const headCells = [
-  { id: 'id', align: 'left', label: 'ID' },
-  { id: 'name', align: 'right', label: 'Name' },
-  { id: 'bqty', align: 'right', label: 'BQty' },
-  { id: 'sqty', align: 'right', label: 'SQty' },
-  { id: 'trade-price', align: 'right', label: 'Trade Prc' },
-  { id: 'trade-number', align: 'right', label: 'Trade No.' },
-  { id: 'status', align: 'right', label: 'Status' },
-  { id: 'initiator', align: 'right', label: 'Initiator' },
-  { id: 'ref', align: 'right', label: 'Ref' },
-  { id: 'time', align: 'right', label: 'Time' },
-  { id: 'order-price', align: 'right', label: 'Order Prc' },
-  { id: 'order-number', align: 'right', label: 'Order No.' },
-  { id: 'external-order', align: 'right', label: 'Ext. Order' },
-  { id: 'log-number', align: 'right', label: 'Log No.' }
+  { id: 'id', align: 'left', label: 'ID', colorMode: 'ignore' },
+  { id: 'name', align: 'right', label: 'Name', colorMode: 'ignore' },
+  { id: 'bqty', align: 'right', label: 'BQty', colorMode: 'normal' },
+  { id: 'sqty', align: 'right', label: 'SQty', colorMode: 'normal' },
+  { id: 'trade-price', align: 'right', label: 'Trade Prc', colorMode: 'normal' },
+  { id: 'trade-number', align: 'right', label: 'Trade No.', colorMode: 'ignore' },
+  { id: 'status', align: 'right', label: 'Status', colorMode: 'ignore' },
+  { id: 'initiator', align: 'right', label: 'Initiator', colorMode: 'ignore' },
+  { id: 'ref', align: 'right', label: 'Ref', colorMode: 'ignore' },
+  { id: 'time', align: 'right', label: 'Time', colorMode: 'ignore' },
+  { id: 'order-price', align: 'right', label: 'Order Prc', colorMode: 'normal' },
+  { id: 'order-number', align: 'right', label: 'Order No.', colorMode: 'ignore' },
+  { id: 'external-order', align: 'right', label: 'Ext. Order', colorMode: 'ignore' },
+  { id: 'log-number', align: 'right', label: 'Log No.', colorMode: 'ignore' }
 ];
 
 const useStyles = makeStyles({
@@ -79,7 +79,7 @@ const ClearTrade = (props: ClearTradeProps) => {
       });
     }
     workFunction();
-    let work = setInterval(workFunction, 30000); 
+    let work = setInterval(workFunction, 5000); 
     return () => {
       clearInterval(work);
     };
@@ -97,16 +97,16 @@ const ClearTrade = (props: ClearTradeProps) => {
             name: '?',
             bQty: done.buySell === 'B' ? done.tradeQty : 0,
             sQty: done.buySell === 'S' ? done.tradeQty : 0,
-            tradePrice: done.tradePrc,
+            tradePrice: done.tradePrice,
             tradeNumber: done.tradeNo,
             status: getDoneTradeStatusString(done.status),
             initiator: done.initiator,
             ref: '?',
             time: done.tradeTimeStr,
             orderPrice: 0,
-            orderNumber: done.orderNo,
+            orderNumber: done.accOrderNo,
             extOrder: done.extOrderNo,
-            logNumber: '?'
+            logNumber: done.recNo
           });
         }       
       });
