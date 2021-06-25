@@ -11,7 +11,9 @@ import {
   UserState,
   SummaryRecord,
   getControlLevelString,
-  getCurrencyString
+  getCurrencyString,
+  getPercentageString,
+  getPeriodString
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -82,7 +84,7 @@ const Profile = (props: ProfileProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 30000); 
+    let work = setInterval(workFunction, 1000); 
     return () => {
       clearInterval(work);
     };
@@ -92,23 +94,23 @@ const Profile = (props: ProfileProps) => {
     let s: SummaryRecord = {};
     if (sum) {
       s = {
-        buyingPower: '?',
+        buyingPower: getCurrencyString(sum.avFund), // ?
         nav: getCurrencyString(sum.nav),
         commodityPL:getCurrencyString(sum.totalPl),
-        currentIMargin: getCurrencyString(sum.iMargin),
-        currentMMargin: getCurrencyString(sum.mMargin),
-        mLevel: getCurrencyString(sum.mLevel),
+        currentIMargin: getCurrencyString(sum.imargin), // !! api: iMargin, actual response: imargin
+        currentMMargin: getCurrencyString(sum.mmargin), // !! api: mMargin, actual response: mmargin
+        mLevel: getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
         prjOvnMargin: '?',
         maxMargin: '?',
         marginCall: getCurrencyString(sum.marginCall),
         cashBalance: getCurrencyString(sum.cashBal),
         transactionAmt: '?',
         lockupAmt: '?',
-        period: sum.marginPeriod,
+        period: getPeriodString(sum.marginPeriod),
         creditLimit: getCurrencyString(sum.creditLimit),
         avgNetOptValue: '?',
         ctrlLevel: getControlLevelString(sum.ctrlLevel),
-        marginClass: '?'
+        marginClass: sum.marginClass //!! not present in api but in response
       };
     }
     return s;

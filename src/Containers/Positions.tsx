@@ -75,7 +75,7 @@ const Positions = (props: PositionProps): JSX.Element => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 5000); 
+    let work = setInterval(workFunction, 1000); 
     return () => {
       clearInterval(work);
     };

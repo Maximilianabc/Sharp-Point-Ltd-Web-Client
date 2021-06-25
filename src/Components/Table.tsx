@@ -333,7 +333,7 @@ const StyledTable = (props: StyledTableProps) => {
                     >
                       {Object.entries(row).map((key: [string, any], index) => {
                         const n = key !== undefined && key[1] !== undefined
-                                ? +(key[1].toString().replace(/\,/gi,''))
+                                ? +(key[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
                                 : NaN;
                         return (
                           <TableCell
@@ -408,7 +408,7 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
                       const loop = 3 * index + Math.floor(i / 2);
                       const d = dataEntries[loop];
                       const n = d !== undefined && d[1] !== undefined
-                              ? +(d[1].toString().replace(/\,/gi,''))
+                              ? +(d[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
                               : NaN;
                       return (
                         d 

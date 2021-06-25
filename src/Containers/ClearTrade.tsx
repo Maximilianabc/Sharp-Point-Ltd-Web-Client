@@ -11,7 +11,8 @@ import {
   UserState,
   ClearTradeRecord,
   reportOperations,
-  store
+  store,
+  getDoneTradeStatusString
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -88,22 +89,26 @@ const ClearTrade = (props: ClearTradeProps) => {
     let b: ClearTradeRecord[] = [];
     if (doneTrade) {
       Array.prototype.forEach.call(doneTrade, done => {
-        b.push({
-          id: done.prodCode,
-          name: '?',
-          bQty: done.buySell === 'B' ? done.tradeQty : 0,
-          sQty: done.buySell === 'S' ? done.tradeQty : 0,
-          tradePrice: done.tradePrc,
-          tradeNumber: done.tradeNo,
-          status: done.status,
-          initiator: done.initiator,
-          ref: '?',
-          time: done.tradeTimeStr,
-          orderPrice: 0,
-          orderNumber: done.orderNo,
-          extOrder: done.extOrderNo,
-          logNumber: '?'
-        });
+        // get today's clear trade only
+        if (new Date(done.tradeTimeStr).getUTCDate() === new Date().getDate())
+        {
+          b.push({
+            id: done.prodCode,
+            name: '?',
+            bQty: done.buySell === 'B' ? done.tradeQty : 0,
+            sQty: done.buySell === 'S' ? done.tradeQty : 0,
+            tradePrice: done.tradePrc,
+            tradeNumber: done.tradeNo,
+            status: getDoneTradeStatusString(done.status),
+            initiator: done.initiator,
+            ref: '?',
+            time: done.tradeTimeStr,
+            orderPrice: 0,
+            orderNumber: done.orderNo,
+            extOrder: done.extOrderNo,
+            logNumber: '?'
+          });
+        }       
       });
     }
     return b;

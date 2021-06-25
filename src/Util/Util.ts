@@ -271,6 +271,21 @@ const getCurrencyString = (val: number | undefined, includeCurrency: boolean = t
 		: '';
 };
 
+const getPercentageString = (val: number | undefined, fixed: number = 2): string => {
+	return val !== undefined
+		? `${(val * 100).toFixed(fixed)}%`
+		: '';
+}
+
+const getPeriodString = (period: number): string => {
+	switch (period) {
+		case 1:
+			return 'Overnight';
+		default:
+			return '?';
+	}
+};
+
 const getControlLevelString = (lvl: 0 | 1 | 2 | 3 | 4): string => {
 	switch (lvl)
 	{
@@ -289,6 +304,15 @@ const getControlLevelString = (lvl: 0 | 1 | 2 | 3 | 4): string => {
 	}
 };
 
+const getDoneTradeStatusString = (status: number): string => {
+	switch (status) {
+		case 0:
+			return 'TRADED';
+		default:
+			return '?';		
+	}
+}
+
 export {
 	wsAddress,
 	OPConsts, 
@@ -302,7 +326,10 @@ export {
 	stayAlive,
 	genRandomHex,
 	getCurrencyString,
-	getControlLevelString
+	getPercentageString,
+	getPeriodString,
+	getControlLevelString,
+	getDoneTradeStatusString
 };
 export type {
 	SortOrder,

@@ -94,7 +94,7 @@ const LoginForm = (props: LoginPageProps) => {
 			if (resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
 					const actionData: UserInfo & { authed: boolean } = {
-						userId: data.userId,
+						userId: data.userId.toUpperCase(),
 						password: data.password,
 						authed: true
 					};
@@ -106,7 +106,7 @@ const LoginForm = (props: LoginPageProps) => {
 							isAE = true;
 							setShow(false);
 						} else {
-							dispatch(setAccountNumAction(data.userId));
+							dispatch(setAccountNumAction(data.userId.toUpperCase()));
 							display2FAForm = false;
 							isAE = false;
 							history.push('/dashboard');
@@ -210,7 +210,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 				setShow(false);
 				display2FAForm = false;
 				isAE = false;
-				dispatch(setAccountNumAction(userId as string));
+				dispatch(setAccountNumAction(userId?.toUpperCase() as string));
 				history.push('/dashboard');
 			}
 		} else {
@@ -262,7 +262,7 @@ const AccNumForm = (props: AccNameFormProps) => {
 	const history = useHistory();
 
 	const handleClick = (event: React.MouseEvent) => {
-		dispatch(setAccountNumAction(accNum));
+		dispatch(setAccountNumAction(accNum.toUpperCase()));
 		setShow(false);
 		display2FAForm = false;
 		isAE = false;
