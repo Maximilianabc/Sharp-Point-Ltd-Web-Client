@@ -5,15 +5,15 @@ import {
   wsAddress,
   getDispatchSelectCB,
   AccOperations,
-  UserState
+  UserState,
+  store
 } from '../Util';
 
 interface WebSocketProps {
-  onReceivePush: (data: any) => void, 
-  operation: number
+
 }
 
-const ClientWS = forwardRef((props: WebSocketProps, ref) => {
+const ClientWS = (props: WebSocketProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const address = `${wsAddress}${token}`;
@@ -43,14 +43,8 @@ const ClientWS = forwardRef((props: WebSocketProps, ref) => {
     };
   }, []);
 
-  useImperativeHandle(ref, () => ({
-    closeExplicit: (normal: boolean) => {
-      closeSocket(normal);
-    }
-  }));
-
   const handlePushMessage = (message: any) => {
-    if (message.dataMask === undefined || message.dataMask !== props.operation) return;
+    if (message.dataMask === undefined) return;
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
@@ -60,7 +54,6 @@ const ClientWS = forwardRef((props: WebSocketProps, ref) => {
     AccOperations(hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
       if (data !== undefined) {
         dispatch(data.actionData);
-        props.onReceivePush(data.data);
       }
     });
   };
@@ -80,7 +73,7 @@ const ClientWS = forwardRef((props: WebSocketProps, ref) => {
   };
 
   return null;
-});
+};
 
 export {
   ClientWS

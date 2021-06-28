@@ -125,11 +125,6 @@ const ClearTrade = (props: ClearTradeProps) => {
 
   return (
     <div id={title.toLowerCase()}>
-      <ClientWS
-        onReceivePush={onReceivePush}
-        operation={OPConsts.DONE_TRADE}
-        ref={wsRef}
-      />
       <StyledTable
           data={doneTrade}
           title={title}

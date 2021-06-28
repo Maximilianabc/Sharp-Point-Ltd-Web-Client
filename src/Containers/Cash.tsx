@@ -75,7 +75,7 @@ const Cash = (props: CashProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 30000); 
+    let work = setInterval(workFunction, 5000); 
     return () => {
       clearInterval(work);
     };
@@ -113,11 +113,6 @@ const Cash = (props: CashProps) => {
 
   return (
     <div id={title.toLowerCase()}>
-      <ClientWS
-        onReceivePush={onReceivePush}
-        operation={OPConsts.BALANCE}
-        ref={wsRef}
-      />
       <StyledTable
           data={balance}
           title={title}

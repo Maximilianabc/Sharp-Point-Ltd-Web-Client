@@ -115,11 +115,6 @@ const Positions = (props: PositionProps): JSX.Element => {
 
   return (
     <div id = {title.toLowerCase()} className={classes.root}>
-      <ClientWS
-        onReceivePush={onReceivePush}
-        operation={OPConsts.POSITION}
-        ref={wsRef}
-      />
       <StyledTable
         data={positions}
         title={title}

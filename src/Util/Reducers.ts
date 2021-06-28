@@ -240,12 +240,12 @@ interface FxRate {
 }
 
 const currentUser = (state: UserState = {}, action: ActionData): UserState => {
-  switch (action.type) {
+  switch (action?.type) {
     case actionConsts.LOGIN2FA:
       return {
         ...state,
-        userId: action.payload.userId,
-        authed: action.payload.authed
+        userId: action.payload?.userId,
+        authed: action.payload?.authed
       };
     case actionConsts.LOGOUT:
       return {};
@@ -263,78 +263,78 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
       return {
         ...state,
         balance: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<Balance>
       };
     case actionConsts.SET_ACC_INFO:
       return {
         ...state,
         info: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<Info>
       };
     case actionConsts.SET_ACC_ORDER:
       return {
         ...state,
         order: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<Order>
       };
     case actionConsts.SET_ACC_POS:
       return {
         ...state,
         position: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<Position>
         };
     case actionConsts.SET_ACC_SUM:
       return {
         ...state,
         summary: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<Summary>
       };
     case actionConsts.SET_DONE_TRADE:
       return {
         ...state,
         doneTrade: {
-          limit: action.payload.limit,
-          page: action.payload.page,
-          data: action.payload.recordData,
-          sort: action.payload.sort,
-          sortBy: action.payload.sortBy,
-          total: action.payload.total,
-          totalPage: action.payload.totalPage
+          limit: action.payload?.limit,
+          page: action.payload?.page,
+          data: action.payload?.recordData,
+          sort: action.payload?.sort,
+          sortBy: action.payload?.sortBy,
+          total: action.payload?.total,
+          totalPage: action.payload?.totalPage
         } as Account<DoneTrade>
       };
     default:

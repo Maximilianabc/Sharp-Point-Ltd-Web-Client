@@ -11,27 +11,31 @@ import {
   getDispatchSelectCB,
   AccOperations,
   OPConsts,
-  AccOrderRecord,
-  UserState
+  OrderRecord,
+  UserState,
+  getOrderStatusString,
+  getValidTypeString
 } from '../Util';
+import { useHistory } from 'react-router';
 
 interface OrdersProps {
 
 }
 
 const headCells = [
-  { id: 'id', align: 'left', label: 'ID' },
-  { id: 'name', align: 'right', label: 'Name' },
-  { id: 'prev', align: 'right', label: 'Prev.' },
-  { id: 'day-long', align: 'right', label: 'Day Long' },
-  { id: 'day-short', align: 'right', label: 'Day Short' },
-  { id: 'net', align: 'right', label: 'Net' },
-  { id: 'market-price', align: 'right', label: 'Mkt.Prc' },
-  { id: 'profit-loss', align: 'right', label: 'P/L' },
-  { id: 'prev-close', align: 'right', label: 'Prv Close' },
-  { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val' },
-  { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate' },
-  { id: 'contract', align: 'right', label: 'Contract' }
+  { id: 'id', align: 'left', label: 'ID', colorMode: 'ignore' },
+  { id: 'name', align: 'right', label: 'Name', colorMode: 'ignore' },
+  { id: 'os-bqty', align: 'right', label: 'OS BQty', colorMode: 'normal' },
+  { id: 'os-sqty', align: 'right', label: 'OS SQty', colorMode: 'normal' },
+  { id: 'price', align: 'right', label: 'Price', colorMode: 'normal' },
+  { id: 'valid', align: 'right', label: 'Valid', colorMode: 'ignore' },
+  { id: 'condition', align: 'right', label: 'Cond.', colorMode: 'ignore' },
+  { id: 'status', align: 'right', label: 'Status', colorMode: 'ignore' },
+  { id: 'traded', align: 'right', label: 'Traded', colorMode: 'ignore' },
+  { id: 'initiator', align: 'right', label: 'Initiator', colorMode: 'ignore' },
+  { id: 'ref', align: 'right', label: 'Ref', colorMode: 'ignore' },
+  { id: 'time', align: 'right', label: 'Time', colorMode: 'ignore' },
+  { id: 'external-order', align: 'right', label: 'Ext. Order', colorMode: 'ignore' },
 ];
 
 const useStyles = makeStyles({
@@ -40,16 +44,12 @@ const useStyles = makeStyles({
   }
 });
 
-const createData = () => {
-  return { }
-};
-
 const Orders = (props: OrdersProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [orders, setOrders] = useState<AccOrderRecord[]>([]);
-  const [sidemenuopened, setSideMenuOpened] = useState(false);
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
   const classes = useStyles();
+  const history = useHistory();
   const dispatch = useDispatch();
   const hooks = getDispatchSelectCB(OPConsts.ORDER);
   const title = "Orders";
@@ -60,38 +60,51 @@ const Orders = (props: OrdersProps) => {
       sessionToken: token,
       targetAccNo: accNo
     };
-    let mounted = true;
-    let work: NodeJS.Timeout;
-    if (mounted) {
-      work = setInterval(() => {
-        AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
-          if (data !== undefined) {
+    const workFunction = () => {
+      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+        try {
+          if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
+          } else {
+            history.push({
+              pathname: '/logout',
+              state: 'Session expired. Please login again.'
+            });
+            clearInterval(work);
           }
-        });
-      }, 1000); 
+        } catch (error) {
+          console.error(error);
+          clearInterval(work);
+        }
+      });
     }
+    workFunction();
+    let work = setInterval(workFunction, 1000); 
     return () => {
-      mounted = false;
       clearInterval(work);
     }
   }, []);
 
-  const handleDrawerOpen = () => {
-    setSideMenuOpened(true);
-  };
-  const handleDrawerClose = () => {
-    setSideMenuOpened(false);
-  };
-
   const ordersToRows = (orders: any) => {
-    let o: AccOrderRecord[] = [];
+    let o: OrderRecord[] = [];
     if (orders) {
       Array.prototype.forEach.call(orders, order => {
-        o.push(createData(
-          
-        ));
+        o.push({
+          id: order.prodCode,
+          name: '?',
+          osBQty: order.buySell === 'B' ? order.qty : '',
+          osSQty: order.buySell === 'S' ? order.qty : '',
+          price: order.price,
+          valid: getValidTypeString(order.validType),
+          condition: order.condTypeStr,
+          status: getOrderStatusString(order.status),
+          traded: '?',
+          initiator: order.sender, // !! not present in API
+          ref: order.ref,
+          time: order.timeStampStr,
+          extOrder: order.extOrderNo
+        });
       });
     }
     return o;
@@ -108,25 +121,11 @@ const Orders = (props: OrdersProps) => {
 
   return (
     <div className={classes.root}>
-      <ClientWS
-        onReceivePush={onReceivePush}
-        operation={OPConsts.ORDER}
-        ref={wsRef}
-      />
-      <DefaultAppbar
-        title={title}
-        sidemenuopened={sidemenuopened}
-        handleDrawerOpen={handleDrawerOpen}
-      />
-      <DefaultDrawer
-        sidemenuopened={sidemenuopened}
-        handleDrawerClose={handleDrawerClose}
-      />
       <StyledTable
         data={orders}
         title={title}
         headerCells={headCells}
-      />     
+      />
     </div>
   );
 };

@@ -109,6 +109,22 @@ interface ClearTradeRecord {
   logNumber: number | string
 }
 
+interface OrderRecord {
+	id: string,
+  name: string,
+  osBQty: number,
+  osSQty: number,
+  price: number,
+  valid: string,
+  condition: string,
+  status: string,
+	traded: string,
+  initiator: string,
+  ref: string,
+  time: string,
+  extOrder: string
+}
+
 type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
@@ -236,9 +252,6 @@ const reportOperations = async (
 const stayAlive = async (payload: any) => {
 	await postRequest(`/accessRight/sessionTokenHeartbeat`, payload)
 		.then(data => {
-			if(data.result_code === 0) {
-				console.log('alive');
-			}
 		})
 };
 
@@ -262,7 +275,6 @@ const stableSort = (array: any[], comparator: Comparator): any[] => {
 };
 
 const getCurrencyString = (val: number | undefined, includeCurrency: boolean = true): string => {
-	//console.log(val);
 	return val !== undefined
 		? `${val.toLocaleString(undefined, { 
 					minimumFractionDigits: 2,
@@ -313,7 +325,70 @@ const getDoneTradeStatusString = (status: number): string => {
 		default:
 			return '?';		
 	}
-}
+};
+
+const getOrderStatusString = (status: number): string => {
+	switch (status) {
+		case 0:
+			return "Sending";
+		case 1:
+			return "Working";
+		case 2:
+			return "Inactive";
+		case 3:
+			return "Pending";
+		case 4:
+			return "Adding";
+		case 5:
+			return "CHANGING";
+		case 6:
+			return "DELETING";
+		case 7:
+			return "INACTIVE";
+		case 8:
+			return "PARTIAL TRADE";
+		case 9:
+			return "TRADED";
+		case 10:
+			return "DELETED";
+		case 14:
+			return "NON OPEN HOLD";
+		case 18:
+			return "WAIT APPROVE";
+		case 20:
+			return "TRADED AND REPORTED";
+		case 21:
+			return "DELETED AND REPORTED";
+		case 28:
+			return "PARTIAL TRADED AND DELETED";
+		case 29:
+			return "PARTIAL TRADED AND REPORTED";
+		case 30:
+			return "INACTIVE IN EXCHANGE";
+		case 31:
+			return "FAILED TO ADDED";
+		default:
+			return '?';
+	}
+};
+
+const getValidTypeString = (valid: number): string => {
+	switch (valid)
+	{
+		case 0:
+			return 'Today';
+		case 1:
+			return 'FaK';
+		case 2:
+			return 'FoK';
+		case 3:
+			return 'GTC';
+		case 4:
+			return 'Data';
+		default:
+			return '?';
+	}
+};
 
 export {
 	wsAddress,
@@ -331,7 +406,9 @@ export {
 	getPercentageString,
 	getPeriodString,
 	getControlLevelString,
-	getDoneTradeStatusString
+	getDoneTradeStatusString,
+	getOrderStatusString,
+	getValidTypeString
 };
 export type {
 	SortOrder,
@@ -340,6 +417,7 @@ export type {
 	SummaryRecord,
 	BalanceRecord,
 	PositionRecord,
-	ClearTradeRecord
+	ClearTradeRecord,
+	OrderRecord
 };
 

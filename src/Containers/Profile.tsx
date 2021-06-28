@@ -124,9 +124,9 @@ const Profile = (props: ProfileProps) => {
   return (
     <div id={title.toLowerCase()}>
       <StyledVerticalTable
-          data={summary}
-          title={title}
-          headerCells={headCells}
+        data={summary}
+        title={title}
+        headerCells={headCells}
       />  
     </div>
   );
