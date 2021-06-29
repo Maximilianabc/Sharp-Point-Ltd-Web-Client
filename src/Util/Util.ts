@@ -249,6 +249,17 @@ const reportOperations = async (
 	return result;
 };
 
+const orderOperations = async (
+	op?: string,
+	payload?: any
+): Promise<Result | undefined> => {
+	let result: any;
+	await postRequest(`/order/${op}`, payload).then(data => {
+		console.log(data);
+	});
+	return undefined;
+};
+
 const stayAlive = async (payload: any) => {
 	await postRequest(`/accessRight/sessionTokenHeartbeat`, payload)
 		.then(data => {
@@ -397,6 +408,7 @@ export {
 	getDispatchSelectCB,
 	AccOperations,
 	reportOperations,
+	orderOperations,
 	descComparator,
 	getComparator,
 	stableSort,

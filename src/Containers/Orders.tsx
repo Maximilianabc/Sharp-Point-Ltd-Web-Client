@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef
+} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
-  ClientWS,
-  DefaultAppbar,
-  DefaultDrawer,
+  StyledPopoverForm,
   StyledTable
 } from '../Components';
 import { 
@@ -38,12 +40,18 @@ const headCells = [
   { id: 'external-order', align: 'right', label: 'Ext. Order', colorMode: 'ignore' },
 ];
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   root: {
+    position: "relative",
     width: 'calc(100% - 2px)',
+  },
+  backdrop: {
+    position: "absolute",
+    zIndex: theme.zIndex.drawer + 1,
+    opacity: 0.8,
+    color: '#fff',
   }
-});
-
+}));
 const Orders = (props: OrdersProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
@@ -126,6 +134,7 @@ const Orders = (props: OrdersProps) => {
         title={title}
         headerCells={headCells}
       />
+      <StyledPopoverForm id='add-order-form'/> 
     </div>
   );
 };
