@@ -1,11 +1,22 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { TextField } from '@material-ui/core';
+import { InputLabelProps, TextField } from '@material-ui/core';
 import { BaseTextFieldProps } from '@material-ui/core';
 
 interface DefaultInputFieldProps extends BaseTextFieldProps {
 	variant?: any,
 	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
+}
+
+interface FormInputFieldProps {
+	variant: 'standard' | 'outlined' | 'filled',
+	label: string,
+	type?: string,
+	labelProps?: InputLabelProps
+}
+
+interface FormNumericUpDownProps {
+	label: string
 }
 
 const useStyleDefault = makeStyles((theme) => ({
@@ -54,6 +65,36 @@ const DefaultInputField = (props: DefaultInputFieldProps) => {
 	)
 }
 
+const useStyleForm = makeStyles((theme) => ({
+	root: {
+		margin: theme.spacing(1)
+	}
+}));
+
+const FormInputField = (props: FormInputFieldProps) => {
+	const { variant, label, type, labelProps } = props;
+	const classes = useStyleForm();
+	return (
+		<TextField
+			className={classes.root}
+			label={label}
+			variant={variant}
+			type={type}
+			InputLabelProps={labelProps}
+		/>
+	)
+};
+
+const FormNumericUpDown = (props: FormNumericUpDownProps) => {
+	const classes = useStyleForm();
+	const { label } = props;
+	return (
+		<TextField className={classes.root} label={label} type="number"/>
+	);
+};
+
 export {
-	DefaultInputField
+	DefaultInputField,
+	FormInputField,
+	FormNumericUpDown
 }

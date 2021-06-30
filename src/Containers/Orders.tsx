@@ -44,12 +44,6 @@ const useStyles = makeStyles(theme => ({
   root: {
     position: "relative",
     width: 'calc(100% - 2px)',
-  },
-  backdrop: {
-    position: "absolute",
-    zIndex: theme.zIndex.drawer + 1,
-    opacity: 0.8,
-    color: '#fff',
   }
 }));
 const Orders = (props: OrdersProps) => {
