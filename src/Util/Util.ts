@@ -10,11 +10,13 @@ import {
 	UserState
 } from './Reducers';
 
-const host = "futures.spsystem.info";
-const port = "9027";
+// NOTE: Change this to false when deploying to server for external use
+const internal = true;
+const host = internal ? "192.168.123.136" : "futures.spsystem.info";
+const port = internal ? "99" : "9026";
 const wsPort = "12000";
 const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
-const path = `http://${host}:${port}/apiCustomer`;
+const path = `http${internal ? '' : 's'}://${host}:${port}/apiCustomer`;
 
 enum OPConsts {
 	SUMMARY = 1,
