@@ -10,11 +10,11 @@ import {
 	UserState
 } from './Reducers';
 
-const serverIP = "192.168.123.136";
-const port = "99";
+const host = "futures.spsystem.info";
+const port = "9027";
 const wsPort = "12000";
-const wsAddress = `ws://${serverIP}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
-const path = `http://${serverIP}:${port}/apiCustomer`;
+const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
+const path = `http://${host}:${port}/apiCustomer`;
 
 enum OPConsts {
 	SUMMARY = 1,
