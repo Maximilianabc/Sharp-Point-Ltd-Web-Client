@@ -16,8 +16,13 @@ import {
   getPeriodString
 } from '../Util';
 import { useHistory } from 'react-router';
+import { Card, CardContent, Typography } from '@material-ui/core';
 
 interface ProfileProps {
+
+}
+
+interface ProfileMinifiedProps {
 
 }
 
@@ -132,6 +137,31 @@ const Profile = (props: ProfileProps) => {
   );
 };
 
+const useStyleMinified = makeStyles((theme) => ({
+  card: {
+    border: '1px solid rgba(255, 255, 255, 0.6)'
+  },
+  title: {
+    font: '1rem roboto',
+    fontWeight: 500,
+    color: 'rgba(255, 255, 255, 0.8)'
+  }
+}));
+
+const ProfileMinified = (props: ProfileMinifiedProps) => {
+  const classes = useStyleMinified();
+  return (
+    <Card elevation={0} className={classes.card}>
+      <CardContent>
+        <Typography className={classes.title} gutterBottom>
+          Summary
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+};
+
 export {
-  Profile
+  Profile,
+  ProfileMinified
 };
