@@ -6,3 +6,4 @@ export * from './WebSocket';
 export * from './Tab';
 export * from './Form';
 export * from './Dropdown';
+export * from './Button';

@@ -8,6 +8,7 @@ import {
   Typography
 } from '@material-ui/core';
 import SwipeableViews from 'react-swipeable-views';
+import { ROBOTO_SEMILIGHT } from '../Util';
 
 interface DefaultTabPanelProps {
   title?: string,
@@ -55,7 +56,7 @@ const useStylesTabControl = makeStyles((theme) => ({
   },
   tab: {
     fontSize: '1.5rem',
-    fontWeight: 300,
+    fontWeight: ROBOTO_SEMILIGHT,
     letterSpacing: '0.15rem',
     padding: '6px 24px'
   }

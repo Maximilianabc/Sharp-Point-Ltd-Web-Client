@@ -8,7 +8,7 @@ import {
   DefaultDrawer,
   DefaultTabControl
 } from '../Components';
-import { UserState } from '../Util';
+import { ROBOTO_REGULAR, ROBOTO_SEMIBOLD, ROBOTO_SEMILIGHT, UserState, WHITE80, WHITE90 } from '../Util';
 import { Typography, Box } from '@material-ui/core/';
 import {
   Profile,
@@ -18,6 +18,8 @@ import {
   ClearTrade,
   Fx
 } from './';
+import { ProfileMinified } from './Profile';
+import { PositionsMinified } from './Positions';
 
 interface DashboardProps {
 
@@ -29,9 +31,27 @@ const useStylesDashboard = makeStyles((theme) => ({
     display: 'flex',
     minWidth: '90%'
   },
+  welcomeBox: {
+    position: 'absolute',
+    top: '10%',
+    left: '3%',
+    display: 'flex',
+    flexDirection: 'column',
+    textAlign: 'left',
+    fontSize: '2rem',
+    fontWeight: ROBOTO_SEMILIGHT,
+    letterSpacing: '0.015rem'
+  },
   welcomeMessage: {
-    fontWeight: 300,
-    marginBottom: '2rem'
+    fontSize: 'inherit',
+    fontWeight: 'inherit',
+    marginBottom: '2rem',
+    color: WHITE90
+  },
+  greetings: {
+    fontSize: 'inherit',
+    fontWeight: 'inherit',
+    color: WHITE80
   },
   content: {
     flexGrow: 1,
@@ -100,30 +120,12 @@ const Dashboard = (props: DashboardProps) => {
         })}
       >
           <div className={classes.toolbar} />
-          <Typography
-            className={classes.welcomeMessage}
-            variant="h3"
-            align="left"
-          >
-            Welcome to Sharp Point Trading Platform.
-          </Typography>
-          <Typography
-            className={classes.welcomeMessage}
-            variant="h4"
-            align="left"
-          >
-            {`Good ${getTimePhrase()}, ${userId}.`}
-          </Typography>
-          <Box height={720} width={1}>
-            <DefaultTabControl>
-              <Profile />
-              <Positions />
-              <Orders />
-              <Cash />
-              <ClearTrade />
-              <Fx />
-            </DefaultTabControl>
-          </Box>
+          <div className={classes.welcomeBox}>
+            <Typography className={classes.welcomeMessage}>Welcome to Sharp Point Trading Platform.</Typography>
+            <Typography className={classes.greetings}>{`Good ${getTimePhrase()}, ${userId}.`}</Typography>
+          </div>
+          <ProfileMinified />
+          <PositionsMinified />
       </main>
     </div>
   );
