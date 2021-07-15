@@ -14,11 +14,13 @@ import {
   PositionRecord,
   WHITE40,
   WHITE80,
-  ROBOTO_SEMIBOLD
+  ROBOTO_SEMIBOLD,
+  ROW_CONTAINER_CLASSES,
+  CARD_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Card, CardContent, Typography } from '@material-ui/core';
-import { CompositeLabel, LabelBase, QtyAvgLabelProps, StackedLabel } from '../Components/Label';
+import { CompositeLabel, LabelBase, QtyAvgLabelProps, StackedLabelProps } from '../Components/Label';
 
 interface PositionProps {
 
@@ -31,9 +33,9 @@ interface PositionMinifiedProps {
 const headCells: { [name: string]: LabelBase } = {
   stockID: { id: 'id', align: 'left', label: 'ID', colorMode: 'ignored' },
   stockName: { id: 'name', align: 'right', label: 'Name', colorMode: 'ignored' },
-  prev: { id: 'prev', align: 'right', label: 'Prev.', colorMode: 'ignored' },
-  long: { id: 'day-long', align: 'right', label: 'Day Long', colorMode: 'ignored' },
-  short: { id: 'day-short', align: 'right', label: 'Day Short', colorMode: 'ignored' },
+  prev: { id: 'prev', align: 'right', label: 'Prev', colorMode: 'ignored' },
+  long: { id: 'day-long', align: 'right', label: 'Long', colorMode: 'ignored' },
+  short: { id: 'day-short', align: 'right', label: 'Short', colorMode: 'ignored' },
   net: { id: 'net', align: 'right', label: 'Net', colorMode: 'ignored' },
   price: { id: 'market-price', align: 'right', label: 'Mkt.Prc', colorMode: 'normal' },
   pl: { id: 'profit-loss', align: 'right', label: 'P/L', colorMode: 'normal' },
@@ -134,40 +136,28 @@ const Positions = (props: PositionProps): JSX.Element => {
   );
 };
 
-const headCellsMinified: { [name: string]: any } = {
-  stock: { labels: [headCells.stockName, headCells.stockID] },
+const headCellsMinified: { [name: string]: LabelBase } = {
+  stock: {
+    classes: { root: { minWidth: '16rem' }},
+    otherLabels: [headCells.stockName, headCells.stockID]
+  } as StackedLabelProps,
   prev: QtyAvgLabelProps(headCells.prev),
   long: QtyAvgLabelProps(headCells.long),
   short: QtyAvgLabelProps(headCells.short),
   net: QtyAvgLabelProps(headCells.net),
-  price: { labels: [headCells.price, headCells.close] },
+  price: { otherLabels: [headCells.price, headCells.close] } as StackedLabelProps,
   pl: headCells.pl
 }
 
 const useStyleMinified = makeStyles((theme) => ({
   card: {
-    backgroundColor: '#282c34',
-    border: `1px solid ${WHITE40}`,
-    borderRadius: 0,
-    maxWidth: '50vw',
-    maxHeight: '50vh',
-    position: 'absolute',
-    left: '3%',
-    top: '45%'
+    ...CARD_CLASSES,
+    minWidth: '55vw',
+    maxHeight: '60vh',
+    left: '2%',
+    top: '38%'
   },
-  title: {
-    textAlign: 'left',
-    fontSize: '1.75rem',
-    fontWeight: ROBOTO_SEMIBOLD,
-    color: WHITE80,
-    marginLeft: '1rem',
-    marginBottom: '1.75rem'
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    position: 'relative'
-  }
+  container: ROW_CONTAINER_CLASSES
 }));
 
 const PositionsMinified = (props : PositionMinifiedProps) => {
@@ -178,7 +168,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.POSITION);
-  /*
+  
   useEffect(() => {
     const payload = {
       sessionToken: token,
@@ -208,7 +198,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     return () => {
       clearInterval(work);
     };
-  }, []);*/
+  }, []);
 
   const positionsToRows = (positions: any): PositionRecord[] => {
     let p: PositionRecord[] = [];
@@ -232,6 +222,32 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     }
     return p;
   };
+  
+  const RowsToLabels = (rows: PositionRecord[]): LabelBase[][] => {
+    let l: LabelBase[][] = [];
+    if (rows)
+    {
+      Array.prototype.forEach.call(rows, r => {
+        let labelRow: LabelBase[] = [];
+        labelRow.push({
+          ...headCellsMinified.stock,
+          otherLabels: [{
+              ...headCells.stockName,
+              label: r.name
+            }, {
+              ...headCells.id,
+              label: r.id
+            }
+          ]
+        } as StackedLabelProps);
+        labelRow.push({
+          
+        });
+        l.push(labelRow);
+      });
+    }
+    return l;
+  }
 
   const onReceivePush = (data: any) => {
     if (data !== undefined) {
@@ -246,7 +262,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     <Card elevation={0} className={classes.card}>
       <CardContent>
         <DataTable
-          headLabels={Object.values(headCells)}
+          headLabels={Object.values(headCellsMinified)}
           data={positions}
           title="Positions"
           addPageControl={false}

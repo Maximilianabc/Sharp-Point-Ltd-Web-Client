@@ -6,6 +6,7 @@ import {
   LabelColumn,
   LabelRow,
   LabelTable,
+  StyledTableToolbar,
   StyledVerticalTable
 } from '../Components';
 import { 
@@ -25,10 +26,17 @@ import {
   WHITE60,
   WHITE80,
   WHITE90,
-  ROBOTO_SEMIBOLD
+  ROBOTO_SEMIBOLD,
+  CARD_CONTENT_CLASSES,
+  TOOLTIP_CLASSES,
+  CARD_BUTTON_HEADER_LABEL_CLASSES,
+  CARD_BUTTON_CLASSES,
+  ROW_CONTAINER_CLASSES,
+  CARD_CLASSES,
+  CARD_TITLE_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
-import { Button, ButtonBase, Card, CardActionArea, CardContent, FormControlLabel, FormLabel, IconButton, Typography } from '@material-ui/core';
+import { Button, ButtonBase, Card, CardActionArea, CardContent, FormControlLabel, FormLabel, IconButton, Tooltip, Typography } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
 import { LabelBase } from '../Components/Label';
 
@@ -158,49 +166,26 @@ const Profile = (props: ProfileProps) => {
 
 const useStyleMinified = makeStyles((theme) => ({
   card: {
-    backgroundColor: '#282c34',
-    border: `1px solid ${WHITE40}`,
-    borderRadius: 0,
+    ...CARD_CLASSES,
     minWidth: '55vw',
     minHeight: '25vh',
-    position: 'absolute',
-    right: '3%',
+    right: '2%',
     top: '10%'
   },
-  title: {
-    textAlign: 'left',
-    fontSize: '1.75rem',
-    fontWeight: ROBOTO_SEMIBOLD,
-    color: WHITE80,
-    marginLeft: '1rem',
-    marginBottom: '1.75rem'
-  },
-  container: {
-    display: 'flex',
-    flexDirection: 'row',
-    position: 'relative'
-  },
+  content: CARD_CONTENT_CLASSES,
+  title: CARD_TITLE_CLASSES,
+  container: ROW_CONTAINER_CLASSES,
   plContainer: {
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
     top: '20%',
-    right: '3%',
+    right: '20%',
     textAlign: 'right'
   },
-  detailsButton: {
-    backgroundColor: 'transparent',
-    color: WHITE90,
-    position: 'absolute',
-    top: '3%',
-    right: '3%'
-  },
-  detailsButtonLabel: {
-    color: 'white',
-    fontSize: '1.25rem',
-    fontWeight: ROBOTO_SEMILIGHT,
-    textTransform: 'none'
-  }
+  detailsButton: CARD_BUTTON_CLASSES,
+  detailsButtonLabel: CARD_BUTTON_HEADER_LABEL_CLASSES,
+  toolTip: TOOLTIP_CLASSES
 }));
 
 const useStyleFirstColumn = makeStyles((theme) => ({
@@ -208,20 +193,19 @@ const useStyleFirstColumn = makeStyles((theme) => ({
     borderRight: `1px solid ${WHITE40}`,
     minWidth: '25%',
     maxHeight: '80%',
-    fontSize: '1.25rem',
-    marginLeft: '1rem'
+    fontSize: '1.25rem'
   },
   label: {
     fontSize: 'inherit',
     fontWeight: ROBOTO_SEMILIGHT,
     color: WHITE60,
-    margin: '0.375rem 0 0.375rem 0'
+    margin: '0.25rem 0 0.25rem 0'
   },  
   content: {
     fontSize: 'inherit',
     fontWeight: ROBOTO_REGULAR,
     color: WHITE80,
-    margin: '0.375rem 0 0.375rem 0'
+    margin: '0.25rem 0 0.25rem 0'
   },
   positive: {
     color: 'rgba(0, 255, 0, 1)'
@@ -236,8 +220,7 @@ const useStyleMarginTable = makeStyles((theme) => ({
   title: {
     color: WHITE80,
     fontSize: '1.25rem',
-    fontWeight: ROBOTO_SEMILIGHT,
-    marginLeft: '1rem'
+    fontWeight: ROBOTO_SEMILIGHT
   },
   container: {
     position: 'absolute',
@@ -250,19 +233,19 @@ const useStyleMarginTable = makeStyles((theme) => ({
 
 const useStyleMarginContent = makeStyles((theme) => ({
   column: {
-    marginLeft: '1rem'
+
   },
   label: {
     fontSize: '1rem',
     fontWeight: ROBOTO_SEMILIGHT,
     color: WHITE60,
-    margin: '0.375rem 0 0.375rem 0'
+    margin: '0.25rem 0 0.25rem 0'
   },  
   content: {
     fontSize: '1.125rem',
     fontWeight: ROBOTO_REGULAR,
     color: WHITE80,
-    margin: '0.375rem 0 0.375rem 0'
+    margin: '0.25rem 0 0.25rem 0'
   }
 }));
 
@@ -280,7 +263,9 @@ const useStylePLContent = makeStyles((theme) => ({
     fontSize: '1.5rem',
     fontWeight: ROBOTO_REGULAR,
     color: WHITE80,
-    margin: '0 0.375rem 0 0.375rem'
+    margin: '0 0.375rem 0 0.375rem',
+    position: 'absolute',
+    right: 0
   },
   positive: {
     color: 'rgba(0, 255, 0, 1)'
@@ -373,10 +358,29 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
 
   return (
     <Card elevation={0} className={classes.card}>
-      <CardContent>
-        <Typography className={classes.title} gutterBottom>
-          Summary
-        </Typography>
+      <CardContent className={classes.content}>
+        <StyledTableToolbar
+          title="Summary"
+        >
+          <Tooltip
+            title="Filter list"
+            className={classes.toolTip}
+          >
+            <Button
+              className={classes.detailsButton}
+              variant="contained"
+              endIcon={<MoreVert/>}
+              classes={{ label: classes.detailsButtonLabel }}
+              style={{ 
+                backgroundColor: 'transparent',
+                padding: 0
+              }}
+              disableElevation
+            >
+              Details
+            </Button>
+          </Tooltip>
+        </StyledTableToolbar>
         <div className={classes.container}>
           <LabelColumn
             labels={[headCells.nav, headCells.buyPower, headCells.cashBal]}
@@ -414,16 +418,6 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
           />
         </div>
       </CardContent>
-      <Button
-        className={classes.detailsButton}
-        variant="contained"
-        endIcon={<MoreVert/>}
-        classes={{ label: classes.detailsButtonLabel }}
-        style={{ backgroundColor: 'transparent' }}
-        disableElevation
-      >
-        Details
-      </Button>
     </Card>
   );
 };

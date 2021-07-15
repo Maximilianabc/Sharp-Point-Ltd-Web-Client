@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, Children, useState } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import Color, { rgb } from 'color';
@@ -25,16 +25,21 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import {
+  FLEX_COLUMN_CLASSES,
+  FLEX_ROW_CLASSES,
   genRandomHex,
   getComparator,
+  HEADER_LABEL_CLASSES,
   ROBOTO_LIGHT,
   ROBOTO_REGULAR,
+  ROBOTO_SEMIBOLD,
   stableSort,
   WHITE60,
+  WHITE80
 } from '../Util';
 import { useEffect } from 'react';
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
-import { isLabelBase, LabelBase } from './Label';
+import { CompositeLabel, isCompositeLabel, isLabelBase, isStackedLabel, LabelBase, StackedLabel } from './Label';
 
 interface StyledTableheadProps {
   classes: any,
@@ -48,7 +53,8 @@ interface StyledTableheadProps {
 
 interface StyledTableToolbarProps {
   title?: string,
-  numSelected?: number
+  numSelected?: number,
+  children?: JSX.Element | JSX.Element[]
 }
 
 interface StyledTableProps {
@@ -90,7 +96,7 @@ interface DataTableHeaderProps {
 }
 
 interface DataTableProps {
-  data: any,
+  data: LabelBase[],
   title?: string,
   headLabels: LabelBase[],
   addPageControl: boolean
@@ -161,8 +167,9 @@ const StyledTablehead = (props: StyledTableheadProps) => {
 const useStylesToolbar = makeStyles((theme) => ({
   root: {
     color: 'white',
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(1),
+    padding: 0,
+    marginBottom: '1rem',
+    minHeight: 'fit-content'
   },
   highlight:
     theme.palette.type === 'light'
@@ -176,6 +183,10 @@ const useStylesToolbar = makeStyles((theme) => ({
         },
   title: {
     flex: '1 1 100%',
+    textAlign: 'left',
+    fontSize: '1.75rem',
+    fontWeight: ROBOTO_SEMIBOLD,
+    color: WHITE80
   },
   icon: {
     color: 'white'
@@ -185,7 +196,8 @@ const useStylesToolbar = makeStyles((theme) => ({
 const StyledTableToolbar = (props: StyledTableToolbarProps) => {
   const {
     title,
-    numSelected
+    numSelected,
+    children
   } = props;
   const classes = useStylesToolbar();
 
@@ -200,7 +212,7 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography variant="h6" id="tableTitle" component="div">
+        <Typography className={classes.title} id="tableTitle" component="div">
           {title}
         </Typography>
       )}
@@ -210,13 +222,9 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-      ) : (
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon className={classes.icon}/>
-          </IconButton>
-        </Tooltip>
-      )}
+      ) : 
+        children
+      }
     </Toolbar>
   );
 };
@@ -563,15 +571,12 @@ const LabelTable = (props: LabelTableProps) => {
 const useStyleDataTableHeader = makeStyles((theme) => ({
   cell: {
     color: WHITE60,
+    backgroundColor: 'transparent',
     fontSize: '1.25rem',
     fontWeight: ROBOTO_LIGHT,
-    padding: '0 0.5rem 0 0.5rem'
+    padding: '0 1rem 0 0'
   },
-  label: {
-    color: WHITE60,
-    fontSize: '1.25rem',
-    fontWeight: ROBOTO_LIGHT,
-  },
+  cellContainer: FLEX_ROW_CLASSES,
   icon: {
     '& path': {
       fill: 'white'
@@ -598,39 +603,59 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
     onRequestSort
   } = props;
   const classes = useStyleDataTableHeader();
-  const createSortHandler = (property: string) => (event: React.MouseEvent) => {
+  const createSortHandler = (property?: string) => (event: React.MouseEvent) => {
+    if (property === undefined) return;
     onRequestSort(event, property);
   };
+  const defaultLabelClass = makeStyles(() => ({default: HEADER_LABEL_CLASSES}))().default;
 
   return (
     <TableHead>
       <TableRow>
         {labels.map((lbl, index) => {
-          if (isLabelBase(lbl)) {
-
-          }
           return (
             <TableCell
               className={classes.cell}
               align={lbl.align}
               key={genRandomHex(16)}
+              classes={{
+                stickyHeader: classes.cell
+              }}
             >
-              <TableSortLabel
-                active={orderBy === lbl.id}
-                direction={orderBy === lbl.id ? order : 'asc'}
-                onClick={createSortHandler(lbl.id)}
-                classes={{
-                  active: classes.icon,
-                  icon: classes.icon
-                }}
-              >
-                {isLabelBase(lbl) ? <FormLabel className={classes.label}>{lbl.label}</FormLabel> : lbl}
-                {orderBy === lbl.id ? (
-                  <span className={classes.visuallyHidden}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                  </span>
-                ) : null}
-              </TableSortLabel>
+              <div className={classes.cellContainer}>
+                <TableSortLabel
+                  active={orderBy === lbl.id}
+                  direction={orderBy === lbl.id ? order : 'asc'}
+                  onClick={createSortHandler(lbl.id)}
+                  classes={{
+                    active: classes.icon,
+                    icon: classes.icon
+                  }}
+                >               
+                  {
+                    orderBy === lbl.id ? (
+                    <span className={classes.visuallyHidden}>
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                    </span>
+                  ) : null}
+                </TableSortLabel>
+                {
+                  isCompositeLabel(lbl)
+                  ? <CompositeLabel 
+                      id={lbl.id}
+                      label={lbl.label}
+                      align={lbl.align}
+                      colorMode={lbl.colorMode}
+                      classes={lbl.classes}
+                      subLabels={lbl.subLabels}
+                    />
+                  : isStackedLabel(lbl)
+                    ? <StackedLabel classes={lbl.classes} otherLabels={lbl.otherLabels} />
+                    : isLabelBase(lbl)
+                      ? <FormLabel className={defaultLabelClass}>{lbl.label}</FormLabel> 
+                      : null
+                }
+              </div>
             </TableCell>
           );
         })}
@@ -648,17 +673,22 @@ const useStyleDataTable = makeStyles((theme) => ({
   toolBar: {
     color: 'white'
   },
+  toolTip: {
+    fontSize: '1rem',
+    fontWeight: ROBOTO_REGULAR,
+    color: WHITE80
+  },
   container: {
     
   },
   table: {
-    
+    backgroundColor: '#282c34'
   },
   row: {
     
   },
   cell: {
-    color: rgb(255, 255, 255).alpha(0.6).string(),
+    color: WHITE60,
     fontSize: '1rem'
   },
   cellNeg: {
@@ -672,7 +702,7 @@ const useStyleDataTable = makeStyles((theme) => ({
   },
   active: {},
   icon: {
-    color: rgb(255, 255, 255).string()
+    color: 'white'
   },
   pagination: {
     color: '#FFFFFF'
@@ -720,13 +750,25 @@ const DataTable = (props: DataTableProps) => {
   return (
     <div>
       <Paper className={classes.paper} elevation={0}>
-        <StyledTableToolbar title={title}/>
+        <StyledTableToolbar title={title}>
+          <Tooltip 
+            title="Filter list"
+            className={classes.toolTip}
+          >
+            <IconButton aria-label="filter list">
+              <FilterListIcon className={classes.icon}/>
+            </IconButton>
+          </Tooltip>
+        </StyledTableToolbar>
         <TableContainer className={classes.container}>
           <Table
-            //className={classes.table}
             aria-labelledby="tableTitle"
             size="medium"
             aria-label="enhanced table"
+            stickyHeader
+            classes={{
+              stickyHeader: classes.table
+            }}
           >
             <DataTableHeader
               classes={classes}
