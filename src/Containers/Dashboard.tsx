@@ -20,6 +20,7 @@ import {
 } from './';
 import { ProfileMinified } from './Profile';
 import { PositionsMinified } from './Positions';
+import { OrdersMinified } from './Orders';
 
 interface DashboardProps {
 
@@ -126,6 +127,7 @@ const Dashboard = (props: DashboardProps) => {
           </div>
           <ProfileMinified />
           <PositionsMinified />
+          <OrdersMinified />
       </main>
     </div>
   );

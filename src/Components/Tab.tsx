@@ -8,7 +8,7 @@ import {
   Typography
 } from '@material-ui/core';
 import SwipeableViews from 'react-swipeable-views';
-import { ROBOTO_SEMILIGHT } from '../Util';
+import { ROBOTO_SEMILIGHT, WHITE60 } from '../Util';
 
 interface DefaultTabPanelProps {
   title?: string,
@@ -49,7 +49,7 @@ const useStylesTabControl = makeStyles((theme) => ({
   tabcontrol: {
     color: '#ffffff',
     backgroundColor: '#282C34',
-    borderBottom: '2px solid rgba(255, 255, 255, 0.6)',
+    borderBottom: `2px solid ${WHITE60}`,
   },
   indicator: {
     backgroundColor: '#bb86fc'

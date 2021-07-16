@@ -7,3 +7,5 @@ export * from './Tab';
 export * from './Form';
 export * from './Dropdown';
 export * from './Button';
+export * from './Label';
+export * from './Icon';

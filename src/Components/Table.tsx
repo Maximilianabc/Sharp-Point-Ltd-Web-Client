@@ -20,26 +20,29 @@ import {
   TableSortLabel,
   Tooltip,
   Typography,
-  FormLabel
+  FormLabel,
+  IconButtonProps
 } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import FilterListIcon from '@material-ui/icons/FilterList';
 import {
   FLEX_COLUMN_CLASSES,
   FLEX_ROW_CLASSES,
   genRandomHex,
   getComparator,
   HEADER_LABEL_CLASSES,
+  LABEL_CONTENT_POSITIVE_CLASSES,
+  LIME60,
   ROBOTO_LIGHT,
   ROBOTO_REGULAR,
   ROBOTO_SEMIBOLD,
   stableSort,
+  TABLE_CELL_CLASSES,
+  WHITE40,
   WHITE60,
   WHITE80
 } from '../Util';
 import { useEffect } from 'react';
-import { ClassNameMap } from '@material-ui/core/styles/withStyles';
-import { CompositeLabel, isCompositeLabel, isLabelBase, isStackedLabel, LabelBase, StackedLabel } from './Label';
+import { CompositeLabel, isCompositeLabel, isLabelBaseProps, isStackedLabel, LabelBase, LabelBaseProps, StackedLabel } from './Label';
+import { getIconByName, IconProps, IconTypes } from './Icon';
 
 interface StyledTableheadProps {
   classes: any,
@@ -69,37 +72,20 @@ interface StyledVerticalTableProps {
   headerCells: any[]
 }
 
-interface LabelColumnProps {
-  labels: any[],
-  content: (string | undefined)[],
-  classes?: any
-}
-
-interface LabelRowProps {
-  labels: any[],
-  content: (string | undefined)[],
-  classes?: any
-}
-
-interface LabelTableProps {
-  title?: string,
-  children: JSX.Element[],
-  classes?: ClassNameMap<'container'|'title'>
-}
-
 interface DataTableHeaderProps {
   classes?: any
-  labels: LabelBase[],
+  labels: LabelBaseProps[],
   order: 'asc' | 'desc',
   orderBy: string,
   onRequestSort: (event: React.MouseEvent, property: any) => void
 }
 
 interface DataTableProps {
-  data: LabelBase[],
+  data: LabelBaseProps[][],
   title?: string,
-  headLabels: LabelBase[],
-  addPageControl: boolean
+  headLabels: LabelBaseProps[],
+  addPageControl: boolean,
+  icons?: IconProps[]
 }
 
 const useStylesTablehead = makeStyles((theme) => ({
@@ -218,9 +204,7 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
       )}
       {numSelected && numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton aria-label="delete">
-            <DeleteIcon />
-          </IconButton>
+          {getIconByName('DELETE')}
         </Tooltip>
       ) : 
         children
@@ -236,33 +220,28 @@ const useStylesTable = makeStyles((theme) => ({
     backgroundColor: '#282c34'
   },
   container: {
-    border: '1px solid rgba(255, 255, 255, 0.6)'
+    border: `1px solid ${WHITE60}`
   },
   table: {
     minWidth: 750
   },
   row: {
-    borderBottom: '1px solid rgba(255, 255, 255, 0.4)'
+    
   },
   cell: {
-    color: rgb(255, 255, 255).alpha(0.6).string(),
+    color: WHITE60,
     fontSize: '1rem'
   },
   cellNeg: {
-    color: rgb(255, 40, 0).alpha(1).string(),
-    fontSize: '1rem',
-    fontWeight: ROBOTO_REGULAR
+
   },
-  cellPos: {
-    color: rgb(0, 255, 0).alpha(0.6).string(),
-    fontSize: '1rem'
-  },
+  cellPos: LABEL_CONTENT_POSITIVE_CLASSES,
   active: {},
   icon: {
-    color: rgb(255, 255, 255).string()
+    color: 'white'
   },
   pagination: {
-    color: '#FFFFFF'
+    color: 'white'
   },
   visuallyHidden: {
     border: 0,
@@ -476,105 +455,12 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
   )
 };
 
-const useStyleLabel = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    textAlign: 'left',
-    marginRight: '1rem'
-  }
-}));
-
-const LabelColumn = (props: LabelColumnProps) => {
-  const labelRoot = useStyleLabel();
-  const { labels, content, classes } = props;
-  return (
-    <div className={classes?.column}>
-      {labels.map((lbl, index) => {
-        const n = lbl !== undefined && content[index] !== undefined
-          ? +(content[index]!.toString().replace(/\,/gi,'').replace(' HKD', ''))
-          : NaN;
-        const normal = lbl.colorMode === 'normal';
-        const revert = lbl.colorMode === 'revert';
-        return (
-          <div id={lbl.id} className={labelRoot.root}>
-            <FormLabel className={classes?.label}>{lbl.label}</FormLabel>
-            <FormLabel
-              className={clsx(classes?.content, {
-                [classes?.negative]: !isNaN(n) && ((n < 0 && normal) || (n > 0 && revert)),
-                [classes?.positive]: !isNaN(n) && ((n > 0 && normal) || (n < 0 && revert)),
-              })}
-            >{content[index] ?? '?'}</FormLabel>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const useStyleLabelHorizontal = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'row',
-    textAlign: 'left',
-    marginRight: '1rem'
-  }
-}));
-
-const LabelRow = (props: LabelRowProps) => {
-  const { labels, content, classes } = props;
-  const labelRoot = useStyleLabelHorizontal();
-  return (
-    <div className={classes?.row}>
-      {labels.map((lbl, index) => {
-        const n = lbl !== undefined && content[index] !== undefined
-          ? +(content[index]!.toString().replace(/\,/gi,'').replace(' HKD', ''))
-          : NaN;
-        const normal = lbl.colorMode === 'normal';
-        const revert = lbl.colorMode === 'revert';
-        return (
-          <div id={lbl.id} className={labelRoot.root}>
-            <FormLabel className={classes?.label}>{lbl.label}</FormLabel>
-            <FormLabel
-              className={clsx(classes?.content, {
-                [classes?.negative]: !isNaN(n) && ((n < 0 && normal) || (n > 0 && revert)),
-                [classes?.positive]: !isNaN(n) && ((n > 0 && normal) || (n < 0 && revert)),
-              })}
-            >{content[index] ?? '?'}</FormLabel>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-const useStylesLabelTable = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'row'
-  }
-}));
-
-const LabelTable = (props: LabelTableProps) => {
-  const { title, children, classes } = props;
-  const tableRoot = useStylesLabelTable();
-  return (
-    <div className={classes?.container}>
-      {title ? <Typography className={classes?.title}>{title}</Typography> : null}
-      <div className={tableRoot.root}>
-        {children}
-      </div>
-    </div>
-  );
-};
-
 const useStyleDataTableHeader = makeStyles((theme) => ({
   cell: {
+    ...TABLE_CELL_CLASSES,
     color: WHITE60,
-    backgroundColor: 'transparent',
     fontSize: '1.25rem',
-    fontWeight: ROBOTO_LIGHT,
-    padding: '0 1rem 0 0'
+    borderBottom: `1px solid ${WHITE40}`
   },
   cellContainer: FLEX_ROW_CLASSES,
   icon: {
@@ -607,7 +493,6 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
     if (property === undefined) return;
     onRequestSort(event, property);
   };
-  const defaultLabelClass = makeStyles(() => ({default: HEADER_LABEL_CLASSES}))().default;
 
   return (
     <TableHead>
@@ -623,6 +508,22 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
               }}
             >
               <div className={classes.cellContainer}>
+                {
+                  isCompositeLabel(lbl)
+                  ? <CompositeLabel 
+                      id={lbl.id}
+                      label={lbl.label}
+                      align={lbl.align}
+                      colorMode={lbl.colorMode}
+                      classes={lbl.classes}
+                      subLabels={lbl.subLabels}
+                    />
+                  : isStackedLabel(lbl)
+                    ? <StackedLabel classes={lbl.classes} otherLabels={lbl.otherLabels} />
+                    : isLabelBaseProps(lbl)
+                      ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={lbl.classes}/>
+                      : null
+                }
                 <TableSortLabel
                   active={orderBy === lbl.id}
                   direction={orderBy === lbl.id ? order : 'asc'}
@@ -639,22 +540,6 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                     </span>
                   ) : null}
                 </TableSortLabel>
-                {
-                  isCompositeLabel(lbl)
-                  ? <CompositeLabel 
-                      id={lbl.id}
-                      label={lbl.label}
-                      align={lbl.align}
-                      colorMode={lbl.colorMode}
-                      classes={lbl.classes}
-                      subLabels={lbl.subLabels}
-                    />
-                  : isStackedLabel(lbl)
-                    ? <StackedLabel classes={lbl.classes} otherLabels={lbl.otherLabels} />
-                    : isLabelBase(lbl)
-                      ? <FormLabel className={defaultLabelClass}>{lbl.label}</FormLabel> 
-                      : null
-                }
               </div>
             </TableCell>
           );
@@ -684,28 +569,15 @@ const useStyleDataTable = makeStyles((theme) => ({
   table: {
     backgroundColor: '#282c34'
   },
-  row: {
-    
-  },
   cell: {
-    color: WHITE60,
-    fontSize: '1rem'
-  },
-  cellNeg: {
-    color: rgb(255, 40, 0).alpha(1).string(),
-    fontSize: '1rem',
-    fontWeight: ROBOTO_REGULAR
-  },
-  cellPos: {
-    color: rgb(0, 255, 0).alpha(0.6).string(),
-    fontSize: '1rem'
+    ...TABLE_CELL_CLASSES,
+    color: WHITE80,
+    padding: '0.5rem 1.5rem 0 0',
+    border: 'none'
   },
   active: {},
-  icon: {
-    color: 'white'
-  },
   pagination: {
-    color: '#FFFFFF'
+    color: 'white'
   },
   visuallyHidden: {
     border: 0,
@@ -725,7 +597,8 @@ const DataTable = (props: DataTableProps) => {
     data,
     title,
     headLabels,
-    addPageControl
+    addPageControl,
+    icons
   } = props;
   const classes = useStyleDataTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
@@ -748,16 +621,13 @@ const DataTable = (props: DataTableProps) => {
   };
 
   return (
-    <div>
-      <Paper className={classes.paper} elevation={0}>
+    <Paper className={classes.paper} elevation={0}>
         <StyledTableToolbar title={title}>
           <Tooltip 
             title="Filter list"
             className={classes.toolTip}
           >
-            <IconButton aria-label="filter list">
-              <FilterListIcon className={classes.icon}/>
-            </IconButton>
+            {getIconByName('FILTER')}
           </Tooltip>
         </StyledTableToolbar>
         <TableContainer className={classes.container}>
@@ -778,38 +648,50 @@ const DataTable = (props: DataTableProps) => {
               onRequestSort={handleRequestSort}
             />
             <TableBody>
-              {stableSort(data, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
                     <TableRow
                       hover
-                      //className={classes.row}
                       tabIndex={-1}
                       key={genRandomHex(16)}
                     >
-                      {Object.entries(row).map((key: [string, any], index) => {
-                        const n = key !== undefined && key[1] !== undefined
-                                ? +(key[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
-                                : NaN;
-                        const normal = headLabels[index].colorMode === 'normal';
-                        const revert = headLabels[index].colorMode === 'reverse';
+                      {row.map((lbl, index) => {
                         return (
                           <TableCell
                             component={index === 0 ? "th" : undefined}
                             scope={index === 0 ? "row" : undefined}
-                            className={clsx(classes.cell, {
-                              [classes.cellNeg]: !isNaN(n) && ((n < 0 && normal) || (n > 0 && revert)),
-                              [classes.cellPos]: !isNaN(n) && ((n > 0 && normal) || (n < 0 && revert)),
-                            })}
+                            className={classes.cell}
                             align={index === 0 ? "left" : "right"}
-                            id={`${key[0]}-${index}`}
                             key={genRandomHex(16)}
                           >
-                            {key[1]}
+                            {
+                              isCompositeLabel(lbl)
+                              ? <CompositeLabel 
+                                  id={lbl.id}
+                                  label={lbl.label}
+                                  align={lbl.align}
+                                  colorMode={lbl.colorMode}
+                                  classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                                  subLabels={lbl.subLabels}
+                                />
+                              : isStackedLabel(lbl)
+                                ? <StackedLabel classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}} otherLabels={lbl.otherLabels} />
+                                : isLabelBaseProps(lbl)
+                                  ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}/>
+                                  : null
+                            }
                           </TableCell>
                         )
                       })}
+                      {icons?.map(icon => {
+                          return (
+                            <TableCell className={classes.cell}>
+                              {getIconByName(icon.name, icon.size)}
+                            </TableCell>
+                          );
+                        })
+                      }
                     </TableRow>
                   );
                 })}
@@ -834,7 +716,6 @@ const DataTable = (props: DataTableProps) => {
           : null
         }
       </Paper>
-    </div>
   );
 };
 
@@ -843,8 +724,5 @@ export {
   StyledTableToolbar,
   StyledTable,
   StyledVerticalTable,
-  LabelColumn,
-  LabelRow,
-  LabelTable,
   DataTable
 }

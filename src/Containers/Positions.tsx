@@ -4,6 +4,8 @@ import { useDispatch,useSelector } from 'react-redux';
 import {
   ClientWS,
   DataTable,
+  IconProps,
+  IconTypes,
   StyledTable
 } from '../Components';
 import { 
@@ -20,7 +22,16 @@ import {
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Card, CardContent, Typography } from '@material-ui/core';
-import { CompositeLabel, LabelBase, QtyAvgLabelProps, StackedLabelProps } from '../Components/Label';
+import {
+  CompositeLabelProps,
+  LabelBaseProps,
+  LableBasesToStackedLabel,
+  QtyAvgLabelProps,
+  setLabelBasePropsValue,
+  setLabelBasePropsValues,
+  setStackedLabelValues,
+  StackedLabelProps
+} from '../Components/Label';
 
 interface PositionProps {
 
@@ -30,16 +41,16 @@ interface PositionMinifiedProps {
 
 }
 
-const headCells: { [name: string]: LabelBase } = {
+const headCells: { [name: string]: LabelBaseProps } = {
   stockID: { id: 'id', align: 'left', label: 'ID', colorMode: 'ignored' },
   stockName: { id: 'name', align: 'right', label: 'Name', colorMode: 'ignored' },
   prev: { id: 'prev', align: 'right', label: 'Prev', colorMode: 'ignored' },
   long: { id: 'day-long', align: 'right', label: 'Long', colorMode: 'ignored' },
   short: { id: 'day-short', align: 'right', label: 'Short', colorMode: 'ignored' },
   net: { id: 'net', align: 'right', label: 'Net', colorMode: 'ignored' },
-  price: { id: 'market-price', align: 'right', label: 'Mkt.Prc', colorMode: 'normal' },
+  price: { id: 'market-price', align: 'right', label: 'Price', colorMode: 'normal' },
   pl: { id: 'profit-loss', align: 'right', label: 'P/L', colorMode: 'normal' },
-  close: { id: 'prev-close', align: 'right', label: 'Prv Close', colorMode: 'normal' },
+  close: { id: 'prev-close', align: 'right', label: '(Prev)', colorMode: 'normal' },
   opt: { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val', colorMode: 'normal' },
   fx: { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignored' },
   contract: { id: 'contract', align: 'right', label: 'Contract', colorMode: 'ignored' }
@@ -136,9 +147,9 @@ const Positions = (props: PositionProps): JSX.Element => {
   );
 };
 
-const headCellsMinified: { [name: string]: LabelBase } = {
+const headCellsMinified: { [name: string]: LabelBaseProps } = {
   stock: {
-    classes: { root: { minWidth: '16rem' }},
+    classes: { root: { minWidth: '10rem' }},
     otherLabels: [headCells.stockName, headCells.stockID]
   } as StackedLabelProps,
   prev: QtyAvgLabelProps(headCells.prev),
@@ -154,7 +165,7 @@ const useStyleMinified = makeStyles((theme) => ({
     ...CARD_CLASSES,
     minWidth: '55vw',
     maxHeight: '60vh',
-    left: '2%',
+    left: '1%',
     top: '38%'
   },
   container: ROW_CONTAINER_CLASSES
@@ -194,7 +205,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 1000); 
+    let work = setInterval(workFunction, 60000); 
     return () => {
       clearInterval(work);
     };
@@ -206,14 +217,14 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       Array.prototype.forEach.call(positions, pos => {
         p.push({
           id: pos.prodCode,
-          name: '', // TODO name?
+          name: '?',
           prev: `${pos.psQty}@${pos.previousAvg}`,
           dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
           dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
           mkt: pos.mktPrice,
           pl: pos.profitLoss,
-          prevClose: pos.closeQty, // ?
+          prevClose: '?',
           optVal: pos.totalAmt, //?
           fx: 0,
           contract: ''}
@@ -223,26 +234,40 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     return p;
   };
   
-  const RowsToLabels = (rows: PositionRecord[]): LabelBase[][] => {
-    let l: LabelBase[][] = [];
+  const RowsToLabels = (rows: PositionRecord[]): LabelBaseProps[][] => {
+    let l: LabelBaseProps[][] = [];
     if (rows)
     {
       Array.prototype.forEach.call(rows, r => {
-        let labelRow: LabelBase[] = [];
-        labelRow.push({
-          ...headCellsMinified.stock,
-          otherLabels: [{
-              ...headCells.stockName,
-              label: r.name
-            }, {
-              ...headCells.id,
-              label: r.id
-            }
-          ]
-        } as StackedLabelProps);
-        labelRow.push({
-          
-        });
+        let labelRow: LabelBaseProps[] = [];
+        labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
+
+        const prevLblStack = (headCellsMinified.prev as CompositeLabelProps).subLabels;
+        if (prevLblStack === undefined) {
+          labelRow.push(setLabelBasePropsValue(headCellsMinified.prev, '?'));
+        } else {
+          labelRow.push(LableBasesToStackedLabel(setLabelBasePropsValues(prevLblStack, [ r.prev.split('@')[1] ?? '', r.prev.split('@')[0] ?? '' ])));
+        }
+        const dayLongLblStack = (headCellsMinified.long as CompositeLabelProps).subLabels;
+        if (dayLongLblStack === undefined) {
+          labelRow.push(setLabelBasePropsValue(headCellsMinified.long, '?'));
+        } else {
+          labelRow.push(LableBasesToStackedLabel(setLabelBasePropsValues(dayLongLblStack, [ r.dayLong.split('@')[1] ?? '', r.dayLong.split('@')[0] ?? '' ])));
+        }
+        const dayShortLblStack = (headCellsMinified.short as CompositeLabelProps).subLabels;
+        if (dayShortLblStack === undefined) {
+          labelRow.push(setLabelBasePropsValue(headCellsMinified.short, '?'));
+        } else {
+          labelRow.push(LableBasesToStackedLabel(setLabelBasePropsValues(dayShortLblStack, [ r.dayShort.split('@')[1] ?? '', r.dayShort.split('@')[0] ?? '' ])));
+        }
+        const netLblStack = (headCellsMinified.net as CompositeLabelProps).subLabels;
+        if (netLblStack === undefined) {
+          labelRow.push(setLabelBasePropsValue(headCellsMinified.net, '?'));
+        } else {
+          labelRow.push(LableBasesToStackedLabel(setLabelBasePropsValues(netLblStack, [ r.net.split('@')[1] ?? '', r.net.split('@')[0] ?? '' ])));
+        }
+        labelRow.push(setStackedLabelValues(headCellsMinified.price, [ r.mkt, r.prevClose ]));
+        labelRow.push(setLabelBasePropsValue(headCellsMinified.pl, r.pl));
         l.push(labelRow);
       });
     }
@@ -263,9 +288,10 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       <CardContent>
         <DataTable
           headLabels={Object.values(headCellsMinified)}
-          data={positions}
+          data={RowsToLabels(positions)}
           title="Positions"
           addPageControl={false}
+          icons={[{ name: 'DETAILS', size: 30 }]}
         />
       </CardContent>
     </Card>

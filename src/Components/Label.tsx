@@ -1,13 +1,21 @@
-import { FormLabel, makeStyles } from "@material-ui/core";
+import {
+  FormLabel,
+  Typography,
+  makeStyles
+} from "@material-ui/core";
 import clsx from 'clsx';
 import {
   WHITE60,
   ROBOTO_LIGHT, 
   HEADER_LABEL_CLASSES,
-  FLEX_COLUMN_CLASSES
+  FLEX_COLUMN_CLASSES,
+  LABEL_CLASSES,
+  LABEL_CONTENT_POSITIVE_CLASSES,
+  LABEL_CONTENT_NEGATIVE_CLASSES
 } from "../Util";
+import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 
-interface LabelBase {
+interface LabelBaseProps {
   id?: string,
   label?: string,
   align?: 'left' | 'right',
@@ -15,7 +23,7 @@ interface LabelBase {
   classes?: any
 }
 
-const isLabelBase = (object: any): object is LabelBase => {
+const isLabelBaseProps = (object: any): object is LabelBaseProps => {
   return 'label' in object;
 };
 
@@ -27,15 +35,33 @@ const isCompositeLabel = (object: any): object is CompositeLabelProps => {
   return 'subLabels' in object;
 };
 
-interface StackedLabelProps extends LabelBase {
-  otherLabels?: LabelBase[]
+interface StackedLabelProps extends LabelBaseProps {
+  otherLabels?: LabelBaseProps[]
 }
 
-interface CompositeLabelProps extends LabelBase {
-  subLabels?: LabelBase[]
+interface CompositeLabelProps extends LabelBaseProps {
+  subLabels?: LabelBaseProps[]
 }
 
-const QtyAvgLabelProps = (main: LabelBase): CompositeLabelProps => {
+interface LabelColumnProps {
+  labels: any[],
+  content: (string | undefined)[],
+  classes?: any
+}
+
+interface LabelRowProps {
+  labels: any[],
+  content: (string | undefined)[],
+  classes?: any
+}
+
+interface LabelTableProps {
+  title?: string,
+  children: JSX.Element[],
+  classes?: ClassNameMap<'container'|'title'>
+}
+
+const QtyAvgLabelProps = (main: LabelBaseProps): CompositeLabelProps => {
   return { 
     id: main.id,
     label: main.label,
@@ -49,25 +75,118 @@ const QtyAvgLabelProps = (main: LabelBase): CompositeLabelProps => {
   };
 };
 
+const setLabelBasePropsValue = (lbl: LabelBaseProps, value: string): LabelBaseProps => {
+  return {
+    ...lbl,
+    label: value
+  }
+};
+
+const setLabelBasePropsValues = (lbls: LabelBaseProps[], values: string[]): LabelBaseProps[] => {
+  let newLbl: LabelBaseProps[] = [];
+  lbls.forEach((lbl, index) => {
+    newLbl.push(setLabelBasePropsValue(lbl, values[index]));
+  });
+  return newLbl;
+}
+
+const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): StackedLabelProps => {
+  if (lbl.otherLabels === undefined)
+    return lbl;
+
+  let newLbl: LabelBaseProps[] = [];
+  values.forEach((v, index) => {
+    newLbl.push({
+      ...lbl.otherLabels![index],
+      label: values[index]
+    });
+  });
+  return {
+    ...lbl,
+    otherLabels: newLbl
+  }
+};
+
+const LableBasesToStackedLabel = (lbls: LabelBaseProps[]): StackedLabelProps => {
+  return {
+    otherLabels: lbls
+  }
+};
+
+const tryParseToNumber = (value: string | undefined): number => {
+  return value ? +(value.toString().replace(/\,/gi,'').replace(' HKD', '')) : NaN;
+};
+
+const tryParseLabelToNumber = (lbl: LabelBaseProps): number => {
+  return (lbl === undefined || lbl.label === undefined) ? NaN : tryParseToNumber(lbl.label);
+};
+
+const tryParseLabelContentToNumber = (lbl: LabelBaseProps, content: string | undefined): number => {
+  return (lbl !== undefined || content !== undefined) ? NaN : tryParseToNumber(content);
+}
+
+const isNormalColorMode = (lbl: LabelBaseProps): boolean => lbl.colorMode === 'normal';
+const isReverseColorMode = (lbl: LabelBaseProps): boolean => lbl.colorMode === 'reverse';
+
+const getNumberContentClassString = (rootClass: any, targetLabel: LabelBaseProps, numberContent: number, overridingClass?: any): string => {
+  return clsx(overridingClass?.content ?? rootClass.content, {
+    [overridingClass?.negative ?? rootClass.negative]: !isNaN(numberContent) 
+                                                      && ((numberContent < 0 && isNormalColorMode(targetLabel)) 
+                                                      || (numberContent > 0 && isReverseColorMode(targetLabel))),
+    [overridingClass?.positive ?? rootClass.positive]: !isNaN(numberContent) 
+                                                      && ((numberContent > 0 && isNormalColorMode(targetLabel)) 
+                                                      || (numberContent < 0 && isReverseColorMode(targetLabel))),
+  })
+};
+
+const useStyleLabel = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    textAlign: 'left',
+    marginRight: '1rem'
+  },
+  label: HEADER_LABEL_CLASSES,
+  content: LABEL_CLASSES,
+  positive: LABEL_CONTENT_POSITIVE_CLASSES,
+  negative: LABEL_CONTENT_NEGATIVE_CLASSES
+}));
+
+const LabelBase = (props: LabelBaseProps) => {
+  const labelRoot = useStyleLabel();
+  const n = tryParseToNumber(props.label);
+  return (
+    <FormLabel
+      className={clsx(getNumberContentClassString(labelRoot, props, n, props.classes))}
+    >
+      {props.label}
+    </FormLabel>
+  );
+}
+
 const useStyleStackedLabel = makeStyles((theme) => ({
   root: {
     ...FLEX_COLUMN_CLASSES,
     position: 'relative',
     right: 0
-  },
-  label: HEADER_LABEL_CLASSES
+  }
 }));
 
 const StackedLabel = (props: StackedLabelProps) => {
   const { classes, otherLabels } = props;
-  const labelRoot = useStyleStackedLabel();
+  const labelRoot = useStyleLabel();
+  const stackedLabelRoot = useStyleStackedLabel();
   const customStyle = makeStyles<"root">(() => (classes))().root;
 
   return (
-    <div className={clsx(labelRoot.root, customStyle)}>
+    <div className={clsx(stackedLabelRoot.root, customStyle)}>
       {otherLabels?.map((lbl, index) => {
+        const n = tryParseLabelToNumber(lbl);
         return (
-          <FormLabel className={lbl.classes ?? labelRoot.label}>{lbl.label}</FormLabel>
+          <FormLabel className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+          >
+            {lbl.label}
+          </FormLabel>
         );
       })}
     </div>
@@ -113,16 +232,98 @@ const CompositeLabel = (props: CompositeLabelProps) => {
   );
 };
 
+const LabelColumn = (props: LabelColumnProps) => {
+  const labelRoot = useStyleLabel();
+  const { labels, content, classes } = props;
+  return (
+    <div className={classes?.column}>
+      {labels.map((lbl, index) => {
+        const n = tryParseLabelContentToNumber(lbl, content[index]);
+        return (
+          <div id={lbl.id} className={labelRoot.root}>
+            <FormLabel className={classes?.label ?? labelRoot.label}>{lbl.label}</FormLabel>
+            <FormLabel
+              className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+            >
+              {content[index] ?? '?'}
+            </FormLabel>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const useStyleLabelHorizontal = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'row',
+    textAlign: 'left',
+    marginRight: '1rem'
+  }
+}));
+
+const LabelRow = (props: LabelRowProps) => {
+  const { labels, content, classes } = props;
+  const labelRoot = useStyleLabel();
+  const horizontalLabelRoot = useStyleLabelHorizontal();
+
+  return (
+    <div className={classes?.row}>
+      {labels.map((lbl, index) => {
+        const n = tryParseLabelContentToNumber(lbl, content[index]);
+        return (
+          <div id={lbl.id} className={horizontalLabelRoot.root}>
+            <FormLabel className={classes?.label}>{lbl.label}</FormLabel>
+            <FormLabel
+              className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+            >{content[index] ?? '?'}</FormLabel>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const useStylesLabelTable = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'row'
+  }
+}));
+
+const LabelTable = (props: LabelTableProps) => {
+  const { title, children, classes } = props;
+  const tableRoot = useStylesLabelTable();
+  return (
+    <div className={classes?.container}>
+      {title ? <Typography className={classes?.title}>{title}</Typography> : null}
+      <div className={tableRoot.root}>
+        {children}
+      </div>
+    </div>
+  );
+};
+
 export {
-  isLabelBase,
+  isLabelBaseProps,
   isStackedLabel,
   isCompositeLabel,
+  setLabelBasePropsValue,
+  setLabelBasePropsValues,
+  setStackedLabelValues,
+  getNumberContentClassString,
+  LableBasesToStackedLabel,
   QtyAvgLabelProps,
+  LabelBase,
   StackedLabel,
-  CompositeLabel
+  CompositeLabel,
+  LabelRow,
+  LabelColumn,
+  LabelTable
 };
 export type {
-  LabelBase,
+  LabelBaseProps,
   StackedLabelProps,
   CompositeLabelProps
 };

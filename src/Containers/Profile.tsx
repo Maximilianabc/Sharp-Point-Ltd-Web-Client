@@ -33,12 +33,14 @@ import {
   CARD_BUTTON_CLASSES,
   ROW_CONTAINER_CLASSES,
   CARD_CLASSES,
-  CARD_TITLE_CLASSES
+  CARD_TITLE_CLASSES,
+  LABEL_CLASSES,
+  HEADER_LABEL_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Button, ButtonBase, Card, CardActionArea, CardContent, FormControlLabel, FormLabel, IconButton, Tooltip, Typography } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
-import { LabelBase } from '../Components/Label';
+import { LabelBaseProps } from '../Components/Label';
 
 interface ProfileProps {
 
@@ -48,7 +50,7 @@ interface ProfileMinifiedProps {
 
 }
 
-const headCells: { [name: string]: LabelBase } = {
+const headCells: { [name: string]: LabelBaseProps } = {
   buyPower: { id: 'buying-power', align: 'left', label: 'Buying Power', colorMode: 'normal' },
   nav: { id: 'nav', align: 'right', label: 'NAV', colorMode: 'normal' },
   commodityPL: { id: 'commodity-pl', align: 'right', label: 'Commodity P/L', colorMode: 'normal' },
@@ -169,7 +171,7 @@ const useStyleMinified = makeStyles((theme) => ({
     ...CARD_CLASSES,
     minWidth: '55vw',
     minHeight: '25vh',
-    right: '2%',
+    right: '1%',
     top: '10%'
   },
   content: CARD_CONTENT_CLASSES,
@@ -206,13 +208,6 @@ const useStyleFirstColumn = makeStyles((theme) => ({
     fontWeight: ROBOTO_REGULAR,
     color: WHITE80,
     margin: '0.25rem 0 0.25rem 0'
-  },
-  positive: {
-    color: 'rgba(0, 255, 0, 1)'
-  },
-  negative: {
-    color: 'rgba(255, 40, 0, 1)',
-    fontWeight: ROBOTO_SEMIBOLD
   }
 }));
 
@@ -236,15 +231,15 @@ const useStyleMarginContent = makeStyles((theme) => ({
 
   },
   label: {
-    fontSize: '1rem',
-    fontWeight: ROBOTO_SEMILIGHT,
+    ...HEADER_LABEL_CLASSES,
     color: WHITE60,
+    fontSize: '1rem',
     margin: '0.25rem 0 0.25rem 0'
   },  
   content: {
-    fontSize: '1.125rem',
-    fontWeight: ROBOTO_REGULAR,
+    ...LABEL_CLASSES,
     color: WHITE80,
+    fontSize: '1.125rem',
     margin: '0.25rem 0 0.25rem 0'
   }
 }));
@@ -254,25 +249,18 @@ const useStylePLContent = makeStyles((theme) => ({
     marginBottom: '0.25rem'
   },
   label: {
-    fontSize: '1.5rem',
-    fontWeight: ROBOTO_SEMILIGHT,
+    ...HEADER_LABEL_CLASSES,
     color: WHITE60,
+    fontSize: '1.5rem',
     margin: '0 0.375rem 0 0.375rem'
   },
   content: {
-    fontSize: '1.5rem',
-    fontWeight: ROBOTO_REGULAR,
+    ...LABEL_CLASSES,
     color: WHITE80,
+    fontSize: '1.5rem',
     margin: '0 0.375rem 0 0.375rem',
     position: 'absolute',
     right: 0
-  },
-  positive: {
-    color: 'rgba(0, 255, 0, 1)'
-  },
-  negative: {
-    color: 'rgba(255, 40, 0, 1)',
-    fontWeight: ROBOTO_SEMIBOLD
   }
 }));
 
@@ -363,7 +351,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
           title="Summary"
         >
           <Tooltip
-            title="Filter list"
+            title="Details"
             className={classes.toolTip}
           >
             <Button
