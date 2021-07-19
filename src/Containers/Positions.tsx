@@ -6,6 +6,7 @@ import {
   DataTable,
   IconProps,
   IconTypes,
+  NamedIconButton,
   StyledTable
 } from '../Components';
 import { 
@@ -49,7 +50,7 @@ const headCells: { [name: string]: LabelBaseProps } = {
   short: { id: 'day-short', align: 'right', label: 'Short', colorMode: 'ignored' },
   net: { id: 'net', align: 'right', label: 'Net', colorMode: 'ignored' },
   price: { id: 'market-price', align: 'right', label: 'Price', colorMode: 'normal' },
-  pl: { id: 'profit-loss', align: 'right', label: 'P/L', colorMode: 'normal' },
+  pl: { id: 'profit-loss', align: 'left', label: 'P/L', colorMode: 'normal' },
   close: { id: 'prev-close', align: 'right', label: '(Prev)', colorMode: 'normal' },
   opt: { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val', colorMode: 'normal' },
   fx: { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignored' },
@@ -291,8 +292,9 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           data={RowsToLabels(positions)}
           title="Positions"
           addPageControl={false}
-          icons={[{ name: 'DETAILS', size: 30 }]}
-        />
+        >
+          <NamedIconButton name="DETAILS" size={30}/>
+        </DataTable>
       </CardContent>
     </Card>
   );

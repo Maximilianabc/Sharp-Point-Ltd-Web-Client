@@ -14,14 +14,18 @@ import {
   LABEL_CONTENT_NEGATIVE_CLASSES
 } from "../Util";
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
+import { IconProps, IconTypes, NamedIconButton } from "./Icon";
 
 interface LabelBaseProps {
   id?: string,
   label?: string,
   align?: 'left' | 'right',
-  colorMode?: 'normal' | 'reverse' | 'ignored',
-  classes?: any
+  colorMode?: ColorMode,
+  classes?: any,
+  icon?: IconProps
 }
+
+type ColorMode = 'normal' | 'reverse' | 'ignored';
 
 const isLabelBaseProps = (object: any): object is LabelBaseProps => {
   return 'label' in object;
@@ -98,7 +102,7 @@ const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): Stacke
   values.forEach((v, index) => {
     newLbl.push({
       ...lbl.otherLabels![index],
-      label: values[index]
+      label: v
     });
   });
   return {
@@ -106,6 +110,23 @@ const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): Stacke
     otherLabels: newLbl
   }
 };
+
+const setStackedLabelIcons = (lbl: StackedLabelProps, icons: (IconProps | undefined)[]): StackedLabelProps => {
+  if (lbl.otherLabels === undefined)
+    return lbl;
+  
+    let newLbl: LabelBaseProps[] = [];
+    icons.forEach((i, index) => {
+      newLbl.push({
+        ...lbl.otherLabels![index],
+        icon: i
+      })
+    });
+    return {
+      ...lbl,
+      otherLabels: newLbl
+    }
+}
 
 const LableBasesToStackedLabel = (lbls: LabelBaseProps[]): StackedLabelProps => {
   return {
@@ -125,17 +146,14 @@ const tryParseLabelContentToNumber = (lbl: LabelBaseProps, content: string | und
   return (lbl !== undefined || content !== undefined) ? NaN : tryParseToNumber(content);
 }
 
-const isNormalColorMode = (lbl: LabelBaseProps): boolean => lbl.colorMode === 'normal';
-const isReverseColorMode = (lbl: LabelBaseProps): boolean => lbl.colorMode === 'reverse';
-
-const getNumberContentClassString = (rootClass: any, targetLabel: LabelBaseProps, numberContent: number, overridingClass?: any): string => {
+const getNumberContentClassString = (rootClass: any, numberContent: number, colorMode?: ColorMode, overridingClass?: any): string => {
   return clsx(overridingClass?.content ?? rootClass.content, {
     [overridingClass?.negative ?? rootClass.negative]: !isNaN(numberContent) 
-                                                      && ((numberContent < 0 && isNormalColorMode(targetLabel)) 
-                                                      || (numberContent > 0 && isReverseColorMode(targetLabel))),
+                                                      && ((numberContent < 0 && colorMode === 'normal') 
+                                                      || (numberContent > 0 && colorMode === 'reverse')),
     [overridingClass?.positive ?? rootClass.positive]: !isNaN(numberContent) 
-                                                      && ((numberContent > 0 && isNormalColorMode(targetLabel)) 
-                                                      || (numberContent < 0 && isReverseColorMode(targetLabel))),
+                                                      && ((numberContent > 0 && colorMode === 'normal') 
+                                                      || (numberContent < 0 && colorMode === 'reverse')),
   })
 };
 
@@ -153,13 +171,17 @@ const useStyleLabel = makeStyles((theme) => ({
 }));
 
 const LabelBase = (props: LabelBaseProps) => {
+  const { label, colorMode, icon, classes } = props;
   const labelRoot = useStyleLabel();
   const n = tryParseToNumber(props.label);
+  console.log(icon);
+
   return (
     <FormLabel
-      className={clsx(getNumberContentClassString(labelRoot, props, n, props.classes))}
+      className={clsx(getNumberContentClassString(labelRoot, n, colorMode, classes))}
     >
-      {props.label}
+      {icon ? <NamedIconButton name={icon.name} size={icon.size} otherProps={icon.otherProps}/> : null}
+      {label}
     </FormLabel>
   );
 }
@@ -183,8 +205,9 @@ const StackedLabel = (props: StackedLabelProps) => {
       {otherLabels?.map((lbl, index) => {
         const n = tryParseLabelToNumber(lbl);
         return (
-          <FormLabel className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+          <FormLabel className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
           >
+            {lbl.icon ? <NamedIconButton name={lbl.icon.name}/> : null}
             {lbl.label}
           </FormLabel>
         );
@@ -243,7 +266,7 @@ const LabelColumn = (props: LabelColumnProps) => {
           <div id={lbl.id} className={labelRoot.root}>
             <FormLabel className={classes?.label ?? labelRoot.label}>{lbl.label}</FormLabel>
             <FormLabel
-              className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+              className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
             >
               {content[index] ?? '?'}
             </FormLabel>
@@ -276,7 +299,7 @@ const LabelRow = (props: LabelRowProps) => {
           <div id={lbl.id} className={horizontalLabelRoot.root}>
             <FormLabel className={classes?.label}>{lbl.label}</FormLabel>
             <FormLabel
-              className={clsx(getNumberContentClassString(labelRoot, lbl, n, classes))}
+              className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
             >{content[index] ?? '?'}</FormLabel>
           </div>
         );
@@ -312,6 +335,7 @@ export {
   setLabelBasePropsValue,
   setLabelBasePropsValues,
   setStackedLabelValues,
+  setStackedLabelIcons,
   getNumberContentClassString,
   LableBasesToStackedLabel,
   QtyAvgLabelProps,
@@ -323,6 +347,7 @@ export {
   LabelTable
 };
 export type {
+  ColorMode,
   LabelBaseProps,
   StackedLabelProps,
   CompositeLabelProps

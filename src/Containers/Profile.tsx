@@ -251,13 +251,13 @@ const useStylePLContent = makeStyles((theme) => ({
   label: {
     ...HEADER_LABEL_CLASSES,
     color: WHITE60,
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     margin: '0 0.375rem 0 0.375rem'
   },
   content: {
     ...LABEL_CLASSES,
     color: WHITE80,
-    fontSize: '1.5rem',
+    fontSize: '1.25rem',
     margin: '0 0.375rem 0 0.375rem',
     position: 'absolute',
     right: 0

@@ -25,7 +25,7 @@ const ClientWS = (props: WebSocketProps) => {
     ws.current = new WebSocket(address);
     ws.current.onopen = () => {
       ws.current!.send(JSON.stringify({
-        "dataMask" : 15,
+        "dataMask" : 47,
         "event" : "subscribe",
         "accNo" : "*"
       }));
@@ -44,6 +44,7 @@ const ClientWS = (props: WebSocketProps) => {
   }, []);
 
   const handlePushMessage = (message: any) => {
+    console.log(message);
     if (message.dataMask === undefined) return;
     const payload = {
       sessionToken: token,
@@ -61,7 +62,7 @@ const ClientWS = (props: WebSocketProps) => {
   const closeSocket = (normal: boolean) => {
     if (!ws.current || ws.current.readyState !== 1) return;
     ws.current.send(JSON.stringify({
-      "dataMask" : 15,
+      "dataMask" : 47,
       "event" : "release"
     }));
     ws.current.close();

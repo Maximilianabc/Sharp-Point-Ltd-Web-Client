@@ -212,6 +212,50 @@ interface Cash {
 interface AccOrderRecord {
 
 }
+interface AccWorkingOrderRecord {
+  accNo?: string,
+  accOrderNo?: string | number,
+  active?: string | number,
+  aeCode?: string,
+  buySell?: string,
+  clOrderId?: string,
+  condType?: string | number,
+  condTypeStr?: string,
+  condition?: string,
+  decInPrc?: string | number,
+  downLevel?: string | number,
+  downPrice?: string | number,
+  extOrderNo?: string,
+  gatewayCode?: string,
+  openClose?: string,
+  orderId?: string,
+  orderNo?: string | number,
+  orderType?: string | number,
+  price?: string | number,
+  prodCode?: string,
+  qty?: string | number,
+  ref?: string,
+  ref2?: string,
+  remainQty?: string | number,
+  schedTime?: string | number,
+  sender?: string,
+  specTime?: string | number,
+  status?: string | number,
+  statusStr?: string,
+  stopPrice?: string | number,
+  stopStatus?: string | number,
+  stopType?: string,
+  timeStamp?: number,
+  timeStampStr?: string,
+  totalQty?: string | number,
+  totalTrdPrc?: string | number,
+  tradeSession?: string,
+  tradedQty?: string | number,
+  type?: string,
+  upLevel?: string | number,
+  upPrice?: string | number,
+  validType?: string | number
+}
 interface Order {
   data: AccOrderRecord[]
 }
@@ -370,6 +414,7 @@ export type {
   AccClearTradeRecord,
   AccCashRecord,
   AccOrderRecord,
+  AccWorkingOrderRecord,
   AccDoneTradeRecord
 };
 

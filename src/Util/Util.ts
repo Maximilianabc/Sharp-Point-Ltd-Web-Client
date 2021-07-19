@@ -127,6 +127,10 @@ interface OrderRecord {
   extOrder: string
 }
 
+interface WorkOrderRecord {
+
+}
+
 type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
@@ -432,6 +436,7 @@ export type {
 	BalanceRecord,
 	PositionRecord,
 	ClearTradeRecord,
-	OrderRecord
+	OrderRecord,
+	WorkOrderRecord
 };
 

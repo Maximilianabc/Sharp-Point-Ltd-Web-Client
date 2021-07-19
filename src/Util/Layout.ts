@@ -20,7 +20,8 @@ const CARD_CONTENT_CLASSES = {
 const TOOLTIP_CLASSES = {
   fontSize: '1rem',
   fontWeight: ROBOTO_REGULAR,
-  color: WHITE80
+  color: WHITE80,
+  position: 'relative' as any
 };
 
 const CARD_BUTTON_HEADER_LABEL_CLASSES = {

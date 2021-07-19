@@ -3,92 +3,46 @@ import {
   MoreHoriz,
   ChevronRight,
   Edit,
-  Delete,
-  FilterList
+  FilterList,
+  PlayCircleFilled,
+  RemoveCircle,
+  DeleteForever,
+  MoreVert,
+  Schedule
 } from '@material-ui/icons';
+import { forwardRef } from 'react';
 
-type IconTypes = 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 'EDIT' | 'DELETE' | 'FILTER';
+type IconTypes = 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 'EDIT' | 'DELETE' | 'FILTER' | 'ACTIVATE' | 'DEACTIVATE' | 'WORKING' | '';
 interface IconProps {
   name: IconTypes,
-  size?: number
+  size?: number,
+  buttonStyle?: object,
+  otherProps?: object
 }
 
-const DETAILS = (size: number = 24) =>
-  <IconButton>
-    <ChevronRight style={{
-      color: 'white',
-      fontSize: size
-    }}/>
-  </IconButton>
-
-const MORE_HORIZ = (size: number = 24) => 
-  <IconButton>
-    <MoreHoriz style={{
-      color: 'white',
-      fontSize: size
-    }}/>
-  </IconButton>
-
-const MORE_VERT = (size: number = 24) =>
-  <IconButton>
-    <MoreHoriz style={{
-      color: 'white',
-      fontSize: size
-    }}/>
-  </IconButton>
-
-const EDIT = (size: number = 24) => 
-  <IconButton>
-    <Edit style={{
-      color: 'white',
-      fontSize: size
-    }}
-    />
-  </IconButton>
-
-const DELETE = (size: number = 24) => 
-  <IconButton>
-    <Delete style={{
-      color: 'white',
-      fontSize: size
-    }}
-    />
-  </IconButton>
-
-const FILTER = (size: number = 24) =>
-  <IconButton>
-    <FilterList style={{
-      color: 'white',
-      fontSize: size
-    }}
-    />
-  </IconButton>
-
-const getIconByName = (name: IconTypes, size: number = 24) => {
-  switch (name) {
-    case 'DETAILS':
-      return DETAILS(size);
-    case 'MORE_HORIZ':
-      return MORE_HORIZ(size);
-    case 'MORE_VERT':
-      return MORE_VERT(size);
-    case 'EDIT':
-      return EDIT(size);
-    case 'DELETE': 
-      return DELETE(size);
-    case 'FILTER':
-      return FILTER(size);
-  }
-}
+const NamedIconButton = forwardRef((props: IconProps, ref) => {
+  const { name, size, buttonStyle, otherProps } = props;
+  const style = { color: 'white', fontSize: size, ...otherProps };
+  return (
+    <IconButton style={buttonStyle}>
+      {{
+        'DETAILS':<ChevronRight style={style}/>,
+        'MORE_HORIZ': <MoreHoriz style={style}/>,
+        'MORE_VERT': <MoreVert style={style}/>,
+        'EDIT': <Edit style={style}/>,
+        'DELETE': <DeleteForever style={style}/>,
+        'FILTER': <FilterList style={style}/>,
+        'ACTIVATE': <PlayCircleFilled style={style}/>,
+        'DEACTIVATE': <RemoveCircle style={style}/>,
+        'WORKING': <Schedule style={style}/>,
+        '': null
+      }[name]}
+    </IconButton>
+  );
+});
 
 export {
-  DETAILS,
-  MORE_HORIZ,
-  MORE_VERT,
-  EDIT,
-  DELETE,
-  FILTER,
-  getIconByName
+  NamedIconButton
 }
 
 export type {

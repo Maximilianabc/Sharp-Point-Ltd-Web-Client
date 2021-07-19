@@ -42,7 +42,7 @@ import {
 } from '../Util';
 import { useEffect } from 'react';
 import { CompositeLabel, isCompositeLabel, isLabelBaseProps, isStackedLabel, LabelBase, LabelBaseProps, StackedLabel } from './Label';
-import { getIconByName, IconProps, IconTypes } from './Icon';
+import { IconProps, IconTypes, NamedIconButton } from './Icon';
 
 interface StyledTableheadProps {
   classes: any,
@@ -85,7 +85,8 @@ interface DataTableProps {
   title?: string,
   headLabels: LabelBaseProps[],
   addPageControl: boolean,
-  icons?: IconProps[]
+  removeToolBar?: boolean,
+  children?: JSX.Element | JSX.Element[]
 }
 
 const useStylesTablehead = makeStyles((theme) => ({
@@ -204,7 +205,9 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
       )}
       {numSelected && numSelected > 0 ? (
         <Tooltip title="Delete">
-          {getIconByName('DELETE')}
+          <div style={{ flex: '0 0 10%' }}>
+            <NamedIconButton name="DELETE"/>
+          </div>
         </Tooltip>
       ) : 
         children
@@ -521,7 +524,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                   : isStackedLabel(lbl)
                     ? <StackedLabel classes={lbl.classes} otherLabels={lbl.otherLabels} />
                     : isLabelBaseProps(lbl)
-                      ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={lbl.classes}/>
+                      ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={lbl.classes} icon={lbl.icon}/>
                       : null
                 }
                 <TableSortLabel
@@ -575,6 +578,11 @@ const useStyleDataTable = makeStyles((theme) => ({
     padding: '0.5rem 1.5rem 0 0',
     border: 'none'
   },
+  iconCell: {
+    ...TABLE_CELL_CLASSES,
+    padding: '0.5rem 1rem 0 0',
+    border: 'none'
+  },
   active: {},
   pagination: {
     color: 'white'
@@ -598,7 +606,8 @@ const DataTable = (props: DataTableProps) => {
     title,
     headLabels,
     addPageControl,
-    icons
+    removeToolBar,
+    children
   } = props;
   const classes = useStyleDataTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
@@ -622,14 +631,18 @@ const DataTable = (props: DataTableProps) => {
 
   return (
     <Paper className={classes.paper} elevation={0}>
-        <StyledTableToolbar title={title}>
-          <Tooltip 
-            title="Filter list"
-            className={classes.toolTip}
-          >
-            {getIconByName('FILTER')}
-          </Tooltip>
-        </StyledTableToolbar>
+        { removeToolBar ? null :
+          <StyledTableToolbar title={title}>
+            <Tooltip 
+              title="Filter list"
+              className={classes.toolTip}
+            >
+              <div style={{ flex: '0 0 10%' }}>
+                <NamedIconButton name="FILTER"/>
+              </div>
+            </Tooltip>
+          </StyledTableToolbar>
+        }
         <TableContainer className={classes.container}>
           <Table
             aria-labelledby="tableTitle"
@@ -662,7 +675,7 @@ const DataTable = (props: DataTableProps) => {
                             component={index === 0 ? "th" : undefined}
                             scope={index === 0 ? "row" : undefined}
                             className={classes.cell}
-                            align={index === 0 ? "left" : "right"}
+                            align={lbl.align}
                             key={genRandomHex(16)}
                           >
                             {
@@ -672,25 +685,37 @@ const DataTable = (props: DataTableProps) => {
                                   label={lbl.label}
                                   align={lbl.align}
                                   colorMode={lbl.colorMode}
+                                  icon={lbl.icon}
                                   classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                                   subLabels={lbl.subLabels}
                                 />
                               : isStackedLabel(lbl)
-                                ? <StackedLabel classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}} otherLabels={lbl.otherLabels} />
+                                ? <StackedLabel
+                                    classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                                    otherLabels={lbl.otherLabels}
+                                    icon={lbl.icon}
+                                  />
                                 : isLabelBaseProps(lbl)
-                                  ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}/>
+                                  ? <LabelBase 
+                                      label={lbl.label}
+                                      colorMode={lbl.colorMode}
+                                      classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                                      icon={lbl.icon}
+                                    />
                                   : null
                             }
                           </TableCell>
                         )
                       })}
-                      {icons?.map(icon => {
-                          return (
-                            <TableCell className={classes.cell}>
-                              {getIconByName(icon.name, icon.size)}
-                            </TableCell>
-                          );
-                        })
+                      {Array.isArray(children) 
+                        ? children?.map(icon => {
+                            return (
+                              <TableCell className={classes.iconCell}>
+                                {icon}
+                              </TableCell>
+                            );
+                          })
+                        : <TableCell className={classes.iconCell}>{children}</TableCell>
                       }
                     </TableRow>
                   );
