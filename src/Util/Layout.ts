@@ -18,8 +18,13 @@ const CARD_CONTENT_CLASSES = {
 };
 
 const TOOLTIP_CLASSES = {
-  fontSize: '1rem',
-  fontWeight: ROBOTO_REGULAR,
+  position: 'relative' as any
+}
+
+const TOOLTIP_TEXT_CLASSES = {
+  fontSize: '0.75rem',
+  fontWeight: ROBOTO_SEMILIGHT,
+  letterSpacing: '0.02rem',
   color: WHITE80,
   position: 'relative' as any
 };
@@ -34,7 +39,7 @@ const CARD_BUTTON_HEADER_LABEL_CLASSES = {
 const CARD_BUTTON_CLASSES = {
   backgroundColor: 'transparent',
   color: WHITE90,
-  position: 'absolute' as any,
+  position: 'relative' as any,
   right: 0
 };
 
@@ -119,6 +124,7 @@ export {
   ROBOTO_EXTRABOLD,
   CARD_CONTENT_CLASSES,
   TOOLTIP_CLASSES,
+  TOOLTIP_TEXT_CLASSES,
   CARD_BUTTON_HEADER_LABEL_CLASSES,
   CARD_BUTTON_CLASSES,
   ROW_CONTAINER_CLASSES,

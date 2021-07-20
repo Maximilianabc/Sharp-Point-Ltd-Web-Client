@@ -11,7 +11,7 @@ import {
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  AccOperations,
+  operations,
   OPConsts,
   UserState,
   SummaryRecord,
@@ -96,7 +96,7 @@ const Profile = (props: ProfileProps) => {
       targetAccNo: accNo
     };
     const workFunction = () => {
-      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
@@ -284,7 +284,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
       targetAccNo: accNo
     };
     const workFunction = () => {
-      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);

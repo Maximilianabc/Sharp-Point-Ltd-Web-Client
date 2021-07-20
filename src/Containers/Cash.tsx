@@ -7,7 +7,7 @@ import {
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  AccOperations,
+  operations,
   OPConsts,
   UserState,
   BalanceRecord,
@@ -53,7 +53,7 @@ const Cash = (props: CashProps) => {
       targetAccNo: accNo
     };
     const workFunction = () => {
-      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);

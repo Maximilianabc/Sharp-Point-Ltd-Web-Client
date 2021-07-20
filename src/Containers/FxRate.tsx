@@ -6,7 +6,7 @@ import {
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  AccOperations,
+  operations,
   OPConsts,
   UserState,
   AccDoneTradeRecord,
@@ -45,7 +45,7 @@ const Fx = (props: ClearTradeProps) => {
       targetAccNo: accNo
     };
     let work = setInterval(() => {
-      AccOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations(hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);

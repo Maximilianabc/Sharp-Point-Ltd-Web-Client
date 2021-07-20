@@ -10,9 +10,9 @@ import {
   OPConsts,
   UserState,
   ClearTradeRecord,
-  reportOperations,
   store,
-  getDoneTradeStatusString
+  getDoneTradeStatusString,
+  operations
 } from '../Util';
 import { useHistory } from 'react-router';
 
@@ -60,7 +60,7 @@ const ClearTrade = (props: ClearTradeProps) => {
       targetAccNo: accNo
     };
     const workFunction = () => {
-      reportOperations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations('reporting', hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);

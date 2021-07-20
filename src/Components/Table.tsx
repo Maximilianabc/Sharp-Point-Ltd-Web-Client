@@ -138,11 +138,11 @@ const StyledTablehead = (props: StyledTableheadProps) => {
               key={genRandomHex(16)}
             >
               {cell.label}
-              {orderBy === cell.id ? (
+              {orderBy === cell.id ? 
                 <span className={classes.visuallyHidden}>
                   {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                 </span>
-              ) : null}
+               : null}
             </TableSortLabel>
           </TableCell>
         ))}
@@ -710,9 +710,11 @@ const DataTable = (props: DataTableProps) => {
                       {Array.isArray(children) 
                         ? children?.map(icon => {
                             return (
+                              (icon.props && Object.keys(icon.props).length !== 0) ?
                               <TableCell className={classes.iconCell}>
                                 {icon}
                               </TableCell>
+                              : null
                             );
                           })
                         : <TableCell className={classes.iconCell}>{children}</TableCell>

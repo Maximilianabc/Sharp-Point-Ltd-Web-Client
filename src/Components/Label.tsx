@@ -174,13 +174,11 @@ const LabelBase = (props: LabelBaseProps) => {
   const { label, colorMode, icon, classes } = props;
   const labelRoot = useStyleLabel();
   const n = tryParseToNumber(props.label);
-  console.log(icon);
-
   return (
     <FormLabel
       className={clsx(getNumberContentClassString(labelRoot, n, colorMode, classes))}
     >
-      {icon ? <NamedIconButton name={icon.name} size={icon.size} otherProps={icon.otherProps}/> : null}
+      {icon ? <NamedIconButton name={icon.name} size={icon.size} buttonStyle={icon.buttonStyle} otherProps={icon.otherProps}/> : null}
       {label}
     </FormLabel>
   );
@@ -205,11 +203,7 @@ const StackedLabel = (props: StackedLabelProps) => {
       {otherLabels?.map((lbl, index) => {
         const n = tryParseLabelToNumber(lbl);
         return (
-          <FormLabel className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
-          >
-            {lbl.icon ? <NamedIconButton name={lbl.icon.name}/> : null}
-            {lbl.label}
-          </FormLabel>
+          <LabelBase id={lbl.id} label={lbl.label} align={lbl.align} colorMode={lbl.colorMode} classes={lbl.classes} icon={lbl.icon}/>
         );
       })}
     </div>

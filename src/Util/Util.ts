@@ -24,9 +24,11 @@ enum OPConsts {
 	POSITION = 4,
 	ORDER = 8,
 	DONE_TRADE = 16,
+	WORKING = 32,
 	SINGLE = SUMMARY | BALANCE | POSITION | ORDER,
-	REPORT = DONE_TRADE
+	REPORT = DONE_TRADE | WORKING
 };
+type OrderStatus = 'Sending' | 'Inactive' | 'Pending' | 'Working' | 'Traded' | 'Deleted';
 
 // TODO: replace any with push message json format
 interface Response {
@@ -135,6 +137,7 @@ type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
+type OPType = 'account' | 'reporting' | 'order' | '';
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
 	const reqOpt = {
@@ -182,54 +185,40 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 			actionCallback = (d: any) => setDoneTradeReportAction(d);
 			selectCallback = () => (state: UserState) => state.doneTrade;
 			break;
+		case 32:
+			op = 'workingOrder';
+			actionCallback = (d: any) => setDoneTradeReportAction(d); // TODO change later
+			selectCallback = () => (state: UserState) => state.doneTrade;
+			break;
 		default:
 			throw new Error(`unknown operation const ${opConst}`);
 	};
 	return { id: op, action: actionCallback, select: selectCallback };
 };
 
-const AccOperations = async (
+const operations = async (
+		type?: OPType,
 		op?: string,
 		payload?: any,
 		closeWSCallback?: WebSocketCallback,
 		actionCallback?: (d: any) => ActionData
 	): Promise<Result | undefined> => {
 	let result;
-	await postRequest(`/account/account${op}`, payload)
-		.then((data?: Response) => {
-			if (data?.result_code === "40011") {
-				if (closeWSCallback) {
-					closeWSCallback(false);
-				} else {
-					result = { closeSocket: true } as Result;				
-				}
-				return;
-			}
-			if (actionCallback) {
-				result = {
-					data: data?.data,
-					actionData: actionCallback(data?.data),
-					closeSocket: false
-				};
-			} else {
-				result = {
-					data: data?.data,
-					closeSocket: false
-				};
-			}
-		});
-	return result;
-};
+	let url: string = '';
 
-// TODO merge it with AccOperations later
-const reportOperations = async (
-	op?: string,
-	payload?: any,
-	closeWSCallback?: WebSocketCallback,
-	actionCallback?: (d: any) => ActionData
-): Promise<Result | undefined> => {
-	let result;
-	await postRequest(`/reporting/${op}`, payload)
+	switch (type) {
+		case "account":
+			url = `/account/account${op}`;
+			break;
+		case "reporting":
+			url = `/reporting/${op}`;
+			break;
+		case "order":
+			url = `/order/${op}`;
+			break;
+	}
+
+	await postRequest(url, payload)
 		.then((data?: Response) => {
 			if (data?.result_code === "40011") {
 				if (closeWSCallback) {
@@ -340,7 +329,7 @@ const getDoneTradeStatusString = (status: number): string => {
 		case 0:
 			return 'TRADED';
 		default:
-			return '?';		
+			return status.toString();		
 	}
 };
 
@@ -407,14 +396,16 @@ const getValidTypeString = (valid: number): string => {
 	}
 };
 
+const workingInProgess = () => {
+	alert('Working in Progress...');
+};
+
 export {
-	wsAddress,
-	OPConsts, 
+	wsAddress, 
+	OPConsts,
 	postRequest,
 	getDispatchSelectCB,
-	AccOperations,
-	reportOperations,
-	orderOperations,
+	operations,
 	descComparator,
 	getComparator,
 	stableSort,
@@ -426,17 +417,21 @@ export {
 	getControlLevelString,
 	getDoneTradeStatusString,
 	getOrderStatusString,
-	getValidTypeString
+	getValidTypeString,
+	workingInProgess
 };
 export type {
+	OPType,
 	SortOrder,
 	Response,
 	Result,
+	StoreCallbacks,
 	SummaryRecord,
 	BalanceRecord,
 	PositionRecord,
 	ClearTradeRecord,
 	OrderRecord,
-	WorkOrderRecord
+	WorkOrderRecord,
+	OrderStatus
 };
 

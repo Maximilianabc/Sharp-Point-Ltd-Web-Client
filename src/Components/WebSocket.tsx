@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { 
   wsAddress,
   getDispatchSelectCB,
-  AccOperations,
+  operations,
   UserState,
   store
 } from '../Util';
@@ -52,7 +52,8 @@ const ClientWS = (props: WebSocketProps) => {
     };
     const closeWSCallback = () => closeSocket(false);
     const hooks = getDispatchSelectCB(message.dataMask);
-    AccOperations(hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
+    //TODO change op type later
+    operations('account', hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
       if (data !== undefined) {
         dispatch(data.actionData);
       }
