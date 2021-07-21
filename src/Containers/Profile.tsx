@@ -14,7 +14,7 @@ import {
   operations,
   OPConsts,
   UserState,
-  SummaryRecord,
+  SummaryRecordRow,
   getControlLevelString,
   getCurrencyString,
   getPercentageString,
@@ -84,7 +84,7 @@ const useStyles = makeStyles({
 const Profile = (props: ProfileProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<SummaryRecord>({});
+  const [summary, setSummary] = useState<SummaryRecordRow>({});
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
@@ -124,8 +124,8 @@ const Profile = (props: ProfileProps) => {
     };
   }, []);
 
-  const summaryToTable = (sum: any): SummaryRecord => {
-    let s: SummaryRecord = {};
+  const summaryToTable = (sum: any): SummaryRecordRow => {
+    let s: SummaryRecordRow = {};
     if (sum) {
       s = {
         buyingPower: getCurrencyString(sum.avFund), // ?
@@ -267,7 +267,7 @@ const useStylePLContent = makeStyles((theme) => ({
 const ProfileMinified = (props: ProfileMinifiedProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<SummaryRecord>({});
+  const [summary, setSummary] = useState<SummaryRecordRow>({});
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
@@ -312,8 +312,8 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
     };
   }, []);
   */
-  const summaryToTable = (sum: any): SummaryRecord => {
-    let s: SummaryRecord = {};
+  const summaryToTable = (sum: any): SummaryRecordRow => {
+    let s: SummaryRecordRow = {};
     if (sum) {
       s = {
         buyingPower: getCurrencyString(sum.avFund), // ?

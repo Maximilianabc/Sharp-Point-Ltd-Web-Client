@@ -25,8 +25,9 @@ enum OPConsts {
 	ORDER = 8,
 	DONE_TRADE = 16,
 	WORKING = 32,
+	HISTORY = 64,
 	SINGLE = SUMMARY | BALANCE | POSITION | ORDER,
-	REPORT = DONE_TRADE | WORKING
+	REPORT = DONE_TRADE | WORKING | HISTORY
 };
 type OrderStatus = 'Sending' | 'Inactive' | 'Pending' | 'Working' | 'Traded' | 'Deleted';
 
@@ -49,7 +50,7 @@ interface StoreCallbacks {
 	action: (d: any) => ActionData;
 }
 
-interface SummaryRecord {
+interface SummaryRecordRow {
   buyingPower?: string,
   nav?: string,
   commodityPL?: string,
@@ -69,7 +70,7 @@ interface SummaryRecord {
   marginClass?: string
 }
 
-interface BalanceRecord {
+interface BalanceRecordRow {
   ccy: string,
   cashBf: string,
   unsettle: string,
@@ -81,7 +82,7 @@ interface BalanceRecord {
   cashBaseCcy: string
 }
 
-interface PositionRecord {
+interface PositionRecordRow {
   id: string,
   name: string,
   prev: string,
@@ -92,33 +93,67 @@ interface PositionRecord {
   pl: string,
   prevClose: string,
   optVal: string,
-  fx: number,
+  fx: string | number,
   contract: string
 }
 
-interface ClearTradeRecord {
+interface ClearTradeRecordRow {
   id: string,
   name: string,
-  bQty: number,
-  sQty: number,
-  tradePrice: number,
-  tradeNumber: number,
+  bQty: string | number,
+  sQty: string | number,
+  tradePrice: string | number,
+  tradeNumber: string | number,
   status: string,
   initiator: string,
   ref: string,
   time: string,
-  orderPrice: number,
-  orderNumber: number,
+  orderPrice: string | number,
+  orderNumber: string | number,
   extOrder: string,
-  logNumber: number | string
+  logNumber: string | number
 }
 
-interface OrderRecord {
+interface OrderRecordRow {
 	id: string,
   name: string,
-  osBQty: number,
-  osSQty: number,
-  price: number,
+	buySell: string,
+  qty: string | number,
+	tradedQty: string | number,
+  price: string | number,
+  valid: string,
+  condition: string,
+  status: string,
+  initiator: string,
+  ref: string,
+  time: string,
+  extOrder: string
+}
+
+interface DoneTradeRecordRow {
+	id: string,
+  name: string,
+  bQty: string | number,
+  sQty: string | number,
+  tradePrc: string | number,
+  tradeNum: string | number,
+  status: string,
+  initiator: string,
+  ref: string,
+  time: string,
+  orderPrc: string | number,
+  orderNo: string | number,
+  extOrder: string,
+  logNum: string
+}
+
+interface WorkingOrderRecordRow {
+	id: string,
+  name: string,
+	buySell: string,
+  qty: string | number,
+	tradedQty: string | number,
+  price: string | number,
   valid: string,
   condition: string,
   status: string,
@@ -129,8 +164,33 @@ interface OrderRecord {
   extOrder: string
 }
 
-interface WorkOrderRecord {
+interface OrderHistoryRecordRow {
+	id: string,
+  name: string,
+	buySell: string,
+  qty: string | number,
+	tradedQty: string | number,
+  price: string | number,
+  valid: string,
+  condition: string,
+  status: string,
+	traded: string,
+  initiator: string,
+  ref: string,
+  time: string,
+  extOrder: string
+}
 
+interface CashMovementRecordRow {
+	ccy: string,
+  cashBF: string | number,
+  unsettled: string | number,
+  todayIO: string | number,
+  withdrawalReq: string,
+  cash: string | number,
+  unpresented: string | number,
+  fx: string | number,
+  cashBaseCcy: string
 }
 
 type SortOrder = 'asc' | 'desc';
@@ -190,6 +250,11 @@ const getDispatchSelectCB = (opConst: OPConsts): StoreCallbacks => {
 			actionCallback = (d: any) => setDoneTradeReportAction(d); // TODO change later
 			selectCallback = () => (state: UserState) => state.doneTrade;
 			break;
+		case 64:
+			op = 'orderHist';
+			actionCallback = (d: any) => setDoneTradeReportAction(d); // TODO change later
+			selectCallback = () => (state: UserState) => state.doneTrade;
+			break;
 		default:
 			throw new Error(`unknown operation const ${opConst}`);
 	};
@@ -242,17 +307,6 @@ const operations = async (
 			}
 		});
 	return result;
-};
-
-const orderOperations = async (
-	op?: string,
-	payload?: any
-): Promise<Result | undefined> => {
-	let result: any;
-	await postRequest(`/order/${op}`, payload).then(data => {
-		console.log(data);
-	});
-	return undefined;
 };
 
 const stayAlive = async (payload: any) => {
@@ -426,12 +480,15 @@ export type {
 	Response,
 	Result,
 	StoreCallbacks,
-	SummaryRecord,
-	BalanceRecord,
-	PositionRecord,
-	ClearTradeRecord,
-	OrderRecord,
-	WorkOrderRecord,
+	SummaryRecordRow,
+	BalanceRecordRow,
+	PositionRecordRow,
+	ClearTradeRecordRow,
+	OrderRecordRow,
+	DoneTradeRecordRow,
+	WorkingOrderRecordRow,
+	OrderHistoryRecordRow,
+	CashMovementRecordRow,
 	OrderStatus
 };
 

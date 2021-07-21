@@ -10,7 +10,7 @@ import {
   operations,
   OPConsts,
   UserState,
-  BalanceRecord,
+  BalanceRecordRow,
   getCurrencyString
 } from '../Util';
 import { useHistory } from 'react-router';
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
 const Cash = (props: CashProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [balance, setBalance] = useState<BalanceRecord[]>([]);
+  const [balance, setBalance] = useState<BalanceRecordRow[]>([]);
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.BALANCE);
@@ -82,8 +82,8 @@ const Cash = (props: CashProps) => {
   }, []);
 
   const zero = 0;
-  const balanceToRows = (balance: any): BalanceRecord[] => {
-    let b: BalanceRecord[] = [];
+  const balanceToRows = (balance: any): BalanceRecordRow[] => {
+    let b: BalanceRecordRow[] = [];
     if (balance) {
       Array.prototype.forEach.call(balance, bal => {
         b.push({

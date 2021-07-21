@@ -11,9 +11,10 @@ interface UserState {
   balance?: Account<Balance>,
   position?: Account<Position>,
   clearTrade?: Account<ClearTrade>,
-  cash?: Account<Cash>,
+  cash?: Account<CashMovement>,
   order?: Account<Order>,
-  doneTrade?: Account<DoneTrade>
+  doneTrade?: Account<DoneTrade>,
+  working?: Account<WorkingOrder>,
 }
 
 type StateContentTypes = Empty | UserTypes | Account<Details> | unknown;
@@ -32,7 +33,7 @@ interface Name {
   accName: string
 }
 
-type Details = Info | Summary | Balance | Position | ClearTrade | Cash | Order | DoneTrade;
+type Details = Info | Summary | Balance | Position | ClearTrade | CashMovement | Order | DoneTrade;
 type Account<U extends Details> = U & {
   limit: number,
   page: number,
@@ -166,7 +167,7 @@ interface AccPositionRecord {
 interface Position {
   data: AccPositionRecord[]
 }
-interface AccClearTradeRecord {
+interface ClearTradeRecord {
   accNo?: string
   accOrderNo?: number
   aeCode?: string
@@ -193,90 +194,216 @@ interface AccClearTradeRecord {
   tradeTimeStr?: string
 }
 interface ClearTrade {
-  data: AccClearTradeRecord[]
+  data: ClearTradeRecord[]
 }
-interface AccCashRecord {
-  ccy: string,
-  cashBF: number,
-  unsettled: number,
-  todayIO: number,
-  withdrawalReq: string,
-  cash: number,
-  unpresented: number,
-  fx: number,
-  cashBaseCcy: string
+interface CashMovementRecord {
+  accName?: string,
+  accNo?: string,
+  accOrderNo?: number,
+  aeCode?: string,
+  aeId?: string,
+  amount?: number,
+  applyFundDate?: number,
+  applyFundDateStr?: string,
+  apprMsg?: string,
+  apprSender?: string,
+  apprTime?: number,
+  apprTimeStr?: string,
+  bankAccNo?: string,
+  bankCode?: string,
+  clOrderId?: string,
+  code?: string,
+  dAmount?: number,
+  dCode?: string,
+  remark?: string,
+  reqAction?: number,
+  reqMsg?: string,
+  reqPrice?: number,
+  reqQty?: number,
+  reqSender?: string,
+  reqStatus?: number,
+  reqStatusStr?: string,
+  reqTime?: number,
+  reqTimeStr?: string,
+  reqType?: string,
+  reqTypeStr?: string,
+  systemId?: string,
+  wAmount?: number,
+  wCode?: string  
 }
-interface Cash {
-  data: AccCashRecord[]
+interface CashMovement {
+  data: CashMovementRecord[]
 }
 interface AccOrderRecord {
-
-}
-interface AccWorkingOrderRecord {
   accNo?: string,
-  accOrderNo?: string | number,
-  active?: string | number,
+  accOrderNo?: number,
+  active?: number,
   aeCode?: string,
   buySell?: string,
   clOrderId?: string,
-  condType?: string | number,
+  condType?: number,
   condTypeStr?: string,
   condition?: string,
-  decInPrc?: string | number,
-  downLevel?: string | number,
-  downPrice?: string | number,
+  decInPrc?: number,
+  downLevel?: number,
+  downPrice?: number,
   extOrderNo?: string,
   gatewayCode?: string,
   openClose?: string,
   orderId?: string,
-  orderNo?: string | number,
-  orderType?: string | number,
-  price?: string | number,
+  orderNo?: number,
+  orderPrice?: number,
+  orderType?: number,
   prodCode?: string,
-  qty?: string | number,
+  qty?: number,
   ref?: string,
   ref2?: string,
-  remainQty?: string | number,
-  schedTime?: string | number,
+  remainQty?: number,
+  schedTime?: number,
   sender?: string,
-  specTime?: string | number,
-  status?: string | number,
+  specTime?: number,
+  status?: number,
   statusStr?: string,
-  stopPrice?: string | number,
-  stopStatus?: string | number,
+  stopPrice?: number,
+  stopStatus?: number,
   stopType?: string,
   timeStamp?: number,
   timeStampStr?: string,
-  totalQty?: string | number,
-  totalTrdPrc?: string | number,
+  totalQty?: number,
+  totalTrdPrc?: number,
   tradeSession?: string,
-  tradedQty?: string | number,
+  tradedQty?: number,
   type?: string,
-  upLevel?: string | number,
-  upPrice?: string | number,
-  validType?: string | number
+  upLevel?: number,
+  upPrice?: number,
+  validType?: number
 }
 interface Order {
   data: AccOrderRecord[]
 }
-interface AccDoneTradeRecord {
-  id: string,
-  name: string,
-  bQty: number,
-  sQty: number,
-  tradePrc: number,
-  tradeNum: number,
-  status: string,
-  initiator: string,
-  ref: string,
-  time: string,
-  orderPrc: number,
-  orderNo: number,
-  extOrder: string,
-  logNum: string
+interface DoneTradeRecord {
+  accNo?: string,
+  accOrderNo?: number,
+  aeCode?: string,
+  avgPrice?: number,
+  buySell?: string,
+  counterParty?: string,
+  decInPrc?: number,
+  doneTradeDate?: number,
+  doneTradeTime?: number,
+  extOrderNo?: string,
+  initiator?: string,
+  instCode?: string,
+  orderNo?: number,
+  prodCode?: string,
+  recNo?: number,
+  status?: number,
+  systemId?: string,
+  totalTrdPrc?: number,
+  tradeDateStr?: string,
+  tradeNo?: number,
+  tradePrice?: number,
+  tradeQty?: number,
+  tradeTime?: number,
+  tradeTimeStr?: string  
 }
 interface DoneTrade {
-  data: AccDoneTradeRecord[]
+  data: DoneTradeRecord[]
+}
+interface WorkingOrderRecord {
+  accNo?: string,
+  accOrderNo?: number,
+  active?: number,
+  aeCode?: string,
+  buySell?: string,
+  clOrderId?: string,
+  condType?: number,
+  condTypeStr?: string,
+  condition?: string,
+  decInPrc?: number,
+  downLevel?: number,
+  downPrice?: number,
+  extOrderNo?: string,
+  gatewayCode?: string,
+  openClose?: string,
+  orderId?: string,
+  orderNo?: number,
+  orderPrice?: number,
+  orderType?: number,
+  prodCode?: string,
+  qty?: number,
+  ref?: string,
+  ref2?: string,
+  remainQty?: number,
+  schedTime?: number,
+  sender?: string,
+  specTime?: number,
+  status?: number,
+  statusStr?: string,
+  stopPrice?: number,
+  stopStatus?: number,
+  stopType?: string,
+  timeStamp?: number,
+  timeStampStr?: string,
+  totalQty?: number,
+  totalTrdPrc?: number,
+  tradeSession?: string,
+  tradedQty?: number,
+  type?: string,
+  upLevel?: number,
+  upPrice?: number,
+  validType?: number
+}
+interface WorkingOrder {
+  data: WorkingOrderRecord[]
+}
+interface OrderHistoryRecord {
+  accNo?: string,
+  accOrderNo?: number,
+  active?: number,
+  aeCode?: string,
+  buySell?: string,
+  clOrderId?: string,
+  condType?: number,
+  condTypeStr?: string,
+  condition?: string,
+  decInPrc?: number,
+  downLevel?: number,
+  downPrice?: number,
+  extOrderNo?: string,
+  gatewayCode?: string,
+  openClose?: string,
+  orderId?: string,
+  orderNo?: number,
+  orderNoStr?: string,
+  orderPrice?: number,
+  orderType?: number,
+  prodCode?: string,
+  qty?: number,
+  ref?: string,
+  ref2?: string,
+  remainQty?: number,
+  schedTime?: number,
+  sender?: string,
+  specTime?: number,
+  status?: number,
+  statusStr?: string,
+  stopPrice?: number,
+  stopStatus?: number,
+  stopType?: string,
+  timeStamp?: number,
+  timeStampStr?: string,
+  totalQty?: number,
+  totalTrdPrc?: number,
+  tradeSession?: string,
+  tradedQty?: number,
+  type?: string,
+  upLevel?: number,
+  upPrice?: number,
+  validType?: number,  
+}
+interface OrderHistory {
+  data: OrderHistoryRecord[]
 }
 interface FxRate {
   ccy: string,
@@ -403,18 +530,21 @@ export type {
   Balance,
   Position,
   ClearTrade,
-  Cash,
+  CashMovement as Cash,
   Order,
   DoneTrade,
+  WorkingOrder,
+  OrderHistory,
   FxRate,
   AccInfoRecord,
   AccSummaryRecord,
   AccBalanceRecord,
   AccPositionRecord,
-  AccClearTradeRecord,
-  AccCashRecord,
+  ClearTradeRecord,
+  CashMovementRecord,
   AccOrderRecord,
-  AccWorkingOrderRecord,
-  AccDoneTradeRecord
+  DoneTradeRecord,
+  WorkingOrderRecord,
+  OrderHistoryRecord
 };
 

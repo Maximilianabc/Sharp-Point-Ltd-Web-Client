@@ -9,7 +9,7 @@ import {
   getDispatchSelectCB,
   OPConsts,
   UserState,
-  ClearTradeRecord,
+  ClearTradeRecordRow,
   store,
   getDoneTradeStatusString,
   operations
@@ -46,7 +46,7 @@ const useStyles = makeStyles({
 const ClearTrade = (props: ClearTradeProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [doneTrade, setDoneTrade] = useState<ClearTradeRecord[]>([]);
+  const [doneTrade, setDoneTrade] = useState<ClearTradeRecordRow[]>([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -85,8 +85,8 @@ const ClearTrade = (props: ClearTradeProps) => {
     };
   }, []);
 
-  const doneTradeToRows = (doneTrade: any): ClearTradeRecord[] => {
-    let b: ClearTradeRecord[] = [];
+  const doneTradeToRows = (doneTrade: any): ClearTradeRecordRow[] => {
+    let b: ClearTradeRecordRow[] = [];
     if (doneTrade) {
       Array.prototype.forEach.call(doneTrade, done => {
         // get today's clear trade only

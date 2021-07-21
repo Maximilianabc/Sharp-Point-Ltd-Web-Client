@@ -25,7 +25,7 @@ import {
   getDispatchSelectCB,
   operations,
   OPConsts,
-  OrderRecord,
+  OrderRecordRow,
   UserState,
   getOrderStatusString,
   getValidTypeString,
@@ -35,11 +35,16 @@ import {
   TOOLTIP_CLASSES,
   FLEX_ROW_CLASSES,
   ROW_CONTAINER_CLASSES,
-  WorkOrderRecord,
+  WorkingOrderRecordRow,
   TOOLTIP_TEXT_CLASSES,
   workingInProgess,
   OPType,
-  StoreCallbacks
+  StoreCallbacks,
+  OrderStatus,
+  OrderHistoryRecordRow,
+  AccOrderRecord,
+  WorkingOrderRecord,
+  OrderHistoryRecord
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Button, Card, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
@@ -95,7 +100,7 @@ const useStyles = makeStyles(theme => ({
 const Orders = (props: OrdersProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [orders, setOrders] = useState<OrderRecordRow[]>([]);
   const classes = useStyles();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -135,19 +140,19 @@ const Orders = (props: OrdersProps) => {
   }, []);
 
   const ordersToRows = (orders: any) => {
-    let o: OrderRecord[] = [];
+    let o: OrderRecordRow[] = [];
     if (orders) {
       Array.prototype.forEach.call(orders, order => {
         o.push({
           id: order.prodCode,
           name: '?',
-          osBQty: order.buySell === 'B' ? order.qty : '',
-          osSQty: order.buySell === 'S' ? order.qty : '',
+          buySell: order.buySell,
+          qty: order.qty,
+          tradedQty: order.tradedQty,
           price: order.price,
           valid: getValidTypeString(order.validType),
           condition: order.condTypeStr,
           status: getOrderStatusString(order.status),
-          traded: '?',
           initiator: order.sender, // !! not present in API
           ref: order.ref,
           time: order.timeStampStr,
@@ -204,8 +209,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const classes = useStyleOrdersMinified();
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [orders, setOrders] = useState<OrderRecord[]>([]);
-  const [workingOrders, setWorkingOrders] = useState<WorkOrderRecord[]>([]);
+  const [orders, setOrders] = useState<OrderRecordRow[]>([]);
+  const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
+  const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const history = useHistory();
   const dispatch = useDispatch();
@@ -215,7 +221,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             ? getDispatchSelectCB(OPConsts.ORDER) 
             : type === 'working'
               ? getDispatchSelectCB(OPConsts.WORKING)
-              : getDispatchSelectCB(OPConsts.DONE_TRADE);
+              : getDispatchSelectCB(OPConsts.HISTORY);
   };
   const getOperationType = (type: OrderType): OPType => {
     return type === 'todays' ? 'account' : 'reporting';
@@ -254,50 +260,113 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   }, []);
   
   const ordersToRows = (orders: any) => {
-    let o: OrderRecord[] = [];
+    let o: OrderRecordRow[] = [];
     if (orders) {
-      Array.prototype.forEach.call(orders, order => {
+      Array.prototype.forEach.call(orders, (order: AccOrderRecord)=> {
         o.push({
-          id: order.prodCode,
+          id: order.prodCode ?? '?',
           name: '?',
-          osBQty: order.buySell === 'B' ? order.qty : '',
-          osSQty: order.buySell === 'S' ? order.qty : '',
-          price: order.price,
-          valid: getValidTypeString(order.validType),
-          condition: order.condTypeStr,
-          status: getOrderStatusString(order.status),
-          traded: '?',
-          initiator: order.sender, // !! not present in API
-          ref: order.ref,
-          time: order.timeStampStr,
-          extOrder: order.extOrderNo
+          buySell: order.buySell ?? '',
+          qty: order.totalQty ?? '?',
+          tradedQty: order.tradedQty ?? '?',
+          price: order.orderPrice ?? '?',
+          valid: getValidTypeString(order.validType ?? -1),
+          condition: order.condTypeStr ?? '?',
+          status: getOrderStatusString(order.status ?? -1),
+          initiator: order.sender ?? '?', // !! not present in API
+          ref: order.ref ?? '?',
+          time: order.timeStampStr ?? '?',
+          extOrder: order.extOrderNo ?? '?'
         });
       });
     }
     return o;
   };
 
+  // TODO modify
+  const workingOrdersToRows = (working: any) => {
+    let w: WorkingOrderRecordRow[] = [];
+    if (working) {
+      Array.prototype.forEach.call(working, (work: WorkingOrderRecord)=> {
+        w.push({
+          id: work.prodCode ?? '?',
+          name: '?',
+          buySell: work.buySell ?? '',
+          qty: work.totalQty ?? '?',
+          tradedQty: work.tradedQty ?? '?',
+          price: work.orderPrice ?? '?',
+          valid: getValidTypeString(work.validType ?? -1),
+          condition: work.condTypeStr ?? '?',
+          status: getOrderStatusString(work.status ?? -1),
+          traded: '?',
+          initiator: work.sender ?? '?', // !! not present in API
+          ref: work.ref ?? '?',
+          time: work.timeStampStr ?? '?',
+          extOrder: work.extOrderNo ?? '?'
+        } as WorkingOrderRecordRow);
+      });
+    }
+    return w;
+  };
+
+  // TODO modify
+  const orderHistoryToRow = (history: any) => {
+    let h: OrderHistoryRecordRow[] = [];
+    if (history) {
+      Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
+        h.push({
+          id: hist.prodCode ?? '?',
+          name: '?',
+          buySell: hist.buySell ?? '',
+          qty: hist.totalQty ?? '?',
+          tradedQty: hist.tradedQty ?? '?',
+          price: hist.orderPrice ?? '?',
+          valid: getValidTypeString(hist.validType ?? -1),
+          condition: hist.condTypeStr ?? '?',
+          status: getOrderStatusString(hist.status ?? -1),
+          traded: '?',
+          initiator: hist.sender ?? '?', // !! not present in API
+          ref: hist.ref ?? '?',
+          time: hist.timeStampStr ?? '?',
+          extOrder: hist.extOrderNo ?? '?'
+        } as OrderHistoryRecordRow);
+      });
+    }
+    return h;
+  };
+
   const onReceivePush = (data: any) => {
     if (data !== undefined) {
       let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
       if (orders) {
-        setOrders(ordersToRows(orders));
+        switch (selectedOrderType)
+        {
+          case 'todays':
+            setOrders(ordersToRows(orders));
+            break;
+          case 'working':
+            setWorkingOrders(workingOrdersToRows(orders));
+            break;
+          case 'history':
+            setOrderHistory(orderHistoryToRow(orders));
+            break;
+        }
       }
     }
   };
 
-  const RowsToLabels = (rows: OrderRecord[]): LabelBaseProps[][] => {
+  const RowsToLabels = (rows: OrderRecordRow[]): LabelBaseProps[][] => {
     let lbls: LabelBaseProps[][] = [];
     if (rows)
     {
-      Array.prototype.forEach.call(rows, r => {
+      Array.prototype.forEach.call(rows, (r: OrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelIcons(
-          setStackedLabelValues(headCellsMinified.first, [ r.osBQty === '' ? 'Sell' : 'Buy', r.status ]), 
-          [ undefined, { name: getIconTypeByStatus(r.status), size: 20, buttonStyle: { padding: 0 }} ]));
+          setStackedLabelValues(headCellsMinified.first, [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ]), 
+          [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
-        labelRow.push(setLabelBasePropsValue(headCellsMinified.price, r.price));
-        labelRow.push(setStackedLabelValues(headCellsMinified.qty, [ r.osBQty === '' ? r.osSQty : r.osBQty, r.traded ]))
+        labelRow.push(setLabelBasePropsValue(headCellsMinified.price, r.price?.toString()));
+        labelRow.push(setStackedLabelValues(headCellsMinified.qty, [ r.qty?.toString(), r.tradedQty.toString() ]))
         lbls.push(labelRow);
       });
     }

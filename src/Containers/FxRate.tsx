@@ -9,7 +9,7 @@ import {
   operations,
   OPConsts,
   UserState,
-  AccDoneTradeRecord,
+  DoneTradeRecord,
   FxRate
 } from '../Util';
 import { useHistory } from 'react-router';

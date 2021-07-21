@@ -14,7 +14,7 @@ import {
   operations,
   OPConsts,
   UserState,
-  PositionRecord,
+  PositionRecordRow,
   WHITE40,
   WHITE80,
   ROBOTO_SEMIBOLD,
@@ -66,7 +66,7 @@ const useStyles = makeStyles({
 const Positions = (props: PositionProps): JSX.Element => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [positions, setPositions] = useState<PositionRecord[]>([]);
+  const [positions, setPositions] = useState<PositionRecordRow[]>([]);
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -105,8 +105,8 @@ const Positions = (props: PositionProps): JSX.Element => {
     };
   }, []);
 
-  const positionsToRows = (positions: any): PositionRecord[] => {
-    let p: PositionRecord[] = [];
+  const positionsToRows = (positions: any): PositionRecordRow[] => {
+    let p: PositionRecordRow[] = [];
     if (positions) {
       Array.prototype.forEach.call(positions, pos => {
         p.push({
@@ -175,7 +175,7 @@ const useStyleMinified = makeStyles((theme) => ({
 const PositionsMinified = (props : PositionMinifiedProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
-  const [positions, setPositions] = useState<PositionRecord[]>([]);
+  const [positions, setPositions] = useState<PositionRecordRow[]>([]);
   const classes = useStyleMinified();
   const dispatch = useDispatch();
   const history = useHistory();
@@ -212,8 +212,8 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     };
   }, []);
 
-  const positionsToRows = (positions: any): PositionRecord[] => {
-    let p: PositionRecord[] = [];
+  const positionsToRows = (positions: any): PositionRecordRow[] => {
+    let p: PositionRecordRow[] = [];
     if (positions) {
       Array.prototype.forEach.call(positions, pos => {
         p.push({
@@ -235,7 +235,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     return p;
   };
   
-  const RowsToLabels = (rows: PositionRecord[]): LabelBaseProps[][] => {
+  const RowsToLabels = (rows: PositionRecordRow[]): LabelBaseProps[][] => {
     let l: LabelBaseProps[][] = [];
     if (rows)
     {

@@ -62,7 +62,7 @@ const NamedIconButton = forwardRef((props: IconProps, ref) => {
   );
 });
 
-const getIconTypeByStatus = (status: OrderStatus | 'TRADED'): IconTypes => {
+const getIconTypeByStatus = (status: OrderStatus): IconTypes => {
   switch (status) {
     case 'Sending':
       return 'UPLOADING';
@@ -75,7 +75,6 @@ const getIconTypeByStatus = (status: OrderStatus | 'TRADED'): IconTypes => {
     case 'Deleted':
       return 'DELETED';
     case 'Traded':
-    case 'TRADED':
       return 'DONE';
   }
 };

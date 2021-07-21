@@ -110,6 +110,20 @@ const getRemInPixel = (): number => parseFloat(getComputedStyle(document.documen
 
 const ToRem = (pixel: number): string => `${pixel / getRemInPixel()}rem`;
 
+declare global {
+  interface String {
+    toProperCase(): string
+  }
+}
+
+String.prototype.toProperCase = function () {
+  return this !== undefined 
+      ? this.split(' ')
+            .map((w: string) => w[0].toUpperCase() + w.substr(1).toLowerCase())
+            .join(' ')
+      : '';
+}
+
 export {
   WHITE40,
   WHITE60,
