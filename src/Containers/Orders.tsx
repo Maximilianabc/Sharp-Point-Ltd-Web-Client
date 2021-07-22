@@ -1,8 +1,7 @@
 import React, {
   useState,
   useEffect,
-  useRef,
-  MouseEventHandler
+  useRef
 } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,11 +14,9 @@ import {
   StyledTableToolbar,
   setStackedLabelValues,
   setLabelBasePropsValue,
-  NamedIconButton,
-  IconTypes,
-  setStackedLabelIcons,
   getIconTypeByStatus,
-  LabelRow
+  LabelRow,
+  TooltipIconButton
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -33,7 +30,6 @@ import {
   CARD_BUTTON_CLASSES,
   CARD_BUTTON_HEADER_LABEL_CLASSES,
   TOOLTIP_CLASSES,
-  FLEX_ROW_CLASSES,
   ROW_CONTAINER_CLASSES,
   WorkingOrderRecordRow,
   TOOLTIP_TEXT_CLASSES,
@@ -44,11 +40,13 @@ import {
   OrderHistoryRecordRow,
   AccOrderRecord,
   WorkingOrderRecord,
-  OrderHistoryRecord
+  OrderHistoryRecord,
+  SCROLL_BAR_CLASSES,
+  BUY_COLOR,
+  SELL_COLOR
 } from '../Util';
 import { useHistory } from 'react-router';
-import { Button, Card, CardContent, Fade, Tooltip, Typography } from '@material-ui/core';
-import { History } from '@material-ui/icons';
+import { Card, CardContent } from '@material-ui/core';
 
 interface OrdersProps {
 
@@ -192,11 +190,11 @@ const useStyleOrdersMinified = makeStyles((theme) => ({
     right: '1%',
     top: '38%'
   },
-  buy: {
-    color: ''
-  },
-  sell: {
-
+  container: {
+    ...ROW_CONTAINER_CLASSES,
+    maxWidth: '40vw',
+    maxHeight: '50vh',
+    '&::-webkit-scrollbar': SCROLL_BAR_CLASSES
   },
   detailsButton: CARD_BUTTON_CLASSES,
   detailsButtonLabel: CARD_BUTTON_HEADER_LABEL_CLASSES,
@@ -238,7 +236,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       try {
         if (data && !data.closeSocket) {
           dispatch(data.actionData);
-          onReceivePush(data.data);
+          onReceivePush(data.data, orderType);
         } else {
           history.push({
             pathname: '/logout',
@@ -253,9 +251,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
 
   useEffect(() => {
     workFunction(getOperationType(selectedOrderType), selectedOrderType);
-    const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);
+    /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
     return () => {
-      clearInterval(work);
+      //clearInterval(work);
     }
   }, []);
   
@@ -335,11 +333,11 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return h;
   };
 
-  const onReceivePush = (data: any) => {
+  const onReceivePush = (data: any, orderType: OrderType) => {
     if (data !== undefined) {
       let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
       if (orders) {
-        switch (selectedOrderType)
+        switch (orderType)
         {
           case 'todays':
             setOrders(ordersToRows(orders));
@@ -361,9 +359,48 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     {
       Array.prototype.forEach.call(rows, (r: OrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
-        labelRow.push(setStackedLabelIcons(
-          setStackedLabelValues(headCellsMinified.first, [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ]), 
-          [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ]));
+        labelRow.push(setStackedLabelValues(headCellsMinified.first,
+          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
+          [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
+        labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
+        labelRow.push(setLabelBasePropsValue(headCellsMinified.price, r.price?.toString()));
+        labelRow.push(setStackedLabelValues(headCellsMinified.qty, [ r.qty?.toString(), r.tradedQty.toString() ]))
+        lbls.push(labelRow);
+      });
+    }
+    return lbls;
+  };
+
+  const workingOrderRowsToLabels = (rows: WorkingOrderRecordRow[]): LabelBaseProps[][] => {
+    let lbls: LabelBaseProps[][] = [];
+    if (rows)
+    {
+      Array.prototype.forEach.call(rows, (r: WorkingOrderRecordRow) => {
+        let labelRow: LabelBaseProps[] = [];
+        labelRow.push(setStackedLabelValues(headCellsMinified.first,
+          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
+          [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
+        labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
+        labelRow.push(setLabelBasePropsValue(headCellsMinified.price, r.price?.toString()));
+        labelRow.push(setStackedLabelValues(headCellsMinified.qty, [ r.qty?.toString(), r.tradedQty.toString() ]))
+        lbls.push(labelRow);
+      });
+    }
+    return lbls;
+  };
+
+  const orderHistoryRowsToLabels = (rows: OrderHistoryRecordRow[]): LabelBaseProps[][] => {
+    let lbls: LabelBaseProps[][] = [];
+    if (rows)
+    {
+      Array.prototype.forEach.call(rows, (r: OrderHistoryRecordRow) => {
+        let labelRow: LabelBaseProps[] = [];
+        labelRow.push(setStackedLabelValues(headCellsMinified.first,
+          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
+          [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
         labelRow.push(setLabelBasePropsValue(headCellsMinified.price, r.price?.toString()));
         labelRow.push(setStackedLabelValues(headCellsMinified.qty, [ r.qty?.toString(), r.tradedQty.toString() ]))
@@ -379,104 +416,69 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         <StyledTableToolbar
             title={selectedOrderType === "working" ? "Working Orders" : selectedOrderType === "todays" ? "Today's Orders" : "Order History"}
           >
-            <Tooltip
-              className={classes.toolTip}
-              title={
-                <React.Fragment>
-                  <Typography className={classes.toolTipText}>Filter</Typography>
-                </React.Fragment>
-              }
-              TransitionComponent={Fade}
-            >
-              <div>
-                <NamedIconButton name="FILTER" buttonStyle={{ padding: '0 0.5rem 0 0' }} onClick={workingInProgess}/>
-              </div>
-            </Tooltip>
+            <TooltipIconButton
+              title="Filter List"
+              name="FILTER"
+              buttonStyle={{ padding: '0 0.5rem 0 0' }}
+              onClick={workingInProgess}
+            />
             {selectedOrderType !== 'working'
               ?
-                <Tooltip
-                  className={classes.toolTip}
-                  title={
-                    <React.Fragment>
-                      <Typography className={classes.toolTipText}>Working Orders</Typography>
-                    </React.Fragment>
-                  }
-                  TransitionComponent={Fade}
-                >
-                  <div>
-                    <NamedIconButton
-                      name="WORKING"
-                      buttonStyle={{ padding: '0 0.5rem 0 0' }}
-                      onClick={(event: React.MouseEvent<EventTarget>) => {
-                        workFunction('reporting', 'working');
-                        setSelectedOrderType('working');
-                      }}
-                    />
-                  </div>
-                </Tooltip>
-              : <div />
+                <TooltipIconButton
+                  title="Working Orders"
+                  name="WORKING"
+                  buttonStyle={{ padding: '0 0.5rem 0 0' }}
+                  onClick={(event: React.MouseEvent<EventTarget>) => {
+                  workFunction('reporting', 'working');
+                  setSelectedOrderType('working');
+                  }}
+                />
+              : <></>
             }
             {selectedOrderType !== 'todays'
               ?
-                <Tooltip
-                  className={classes.toolTip}
-                  title={
-                    <React.Fragment>
-                      <Typography className={classes.toolTipText}>Today's Orders</Typography>
-                    </React.Fragment>
-                  }
-                  TransitionComponent={Fade}
-                >
-                  <div>
-                    <NamedIconButton
-                      name="DONE_ALL"
-                      buttonStyle={{ padding: '0 0.5rem 0 0' }}
-                      onClick={(event: React.MouseEvent<EventTarget>) => {
-                        workFunction('account', 'todays');
-                        setSelectedOrderType("todays");
-                      }}
-                    />
-                  </div>
-                </Tooltip>
-              : <div />
+                <TooltipIconButton
+                  title="Today's Orders"
+                  name="DONE_ALL"
+                  buttonStyle={{ padding: '0 0.5rem 0 0' }}
+                  onClick={(event: React.MouseEvent<EventTarget>) => {
+                    workFunction('account', 'todays');
+                    setSelectedOrderType("todays");
+                  }}
+                />
+              : <></>
             }
             {selectedOrderType !== 'history' 
               ?
-                <Tooltip
-                  className={classes.toolTip}
-                  title={
-                    <React.Fragment>
-                      <Typography className={classes.toolTipText}>Order History</Typography>
-                    </React.Fragment>
-                  }
-                  TransitionComponent={Fade}
-                >
-                  <div>
-                    <NamedIconButton
-                      name="HISTORY"
-                      buttonStyle={{ padding: '0 0.5rem 0 0' }} 
-                      onClick={(event: React.MouseEvent<EventTarget>) => {
-                        workFunction('reporting', 'history');
-                        setSelectedOrderType('history');
-                      }}
-                    />
-                  </div>
-                </Tooltip>
-              : <div />
+                <TooltipIconButton
+                  title="Order History"
+                  name="HISTORY"
+                  buttonStyle={{ padding: '0 0.5rem 0 0' }} 
+                  onClick={(event: React.MouseEvent<EventTarget>) => {
+                    workFunction('reporting', 'history');
+                    setSelectedOrderType('history');
+                  }}
+                />
+              : <></>
             }
           </StyledTableToolbar>
         <DataTable
           headLabels={Object.values(headCellsMinified)}
-          data={RowsToLabels(orders)}
+          data={selectedOrderType === 'todays' 
+                ? RowsToLabels(orders) 
+                : selectedOrderType === 'working' 
+                  ? workingOrderRowsToLabels(workingOrders) 
+                  : orderHistoryRowsToLabels(orderHistory)}
           addPageControl={false}
           removeToolBar={true}
-        >
-          <NamedIconButton name="MORE_HORIZ" buttonStyle={{ padding: 0 }}/>
-          {selectedOrderType === 'working' ? <NamedIconButton name="EDIT" buttonStyle={{ padding: 0 }}/> : <></>}
-          {selectedOrderType === 'working' ? <NamedIconButton name="DEACTIVATE" buttonStyle={{ padding: 0 }}/> : <></>}
-          {selectedOrderType === 'working' ? <NamedIconButton name="DELETE" buttonStyle={{ padding: 0 }}/> : <></>}
-          <NamedIconButton name="DETAILS" buttonStyle={{ padding: 0 }}/>
-        </DataTable>
+          icons={[<TooltipIconButton title="More Details" name="MORE_HORIZ" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/>,
+            selectedOrderType !== 'history' ? <TooltipIconButton title="Edit" name="EDIT" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
+            selectedOrderType !== 'history' ? <TooltipIconButton title="Deactivate" name="DEACTIVATE" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
+            selectedOrderType !== 'history' ? <TooltipIconButton title="Delete" name="DELETE" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
+            <TooltipIconButton title="Quote" name="DETAILS" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/>
+          ]}
+          containerClasses={classes.container}
+        />
       </CardContent>
     </Card>
   );

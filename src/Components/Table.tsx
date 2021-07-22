@@ -1,14 +1,10 @@
-import React, { ChangeEvent, Children, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import clsx from 'clsx';
-import Color, { rgb } from 'color';
+import { rgb } from 'color';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import {
-  Checkbox,
-  FormControlLabel,
-  IconButton,
   Paper,
-  Switch,
+  Slide,
   Table,
   TableBody,
   TableCell,
@@ -18,31 +14,33 @@ import {
   TableRow,
   Toolbar,
   TableSortLabel,
-  Tooltip,
   Typography,
-  FormLabel,
-  IconButtonProps
 } from '@material-ui/core';
 import {
-  FLEX_COLUMN_CLASSES,
   FLEX_ROW_CLASSES,
   genRandomHex,
   getComparator,
-  HEADER_LABEL_CLASSES,
   LABEL_CONTENT_POSITIVE_CLASSES,
-  LIME60,
-  ROBOTO_LIGHT,
-  ROBOTO_REGULAR,
   ROBOTO_SEMIBOLD,
   stableSort,
+  SVG_ICON_CLASSES,
   TABLE_CELL_CLASSES,
+  TABLE_HEAD_CLASSES,
+  TABLE_ROW_CLASSES,
   WHITE40,
   WHITE60,
   WHITE80
 } from '../Util';
-import { useEffect } from 'react';
-import { CompositeLabel, isCompositeLabel, isLabelBaseProps, isStackedLabel, LabelBase, LabelBaseProps, StackedLabel } from './Label';
-import { IconProps, IconTypes, NamedIconButton } from './Icon';
+import {
+  CompositeLabel,
+  isCompositeLabel,
+  isLabelBaseProps,
+  isStackedLabel,
+  LabelBase,
+  LabelBaseProps,
+  StackedLabel
+} from './Label';
+import { TooltipIconButton } from './Icon';
 
 interface StyledTableheadProps {
   classes: any,
@@ -73,11 +71,11 @@ interface StyledVerticalTableProps {
 }
 
 interface DataTableHeaderProps {
-  classes?: any
   labels: LabelBaseProps[],
   order: 'asc' | 'desc',
   orderBy: string,
-  onRequestSort: (event: React.MouseEvent, property: any) => void
+  onRequestSort: (event: React.MouseEvent, property: any) => void,
+  icons?: JSX.Element | JSX.Element[]
 }
 
 interface DataTableProps {
@@ -86,7 +84,14 @@ interface DataTableProps {
   headLabels: LabelBaseProps[],
   addPageControl: boolean,
   removeToolBar?: boolean,
-  children?: JSX.Element | JSX.Element[]
+  icons?: JSX.Element | JSX.Element[],
+  containerClasses?: any
+}
+
+interface DataRowProps {
+  row: LabelBaseProps[],
+  icons?: JSX.Element | JSX.Element[],
+  classes?: any
 }
 
 const useStylesTablehead = makeStyles((theme) => ({
@@ -204,11 +209,7 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
         </Typography>
       )}
       {numSelected && numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <div style={{ flex: '0 0 10%' }}>
-            <NamedIconButton name="DELETE"/>
-          </div>
-        </Tooltip>
+        <TooltipIconButton title="Delete" name="DELETE"/>
       ) : 
         children
       }
@@ -397,14 +398,9 @@ const StyledTable = (props: StyledTableProps) => {
 const StyledVerticalTable = (props: StyledVerticalTableProps) => {
   const {
     data,
-    title,
     headerCells
   } = props;
   const classes = useStylesTable();
-  const [selected, setSelected] = useState<any[]>([]);
-  const [page, setPage] = useState(0);
-  const [columnsPerPage, setColumnsPerPage] = useState(3);
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
   const dataEntries: [string, any][] = Object.entries(data);
 
   return (
@@ -441,7 +437,7 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
                             style={i % 2 === 0 ? undefined : {borderRight: '1px solid rgba(255, 255, 255, 0.6)'}}
                             key={genRandomHex(16)}
                           >
-                            {i % 2 == 0 ? headerCells[loop].label : d[1]}
+                            {i % 2 === 0 ? headerCells[loop].label : d[1]}
                           </TableCell>
                         : null
                       );
@@ -459,6 +455,8 @@ const StyledVerticalTable = (props: StyledVerticalTableProps) => {
 };
 
 const useStyleDataTableHeader = makeStyles((theme) => ({
+  root: TABLE_HEAD_CLASSES,
+  row: TABLE_ROW_CLASSES,
   cell: {
     ...TABLE_CELL_CLASSES,
     color: WHITE60,
@@ -466,11 +464,7 @@ const useStyleDataTableHeader = makeStyles((theme) => ({
     borderBottom: `1px solid ${WHITE40}`
   },
   cellContainer: FLEX_ROW_CLASSES,
-  icon: {
-    '& path': {
-      fill: 'white'
-    }
-  },
+  icon: SVG_ICON_CLASSES,
   visuallyHidden: {
     border: 0,
     clip: 'rect(0 0 0 0)',
@@ -489,7 +483,8 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
     labels,
     order,
     orderBy,
-    onRequestSort
+    onRequestSort,
+    icons
   } = props;
   const classes = useStyleDataTableHeader();
   const createSortHandler = (property?: string) => (event: React.MouseEvent) => {
@@ -498,8 +493,8 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
   };
 
   return (
-    <TableHead>
-      <TableRow>
+    <TableHead className={classes.root}>
+      <TableRow className={classes.row}>
         {labels.map((lbl, index) => {
           return (
             <TableCell
@@ -561,16 +556,12 @@ const useStyleDataTable = makeStyles((theme) => ({
   toolBar: {
     color: 'white'
   },
-  toolTip: {
-    fontSize: '1rem',
-    fontWeight: ROBOTO_REGULAR,
-    color: WHITE80
-  },
   container: {
-    
+    overflow: 'auto'
   },
   table: {
-    backgroundColor: '#282c34'
+    backgroundColor: '#282c34',
+    overflow: 'auto'
   },
   cell: {
     ...TABLE_CELL_CLASSES,
@@ -607,7 +598,8 @@ const DataTable = (props: DataTableProps) => {
     headLabels,
     addPageControl,
     removeToolBar,
-    children
+    icons,
+    containerClasses
   } = props;
   const classes = useStyleDataTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
@@ -630,20 +622,17 @@ const DataTable = (props: DataTableProps) => {
   };
 
   return (
-    <Paper className={classes.paper} elevation={0}>
+    <Paper className={classes.paper} elevation={0} key={genRandomHex(16)}>
         { removeToolBar ? null :
-          <StyledTableToolbar title={title}>
-            <Tooltip 
+          <StyledTableToolbar title={title} key={genRandomHex(16)}>
+            <TooltipIconButton
               title="Filter list"
-              className={classes.toolTip}
-            >
-              <div style={{ flex: '0 0 10%' }}>
-                <NamedIconButton name="FILTER"/>
-              </div>
-            </Tooltip>
+              name="FILTER"
+              key={genRandomHex(16)}
+            />
           </StyledTableToolbar>
         }
-        <TableContainer className={classes.container}>
+        <TableContainer className={clsx(classes.container, containerClasses)} key={genRandomHex(16)}>
           <Table
             aria-labelledby="tableTitle"
             size="medium"
@@ -652,80 +641,28 @@ const DataTable = (props: DataTableProps) => {
             classes={{
               stickyHeader: classes.table
             }}
+            key={genRandomHex(16)}
           >
             <DataTableHeader
-              classes={classes}
               labels={headLabels}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
+              key={genRandomHex(16)}
             />
-            <TableBody>
-              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  return (
-                    <TableRow
-                      hover
-                      tabIndex={-1}
-                      key={genRandomHex(16)}
-                    >
-                      {row.map((lbl, index) => {
-                        return (
-                          <TableCell
-                            component={index === 0 ? "th" : undefined}
-                            scope={index === 0 ? "row" : undefined}
-                            className={classes.cell}
-                            align={lbl.align}
-                            key={genRandomHex(16)}
-                          >
-                            {
-                              isCompositeLabel(lbl)
-                              ? <CompositeLabel 
-                                  id={lbl.id}
-                                  label={lbl.label}
-                                  align={lbl.align}
-                                  colorMode={lbl.colorMode}
-                                  icon={lbl.icon}
-                                  classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
-                                  subLabels={lbl.subLabels}
-                                />
-                              : isStackedLabel(lbl)
-                                ? <StackedLabel
-                                    classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
-                                    otherLabels={lbl.otherLabels}
-                                    icon={lbl.icon}
-                                  />
-                                : isLabelBaseProps(lbl)
-                                  ? <LabelBase 
-                                      label={lbl.label}
-                                      colorMode={lbl.colorMode}
-                                      classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
-                                      icon={lbl.icon}
-                                    />
-                                  : null
-                            }
-                          </TableCell>
-                        )
-                      })}
-                      {Array.isArray(children) 
-                        ? children?.map(icon => {
-                            return (
-                              (icon.props && Object.keys(icon.props).length !== 0) ?
-                              <TableCell className={classes.iconCell}>
-                                {icon}
-                              </TableCell>
-                              : null
-                            );
-                          })
-                        : <TableCell className={classes.iconCell}>{children}</TableCell>
-                      }
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}/>
-              )}
-            </TableBody>
+            <Slide in={true} direction='left' key={genRandomHex(16)}>
+              <TableBody key={genRandomHex(16)}>            
+                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    return (
+                      <DataRow row={row} icons={icons} classes={classes} key={genRandomHex(16)}/>
+                    );
+                  })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(16)}/>
+                )}   
+              </TableBody>
+            </Slide>
           </Table>
         </TableContainer>
         {addPageControl 
@@ -739,6 +676,7 @@ const DataTable = (props: DataTableProps) => {
               page={page}
               onChangePage={handleChangePage}
               onChangeRowsPerPage={handleChangeRowsPerPage}
+              key={genRandomHex(16)}
             />
           : null
         }
@@ -746,10 +684,72 @@ const DataTable = (props: DataTableProps) => {
   );
 };
 
+const DataRow = (props: DataRowProps) => {
+  const { row, icons, classes } = props;
+  return (
+    <TableRow
+      key={genRandomHex(16)}
+      hover
+    >
+      {row.map((lbl, index) => {
+        return (
+          <TableCell
+            component={index === 0 ? "th" : undefined}
+            scope={index === 0 ? "row" : undefined}
+            className={classes.cell}
+            align={lbl.align}
+            key={genRandomHex(16)}
+          >
+            {
+              isCompositeLabel(lbl)
+              ? <CompositeLabel 
+                  id={lbl.id}
+                  label={lbl.label}
+                  align={lbl.align}
+                  colorMode={lbl.colorMode}
+                  icon={lbl.icon}
+                  classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                  subLabels={lbl.subLabels}
+                />
+              : isStackedLabel(lbl)
+                ? <StackedLabel
+                    classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                    otherLabels={lbl.otherLabels}
+                    icon={lbl.icon}
+                  />
+                : isLabelBaseProps(lbl)
+                  ? <LabelBase 
+                      label={lbl.label}
+                      colorMode={lbl.colorMode}
+                      classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                      icon={lbl.icon}
+                    />
+                  : null
+            }
+          </TableCell>
+        )
+      })}
+      {Array.isArray(icons) 
+        ? icons?.map(icon => {
+            return (
+              (icon.props && Object.keys(icon.props).length !== 0) ?
+              <TableCell className={classes.iconCell}>
+                {icon}
+              </TableCell>
+              : null
+            );
+          })
+        : <TableCell className={classes.iconCell}>{icons}</TableCell>
+      }
+    </TableRow>
+  )
+};
+
 export {
   StyledTablehead,
   StyledTableToolbar,
   StyledTable,
   StyledVerticalTable,
-  DataTable
+  DataTable,
+  DataRow
 }

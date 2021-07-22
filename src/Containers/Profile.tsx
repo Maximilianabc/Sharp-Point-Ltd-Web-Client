@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  CardActionButton,
   LabelColumn,
   LabelRow,
   LabelTable,
@@ -21,12 +20,9 @@ import {
   getPeriodString,
   ROBOTO_REGULAR,
   ROBOTO_SEMILIGHT,
-  ROBOTO_LIGHT,
   WHITE40,
   WHITE60,
   WHITE80,
-  WHITE90,
-  ROBOTO_SEMIBOLD,
   CARD_CONTENT_CLASSES,
   TOOLTIP_CLASSES,
   CARD_BUTTON_HEADER_LABEL_CLASSES,
@@ -38,7 +34,12 @@ import {
   HEADER_LABEL_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
-import { Button, ButtonBase, Card, CardActionArea, CardContent, FormControlLabel, FormLabel, IconButton, Tooltip, Typography } from '@material-ui/core';
+import {
+  Button,
+  Card,
+  CardContent,
+  Tooltip
+} from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
 import { LabelBaseProps } from '../Components/Label';
 

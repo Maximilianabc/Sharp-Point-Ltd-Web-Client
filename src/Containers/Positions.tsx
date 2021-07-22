@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
-  ClientWS,
   DataTable,
-  IconProps,
-  IconTypes,
   NamedIconButton,
   StyledTable
 } from '../Components';
@@ -15,14 +12,13 @@ import {
   OPConsts,
   UserState,
   PositionRecordRow,
-  WHITE40,
-  WHITE80,
-  ROBOTO_SEMIBOLD,
   ROW_CONTAINER_CLASSES,
-  CARD_CLASSES
+  CARD_CLASSES,
+  workingInProgess,
+  SCROLL_BAR_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
-import { Card, CardContent, Typography } from '@material-ui/core';
+import { Card, CardContent } from '@material-ui/core';
 import {
   CompositeLabelProps,
   LabelBaseProps,
@@ -169,7 +165,13 @@ const useStyleMinified = makeStyles((theme) => ({
     left: '1%',
     top: '38%'
   },
-  container: ROW_CONTAINER_CLASSES
+  container: {
+    ...ROW_CONTAINER_CLASSES,
+    maxWidth: '55vw',
+    maxHeight: '50vh',
+    overflow: 'auto',
+    '&::-webkit-scrollbar': SCROLL_BAR_CLASSES
+  }
 }));
 
 const PositionsMinified = (props : PositionMinifiedProps) => {
@@ -292,9 +294,9 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           data={RowsToLabels(positions)}
           title="Positions"
           addPageControl={false}
-        >
-          <NamedIconButton name="DETAILS" size={30}/>
-        </DataTable>
+          icons={<NamedIconButton name="DETAILS" size={30} onClick={workingInProgess}/>}
+          containerClasses={classes.container}
+        />
       </CardContent>
     </Card>
   );

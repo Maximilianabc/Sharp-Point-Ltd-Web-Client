@@ -10,6 +10,11 @@ const ROBOTO_SEMIBOLD = 500;
 const ROBOTO_BOLD = 700;
 const ROBOTO_EXTRABOLD = 900;
 
+const SCROLL_BAR_CLASSES = {
+  width: 0,
+  backgroundColor: 'transparent'
+};
+
 const CARD_CONTENT_CLASSES = {
   padding: '0.25rem 0.75rem 0.25rem 0.75rem',
   '&:last-child': {
@@ -100,10 +105,32 @@ const FLEX_ROW_CLASSES = {
 };
 
 const TABLE_CELL_CLASSES = {
-  backgroundColor: 'transparent',
+  backgroundColor: 'inherit',
   fontSize: '1rem',
   fontWeight: ROBOTO_LIGHT,
   padding: '0 0 0.5rem 0'
+};
+
+const TABLE_ROW_CLASSES = {
+  backgroundColor: 'inherit',
+};
+
+const TABLE_HEAD_CLASSES = {
+  backgroundColor: 'inherit',
+};
+
+const SVG_ICON_CLASSES = {
+  '& path': {
+    fill: 'white'
+  }
+};
+
+const BUY_COLOR = {
+  color: 'rgba(0, 176, 255, 0.8)'
+};
+
+const SELL_COLOR = {
+  color: 'rgba(255, 187, 0, 0.8)'
 };
 
 const getRemInPixel = (): number => parseFloat(getComputedStyle(document.documentElement).fontSize); 
@@ -136,6 +163,7 @@ export {
   ROBOTO_SEMIBOLD,
   ROBOTO_BOLD,
   ROBOTO_EXTRABOLD,
+  SCROLL_BAR_CLASSES,
   CARD_CONTENT_CLASSES,
   TOOLTIP_CLASSES,
   TOOLTIP_TEXT_CLASSES,
@@ -151,6 +179,11 @@ export {
   FLEX_COLUMN_CLASSES,
   FLEX_ROW_CLASSES,
   TABLE_CELL_CLASSES,
+  TABLE_ROW_CLASSES,
+  TABLE_HEAD_CLASSES,
+  SVG_ICON_CLASSES,
+  BUY_COLOR,
+  SELL_COLOR,
   getRemInPixel,
   ToRem
 }

@@ -5,16 +5,15 @@ import {
 } from "@material-ui/core";
 import clsx from 'clsx';
 import {
-  WHITE60,
-  ROBOTO_LIGHT, 
   HEADER_LABEL_CLASSES,
   FLEX_COLUMN_CLASSES,
   LABEL_CLASSES,
   LABEL_CONTENT_POSITIVE_CLASSES,
-  LABEL_CONTENT_NEGATIVE_CLASSES
+  LABEL_CONTENT_NEGATIVE_CLASSES,
+  genRandomHex
 } from "../Util";
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
-import { IconProps, IconTypes, NamedIconButton } from "./Icon";
+import { IconProps, NamedIconButton } from "./Icon";
 
 interface LabelBaseProps {
   id?: string,
@@ -94,7 +93,7 @@ const setLabelBasePropsValues = (lbls: LabelBaseProps[], values: string[]): Labe
   return newLbl;
 }
 
-const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): StackedLabelProps => {
+const setStackedLabelValues = (lbl: StackedLabelProps, values: string[], icons?: (IconProps | undefined)[], classes?: any[]): StackedLabelProps => {
   if (lbl.otherLabels === undefined)
     return lbl;
 
@@ -102,7 +101,9 @@ const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): Stacke
   values.forEach((v, index) => {
     newLbl.push({
       ...lbl.otherLabels![index],
-      label: v
+      label: v,
+      icon: icons ? icons[index] : undefined,
+      classes: classes ? classes[index] : undefined
     });
   });
   return {
@@ -110,23 +111,6 @@ const setStackedLabelValues = (lbl: StackedLabelProps, values: string[]): Stacke
     otherLabels: newLbl
   }
 };
-
-const setStackedLabelIcons = (lbl: StackedLabelProps, icons: (IconProps | undefined)[]): StackedLabelProps => {
-  if (lbl.otherLabels === undefined)
-    return lbl;
-  
-    let newLbl: LabelBaseProps[] = [];
-    icons.forEach((i, index) => {
-      newLbl.push({
-        ...lbl.otherLabels![index],
-        icon: i
-      })
-    });
-    return {
-      ...lbl,
-      otherLabels: newLbl
-    }
-}
 
 const LableBasesToStackedLabel = (lbls: LabelBaseProps[]): StackedLabelProps => {
   return {
@@ -174,9 +158,12 @@ const LabelBase = (props: LabelBaseProps) => {
   const { label, colorMode, icon, classes } = props;
   const labelRoot = useStyleLabel();
   const n = tryParseToNumber(props.label);
+  console.log(classes);
+
   return (
     <FormLabel
-      className={clsx(getNumberContentClassString(labelRoot, n, colorMode, classes))}
+      className={clsx(classes, labelRoot, getNumberContentClassString(labelRoot, n, colorMode, classes))}
+      key={genRandomHex(16)}
     >
       {icon ? <NamedIconButton name={icon.name} size={icon.size} buttonStyle={icon.buttonStyle} otherProps={icon.otherProps}/> : null}
       {label}
@@ -240,7 +227,12 @@ const CompositeLabel = (props: CompositeLabelProps) => {
 
   return (
     <div className={labelRoot.root}>
-      <FormLabel className={clsx(labelRoot.main, customClasses)}>{label}</FormLabel>
+      <FormLabel
+        className={clsx(labelRoot.main, customClasses)}
+        key={genRandomHex(16)}
+      >
+        {label}
+      </FormLabel>
       <StackedLabel
         classes={labelRoot.stack}
         otherLabels={subs}
@@ -258,9 +250,15 @@ const LabelColumn = (props: LabelColumnProps) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
         return (
           <div id={lbl.id} className={labelRoot.root}>
-            <FormLabel className={classes?.label ?? labelRoot.label}>{lbl.label}</FormLabel>
+            <FormLabel
+              className={classes?.label ?? labelRoot.label}
+              key={genRandomHex(16)}
+            >
+              {lbl.label}
+            </FormLabel>
             <FormLabel
               className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
+              key={genRandomHex(16)}
             >
               {content[index] ?? '?'}
             </FormLabel>
@@ -291,10 +289,18 @@ const LabelRow = (props: LabelRowProps) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
         return (
           <div id={lbl.id} className={horizontalLabelRoot.root}>
-            <FormLabel className={classes?.label}>{lbl.label}</FormLabel>
+            <FormLabel
+              className={classes?.label}
+              key={genRandomHex(16)}
+            >
+              {lbl.label}
+            </FormLabel>
             <FormLabel
               className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
-            >{content[index] ?? '?'}</FormLabel>
+              key={genRandomHex(16)}
+            >
+              {content[index] ?? '?'}
+            </FormLabel>
           </div>
         );
       })}
@@ -329,7 +335,6 @@ export {
   setLabelBasePropsValue,
   setLabelBasePropsValues,
   setStackedLabelValues,
-  setStackedLabelIcons,
   getNumberContentClassString,
   LableBasesToStackedLabel,
   QtyAvgLabelProps,
