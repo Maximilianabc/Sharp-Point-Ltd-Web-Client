@@ -2,9 +2,6 @@ import './App.css';
 import {
   Dashboard,
   LoginForm,
-  Profile,
-  Positions,
-  Orders,
   LogOut
 } from '../Containers';
 import {
@@ -52,15 +49,6 @@ function App() {
         </Route>
         <Route exact path="/dashboard">
           <Dashboard />
-        </Route>
-        <Route exact path="/profile">
-          <Profile />
-        </Route>
-        <Route exact path="/positions">
-          <Positions />
-        </Route>
-        <Route exact path="/orders">
-          <Orders />
         </Route>
         <Route exact path="/logout">
           <LogOut/>

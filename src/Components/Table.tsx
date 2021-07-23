@@ -15,6 +15,8 @@ import {
   Toolbar,
   TableSortLabel,
   Typography,
+  Collapse,
+  Box,
 } from '@material-ui/core';
 import {
   FLEX_ROW_CLASSES,
@@ -27,6 +29,7 @@ import {
   TABLE_CELL_CLASSES,
   TABLE_HEAD_CLASSES,
   TABLE_ROW_CLASSES,
+  WHITE5,
   WHITE40,
   WHITE60,
   WHITE80
@@ -40,17 +43,7 @@ import {
   LabelBaseProps,
   StackedLabel
 } from './Label';
-import { TooltipIconButton } from './Icon';
-
-interface StyledTableheadProps {
-  classes: any,
-  headerCells: any[],
-  order: 'asc' | 'desc',
-  orderBy: string,
-  onClickSelectAll?: (event: React.ChangeEvent) => void,
-  onRequestSort: (event: React.MouseEvent, property: any) => void,
-  numSelected?: number
-}
+import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton } from './Icon';
 
 interface StyledTableToolbarProps {
   title?: string,
@@ -58,103 +51,35 @@ interface StyledTableToolbarProps {
   children?: JSX.Element | JSX.Element[]
 }
 
-interface StyledTableProps {
-  data: any,
-  title: string,
-  headerCells: any[]
-}
-
-interface StyledVerticalTableProps {
-  data: any,
-  title: string,
-  headerCells: any[]
-}
-
 interface DataTableHeaderProps {
   labels: LabelBaseProps[],
   order: 'asc' | 'desc',
   orderBy: string,
   onRequestSort: (event: React.MouseEvent, property: any) => void,
-  icons?: JSX.Element | JSX.Element[]
+  iconsLength: number
 }
 
 interface DataTableProps {
   data: LabelBaseProps[][],
   title?: string,
   headLabels: LabelBaseProps[],
-  addPageControl: boolean,
+  rowCollapsible?: boolean,
+  addPageControl?: boolean,
   removeToolBar?: boolean,
-  icons?: JSX.Element | JSX.Element[],
-  containerClasses?: any
+  openArray?: boolean[],
+  icons?: (IconProps | undefined)[],
+  containerClasses?: any,
+  setOpenArray?: any
 }
 
 interface DataRowProps {
   row: LabelBaseProps[],
-  icons?: JSX.Element | JSX.Element[],
+  index: number,
+  open?: boolean
+  collapsible?: boolean,
+  icons?: (IconProps | undefined)[],
   classes?: any
 }
-
-const useStylesTablehead = makeStyles((theme) => ({
-  root :{
-    '&:hover': {
-      color: rgb(255, 255, 255).alpha(0.8).string(),
-    },
-    '&$active': {
-      color: rgb(255, 255, 255).string(),
-    }
-  },
-  active: {
-    color: rgb(255, 255, 255).string()
-  }
-}));
-
-const StyledTablehead = (props: StyledTableheadProps) => {
-  const {
-    classes,
-    headerCells,
-    order,
-    orderBy,
-    onRequestSort,
-  } = props;
-
-  const labelClasses = useStylesTablehead();
-  const createSortHandler = (property: string) => (event: React.MouseEvent) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headerCells.map((cell: any) => (
-          <TableCell
-            className={classes.cell}
-            align={cell.align}
-            sortDirection={orderBy === cell.id ? order : 'asc'}
-            key={genRandomHex(16)}
-          >
-            <TableSortLabel
-              classes={{
-                root: labelClasses.root,
-                active: labelClasses.active
-              }}
-              active={orderBy === cell.id}
-              direction={orderBy === cell.id ? order : 'asc'}
-              onClick={createSortHandler(cell.id)}
-              key={genRandomHex(16)}
-            >
-              {cell.label}
-              {orderBy === cell.id ? 
-                <span className={classes.visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </span>
-               : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-};
 
 const useStylesToolbar = makeStyles((theme) => ({
   root: {
@@ -217,243 +142,6 @@ const StyledTableToolbar = (props: StyledTableToolbarProps) => {
   );
 };
 
-const useStylesTable = makeStyles((theme) => ({
-  paper: {
-    width: '100%',
-    marginBottom: theme.spacing(2),
-    backgroundColor: '#282c34'
-  },
-  container: {
-    border: `1px solid ${WHITE60}`
-  },
-  table: {
-    minWidth: 750
-  },
-  row: {
-    
-  },
-  cell: {
-    color: WHITE60,
-    fontSize: '1rem'
-  },
-  cellNeg: {
-
-  },
-  cellPos: LABEL_CONTENT_POSITIVE_CLASSES,
-  active: {},
-  icon: {
-    color: 'white'
-  },
-  pagination: {
-    color: 'white'
-  },
-  visuallyHidden: {
-    border: 0,
-    clip: 'rect(0 0 0 0)',
-    height: 1,
-    margin: -1,
-    overflow: 'hidden',
-    padding: 0,
-    position: 'absolute',
-    top: 20,
-    width: 1,
-  },
-}));
-
-const StyledTable = (props: StyledTableProps) => {
-  const {
-    data,
-    title,
-    headerCells
-  } = props;
-  const classes = useStylesTable();
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState('id');
-  const [selected, setSelected] = useState<any[]>([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  const handleRequestSort = (event: React.MouseEvent, property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-  const handleClickSelectAll = (event: React.ChangeEvent) => {
-    if ((event?.target as HTMLInputElement)?.checked) {
-      const newSelecteds = data.map((n: any) => n.name);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
-  const handleClick = (event: React.MouseEvent<HTMLTableRowElement>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: any[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-    setSelected(newSelected);
-  };
-  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-    setPage(newPage);
-  };
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    setRowsPerPage(parseInt((event?.target as HTMLInputElement)?.value, 10));
-    setPage(0);
-  };
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-
-  return (
-    <div>
-      <Paper className={classes.paper} elevation={0}>
-        <TableContainer className={classes.container}>
-          <Table
-            className={classes.table}
-            aria-labelledby="tableTitle"
-            size="medium"
-            aria-label="enhanced table"
-          >
-            <StyledTablehead
-              classes={classes}
-              headerCells={headerCells}
-              order={order}
-              orderBy={orderBy}
-              onClickSelectAll={handleClickSelectAll}
-              onRequestSort={handleRequestSort}
-              numSelected={selected.length}
-            />
-            <TableBody>
-              {stableSort(data, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
-                  return (
-                    <TableRow
-                      hover
-                      className={classes.row}
-                      onClick={(event: React.MouseEvent<HTMLTableRowElement>) => handleClick(event, row.name)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      selected={isItemSelected}
-                      key={genRandomHex(16)}
-                    >
-                      {Object.entries(row).map((key: [string, any], index) => {
-                        const n = key !== undefined && key[1] !== undefined
-                                ? +(key[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
-                                : NaN;
-                        const normal = headerCells[index].colorMode === 'normal';
-                        const revert = headerCells[index].colorMode === 'revert';
-                        return (
-                          <TableCell
-                            component={index === 0 ? "th" : undefined}
-                            scope={index === 0 ? "row" : undefined}
-                            className={clsx(classes.cell, {
-                              [classes.cellNeg]: !isNaN(n) && ((n < 0 && normal) || (n > 0 && revert)),
-                              [classes.cellPos]: !isNaN(n) && ((n > 0 && normal) || (n < 0 && revert)),
-                            })}
-                            align={index === 0 ? "left" : "right"}
-                            id={`${key[0]}-${index}`}
-                            key={genRandomHex(16)}
-                          >
-                            {key[1]}
-                          </TableCell>
-                        )
-                      })}
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}/>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          className={classes.pagination}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-        />
-      </Paper>
-    </div>
-  );
-};
-
-const StyledVerticalTable = (props: StyledVerticalTableProps) => {
-  const {
-    data,
-    headerCells
-  } = props;
-  const classes = useStylesTable();
-  const dataEntries: [string, any][] = Object.entries(data);
-
-  return (
-    <div>
-    <TableContainer className={classes.container}>
-      <Table
-        className={classes.table}
-        aria-labelledby="tableTitle"
-        size="medium"
-        aria-label="enhanced table"
-      >
-        <TableHead />
-        <TableBody>
-          {
-            [...Array(Math.ceil(dataEntries.length / 3))].map((_, index) => {
-              return (
-                <TableRow key={genRandomHex(16)}>
-                  {
-                    [...Array(6).keys()].map((_, i) => {
-                      const loop = 3 * index + Math.floor(i / 2);
-                      const d = dataEntries[loop];
-                      const n = d !== undefined && d[1] !== undefined
-                              ? +(d[1].toString().replace(/\,/gi,'').replace(' HKD', ''))
-                              : NaN;
-                      return (
-                        d 
-                        ? <TableCell 
-                            id={i % 2 === 0 ? `${headerCells[loop].id}-item` : `${headerCells[loop].id}-value`}
-                            align="left"
-                            className={i % 2 === 0 ? classes.cell : clsx(classes.cell, {
-                              [classes.cellNeg]: !isNaN(n) && n < 0,
-                              [classes.cellPos]: !isNaN(n) && n > 0,
-                            })}
-                            style={i % 2 === 0 ? undefined : {borderRight: '1px solid rgba(255, 255, 255, 0.6)'}}
-                            key={genRandomHex(16)}
-                          >
-                            {i % 2 === 0 ? headerCells[loop].label : d[1]}
-                          </TableCell>
-                        : null
-                      );
-                    })
-                  }
-                </TableRow>
-              );
-            })
-          }
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </div>
-  )
-};
-
 const useStyleDataTableHeader = makeStyles((theme) => ({
   root: TABLE_HEAD_CLASSES,
   row: TABLE_ROW_CLASSES,
@@ -484,13 +172,14 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
     order,
     orderBy,
     onRequestSort,
-    icons
+    iconsLength
   } = props;
   const classes = useStyleDataTableHeader();
   const createSortHandler = (property?: string) => (event: React.MouseEvent) => {
     if (property === undefined) return;
     onRequestSort(event, property);
   };
+  const indices = [...Array(iconsLength).keys()];
 
   return (
     <TableHead className={classes.root}>
@@ -541,6 +230,11 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
               </div>
             </TableCell>
           );
+        })}
+        {indices.map(i => {
+          return (
+            <TableCell className={classes.cell}/>
+          )
         })}
       </TableRow>
     </TableHead>
@@ -598,6 +292,8 @@ const DataTable = (props: DataTableProps) => {
     headLabels,
     addPageControl,
     removeToolBar,
+    rowCollapsible,
+    openArray,
     icons,
     containerClasses
   } = props;
@@ -649,20 +345,27 @@ const DataTable = (props: DataTableProps) => {
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
               key={genRandomHex(16)}
+              iconsLength={icons?.length ?? 0}
             />
-            <Slide in={true} direction='left' key={genRandomHex(16)}>
-              <TableBody key={genRandomHex(16)}>            
-                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row, index) => {
-                    return (
-                      <DataRow row={row} icons={icons} classes={classes} key={genRandomHex(16)}/>
-                    );
-                  })}
-                {emptyRows > 0 && (
-                  <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(16)}/>
-                )}   
-              </TableBody>
-            </Slide>
+            <TableBody key={genRandomHex(16)}>            
+              {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => {
+                  return (
+                    <DataRow
+                      row={row}
+                      index={index}
+                      icons={icons}
+                      classes={classes}
+                      collapsible={rowCollapsible}
+                      open={openArray && openArray[index]}
+                      key={genRandomHex(16)}
+                    />
+                  );
+                })}
+              {emptyRows > 0 && (
+                <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(16)}/>
+              )}   
+            </TableBody>
           </Table>
         </TableContainer>
         {addPageControl 
@@ -684,72 +387,114 @@ const DataTable = (props: DataTableProps) => {
   );
 };
 
+const useStlyeDataRow = makeStyles((theme) => ({
+  root: {
+    backgroundColor: 'inherit',
+    '&:hover': {
+      backgroundColor: WHITE5
+    }
+  },
+  
+}));
+
 const DataRow = (props: DataRowProps) => {
-  const { row, icons, classes } = props;
+  const { row, icons, classes, collapsible, open, index } = props;
+  const rowClasses = useStlyeDataRow();
   return (
-    <TableRow
-      key={genRandomHex(16)}
-      hover
-    >
-      {row.map((lbl, index) => {
-        return (
-          <TableCell
-            component={index === 0 ? "th" : undefined}
-            scope={index === 0 ? "row" : undefined}
-            className={classes.cell}
-            align={lbl.align}
-            key={genRandomHex(16)}
-          >
-            {
-              isCompositeLabel(lbl)
-              ? <CompositeLabel 
-                  id={lbl.id}
-                  label={lbl.label}
-                  align={lbl.align}
-                  colorMode={lbl.colorMode}
-                  icon={lbl.icon}
-                  classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
-                  subLabels={lbl.subLabels}
-                />
-              : isStackedLabel(lbl)
-                ? <StackedLabel
-                    classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
-                    otherLabels={lbl.otherLabels}
+    <React.Fragment>
+      <TableRow
+        key={genRandomHex(16)}
+        className={rowClasses.root}
+      >
+        {row.map((lbl, index) => {
+          return (
+            <TableCell
+              component={index === 0 ? "th" : undefined}
+              scope={index === 0 ? "row" : undefined}
+              className={classes.cell}
+              align={lbl.align}
+              key={genRandomHex(16)}
+            >
+              {
+                isCompositeLabel(lbl)
+                ? <CompositeLabel 
+                    id={lbl.id}
+                    label={lbl.label}
+                    align={lbl.align}
+                    colorMode={lbl.colorMode}
                     icon={lbl.icon}
+                    classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                    subLabels={lbl.subLabels}
                   />
-                : isLabelBaseProps(lbl)
-                  ? <LabelBase 
-                      label={lbl.label}
-                      colorMode={lbl.colorMode}
+                : isStackedLabel(lbl)
+                  ? <StackedLabel
                       classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                      otherLabels={lbl.otherLabels}
                       icon={lbl.icon}
                     />
-                  : null
-            }
-          </TableCell>
-        )
-      })}
-      {Array.isArray(icons) 
-        ? icons?.map(icon => {
-            return (
-              (icon.props && Object.keys(icon.props).length !== 0) ?
-              <TableCell className={classes.iconCell}>
-                {icon}
-              </TableCell>
-              : null
-            );
-          })
-        : <TableCell className={classes.iconCell}>{icons}</TableCell>
+                  : isLabelBaseProps(lbl)
+                    ? <LabelBase 
+                        label={lbl.label}
+                        colorMode={lbl.colorMode}
+                        classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
+                        icon={lbl.icon}
+                      />
+                    : null
+              }
+            </TableCell>
+          )
+        })}
+        {icons && icons.length !== 0
+          ? icons?.map(icon => {
+              return (
+                icon 
+                ?
+                  <TableCell className={classes.iconCell}>
+                    {
+                      isTooltipIconButton(icon)
+                      ? 
+                        <TooltipIconButton
+                          title={icon.title}
+                          name={icon.name}
+                          size={icon.size}
+                          buttonStyle={icon.buttonStyle}
+                          otherProps={icon.otherProps}
+                          classes={icon.classes}
+                          onClick={icon.onClick}
+                        />
+                      :
+                        <NamedIconButton 
+                          name={icon.name}
+                          size={icon.size}
+                          buttonStyle={icon.buttonStyle}
+                          otherProps={icon.otherProps}
+                          onClick={icon.onClick}
+                        />
+                    }
+                  </TableCell>
+                : null
+              );
+            })
+          : null
+        }
+      </TableRow>
+      {collapsible && open
+        ?
+          <TableRow>
+            <TableCell colSpan={row.length + (icons !== undefined ? icons.length : 0)}>
+              <Collapse in={open}>
+                <Box />
+              </Collapse>
+            </TableCell>
+          </TableRow>
+        : null
       }
-    </TableRow>
+    </React.Fragment>
   )
 };
 
 export {
-  StyledTablehead,
   StyledTableToolbar,
-  StyledTable,
-  StyledVerticalTable,
   DataTable,
   DataRow
 }

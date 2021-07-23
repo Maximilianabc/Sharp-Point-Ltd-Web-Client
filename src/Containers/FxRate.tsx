@@ -2,14 +2,11 @@ import { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  StyledTable
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  operations,
   OPConsts,
   UserState,
-  DoneTradeRecord,
   FxRate
 } from '../Util';
 import { useHistory } from 'react-router';
@@ -78,13 +75,7 @@ const Fx = (props: ClearTradeProps) => {
   };
 
   return (
-    <div id={title.toLowerCase()}>
-      <StyledTable
-          data={fx}
-          title={title}
-          headerCells={headCells}
-      />  
-    </div>   
+    <div />   
   );
 };
 

@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  ClientWS,
-  StyledTable
-} from '../Components';
 import { 
   getDispatchSelectCB,
   operations,
@@ -112,13 +108,7 @@ const Cash = (props: CashProps) => {
   };
 
   return (
-    <div id={title.toLowerCase()}>
-      <StyledTable
-          data={balance}
-          title={title}
-          headerCells={headCells}
-      />  
-    </div>   
+    <div></div>
   );
 };
 

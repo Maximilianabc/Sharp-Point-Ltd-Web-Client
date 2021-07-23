@@ -1,3 +1,4 @@
+const WHITE5 = 'rgba(255, 255, 255, 0.05)';
 const WHITE40 = 'rgba(255, 255, 255, 0.4)';
 const WHITE60 = 'rgba(255, 255, 255, 0.6)';
 const WHITE80 = 'rgba(255, 255, 255, 0.8)';
@@ -126,11 +127,11 @@ const SVG_ICON_CLASSES = {
 };
 
 const BUY_COLOR = {
-  color: 'rgba(0, 176, 255, 0.8)'
+  root: { color: 'rgba(0, 176, 255, 0.8)' }
 };
 
 const SELL_COLOR = {
-  color: 'rgba(255, 187, 0, 0.8)'
+  root: { color: 'rgba(255, 187, 0, 0.8)' }
 };
 
 const getRemInPixel = (): number => parseFloat(getComputedStyle(document.documentElement).fontSize); 
@@ -152,6 +153,7 @@ String.prototype.toProperCase = function () {
 }
 
 export {
+  WHITE5,
   WHITE40,
   WHITE60,
   WHITE80,

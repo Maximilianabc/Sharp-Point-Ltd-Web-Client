@@ -7,7 +7,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   StyledPopoverForm,
-  StyledTable,
   LabelBaseProps,
   DataTable,
   StackedLabelProps,
@@ -15,8 +14,8 @@ import {
   setStackedLabelValues,
   setLabelBasePropsValue,
   getIconTypeByStatus,
-  LabelRow,
-  TooltipIconButton
+  TooltipIconButton,
+  TooltipIconProps
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -95,93 +94,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Orders = (props: OrdersProps) => {
-  const token = useSelector((state: UserState) => state.token);
-  const accNo = useSelector((state: UserState) => state.accName);
-  const [orders, setOrders] = useState<OrderRecordRow[]>([]);
-  const classes = useStyles();
-  const history = useHistory();
-  const dispatch = useDispatch();
-  const hooks = getDispatchSelectCB(OPConsts.ORDER);
-  const title = "Orders";
-  const wsRef = useRef(null);
-
-  useEffect(() => {
-    const payload = {
-      sessionToken: token,
-      targetAccNo: accNo
-    };
-    const workFunction = () => {
-      operations('reporting', hooks.id, payload, undefined, hooks.action).then(data => {
-        try {
-          if (data && !data.closeSocket) {
-            dispatch(data.actionData);
-            onReceivePush(data.data);
-          } else {
-            history.push({
-              pathname: '/logout',
-              state: 'Session expired. Please login again.'
-            });
-            clearInterval(work);
-          }
-        } catch (error) {
-          console.error(error);
-          clearInterval(work);
-        }
-      });
-    }
-    workFunction();
-    let work = setInterval(workFunction, 1000); 
-    return () => {
-      clearInterval(work);
-    }
-  }, []);
-
-  const ordersToRows = (orders: any) => {
-    let o: OrderRecordRow[] = [];
-    if (orders) {
-      Array.prototype.forEach.call(orders, order => {
-        o.push({
-          id: order.prodCode,
-          name: '?',
-          buySell: order.buySell,
-          qty: order.qty,
-          tradedQty: order.tradedQty,
-          price: order.price,
-          valid: getValidTypeString(order.validType),
-          condition: order.condTypeStr,
-          status: getOrderStatusString(order.status),
-          initiator: order.sender, // !! not present in API
-          ref: order.ref,
-          time: order.timeStampStr,
-          extOrder: order.extOrderNo
-        });
-      });
-    }
-    return o;
-  };
-
-  const onReceivePush = (data: any) => {
-    if (data !== undefined) {
-      let orders = data.orders ? data.orders : (data.recordData ? data.recordData : undefined);
-      if (orders) {
-        setOrders(ordersToRows(orders));
-      }
-    }
-  };
-
-  return (
-    <div className={classes.root}>
-      <StyledTable
-        data={orders}
-        title={title}
-        headerCells={Object.values(headCells)}
-      />
-      <StyledPopoverForm id='add-order-form'/> 
-    </div>
-  );
-};
-
 const useStyleOrdersMinified = makeStyles((theme) => ({
   card: {
     ...CARD_CLASSES,
@@ -211,6 +123,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
+  const [open, setOpen] = useState<boolean[]>([]);
   const history = useHistory();
   const dispatch = useDispatch();
 
@@ -410,6 +323,19 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return lbls;
   }
 
+  const setOpenArray = (index: number) => {
+    let bool: boolean[] = selectedOrderType === 'todays' 
+                            ? new Array<boolean>(orders.length).fill(false)
+                            : selectedOrderType === 'working' 
+                              ? new Array<boolean>(workingOrders.length).fill(false)
+                              : new Array<boolean>(orderHistory.length).fill(false);
+    if (index >= 0)
+    {
+      bool[index] = !bool[index];
+    }
+    setOpen(bool);
+  }
+
   return (
     <Card elevation={0} className={classes.card}>
       <CardContent>
@@ -469,13 +395,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                 : selectedOrderType === 'working' 
                   ? workingOrderRowsToLabels(workingOrders) 
                   : orderHistoryRowsToLabels(orderHistory)}
-          addPageControl={false}
-          removeToolBar={true}
-          icons={[<TooltipIconButton title="More Details" name="MORE_HORIZ" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/>,
-            selectedOrderType !== 'history' ? <TooltipIconButton title="Edit" name="EDIT" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
-            selectedOrderType !== 'history' ? <TooltipIconButton title="Deactivate" name="DEACTIVATE" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
-            selectedOrderType !== 'history' ? <TooltipIconButton title="Delete" name="DELETE" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/> : <></>,
-            <TooltipIconButton title="Quote" name="DETAILS" buttonStyle={{ padding: 0 }} onClick={workingInProgess}/>
+          removeToolBar
+          rowCollapsible
+          openArray={open}
+          icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, onClick: () => setOpenArray } as TooltipIconProps,
+            selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
+            selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
+            selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
+            { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps 
           ]}
           containerClasses={classes.container}
         />
@@ -485,6 +412,5 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
 };
 
 export {
-  Orders,
   OrdersMinified
 }

@@ -132,13 +132,19 @@ const getIconTypeByStatus = (status: OrderStatus): IconTypes => {
   }
 };
 
+const isTooltipIconButton = (props: IconProps): props is TooltipIconProps => {
+  return 'title' in props;
+};
+
 export {
   NamedIconButton,
   TooltipIconButton,
-  getIconTypeByStatus
+  getIconTypeByStatus,
+  isTooltipIconButton
 }
 
 export type {
   IconProps,
+  TooltipIconProps,
   IconTypes
 }

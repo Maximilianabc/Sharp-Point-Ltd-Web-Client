@@ -60,7 +60,7 @@ interface LabelRowProps {
 
 interface LabelTableProps {
   title?: string,
-  children: JSX.Element[],
+  children: React.ReactElement<LabelColumnProps | LabelRowProps>[],
   classes?: ClassNameMap<'container'|'title'>
 }
 
@@ -158,11 +158,12 @@ const LabelBase = (props: LabelBaseProps) => {
   const { label, colorMode, icon, classes } = props;
   const labelRoot = useStyleLabel();
   const n = tryParseToNumber(props.label);
-  console.log(classes);
+  const customStyle = makeStyles<"root">(() => (classes))().root;
+  const numberStyle =  getNumberContentClassString(labelRoot, n, colorMode, classes);
 
   return (
     <FormLabel
-      className={clsx(classes, labelRoot, getNumberContentClassString(labelRoot, n, colorMode, classes))}
+      className={clsx(customStyle, labelRoot.content, numberStyle)}
       key={genRandomHex(16)}
     >
       {icon ? <NamedIconButton name={icon.name} size={icon.size} buttonStyle={icon.buttonStyle} otherProps={icon.otherProps}/> : null}

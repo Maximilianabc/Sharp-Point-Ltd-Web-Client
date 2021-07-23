@@ -5,12 +5,10 @@ import {
   LabelColumn,
   LabelRow,
   LabelTable,
-  StyledTableToolbar,
-  StyledVerticalTable
+  StyledTableToolbar
 } from '../Components';
 import { 
   getDispatchSelectCB,
-  operations,
   OPConsts,
   UserState,
   SummaryRecordRow,
@@ -75,97 +73,6 @@ const plHeadCells = {
   total: { id: 'total-pl', align: 'right', label: 'P/L', colorMode: 'normal' },
   today: { id: 'today-pl', align: 'right', label: 'Today\'s P/L', colorMode: 'normal' }
 }
-
-const useStyles = makeStyles({
-  root: {
-    width: 'calc(100% - 2px)',
-  }
-});
-
-const Profile = (props: ProfileProps) => {
-  const token = useSelector((state: UserState) => state.token);
-  const accNo = useSelector((state: UserState) => state.accName);
-  const [summary, setSummary] = useState<SummaryRecordRow>({});
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
-  const title = 'Summary';
-
-  useEffect(() => {
-    const payload = {
-      sessionToken: token,
-      targetAccNo: accNo
-    };
-    const workFunction = () => {
-      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
-        try {
-          if (data && !data.closeSocket) {
-            dispatch(data.actionData);
-            onReceivePush(data.data);
-          } else {
-            //if (wsRef && wsRef.current) {
-              //wsRef!.current!.closeExplicit(false);
-            //}
-            history.push({
-              pathname: '/logout',
-              state: 'Session expired. Please login again.'
-            });
-            clearInterval(work);
-          }
-        } catch (error) {
-          console.error(error);
-          clearInterval(work);
-        }
-      });
-    };
-    workFunction();
-    let work = setInterval(workFunction, 1000); 
-    return () => {
-      clearInterval(work);
-    };
-  }, []);
-
-  const summaryToTable = (sum: any): SummaryRecordRow => {
-    let s: SummaryRecordRow = {};
-    if (sum) {
-      s = {
-        buyingPower: getCurrencyString(sum.avFund), // ?
-        nav: getCurrencyString(sum.nav),
-        commodityPL:getCurrencyString(sum.totalPl),
-        currentIMargin: getCurrencyString(sum.imargin), // !! api: iMargin, actual response: imargin
-        currentMMargin: getCurrencyString(sum.mmargin), // !! api: mMargin, actual response: mmargin
-        mLevel: getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
-        prjOvnMargin: '?',
-        maxMargin: '?',
-        marginCall: getCurrencyString(sum.marginCall),
-        cashBalance: getCurrencyString(sum.cashBal),
-        transactionAmt: '?',
-        lockupAmt: '?',
-        period: getPeriodString(sum.marginPeriod),
-        creditLimit: getCurrencyString(sum.creditLimit),
-        avgNetOptValue: '?',
-        ctrlLevel: getControlLevelString(sum.ctrlLevel),
-        marginClass: sum.marginClass //!! not present in api but in response
-      };
-    }
-    return s;
-  };
-
-  const onReceivePush = (data: any) => {
-    if (data !== undefined) {
-      setSummary(summaryToTable(data));
-    }
-  };
-  return (
-    <div id={title.toLowerCase()}>
-      <StyledVerticalTable
-        data={summary}
-        title={title}
-        headerCells={[headCells]}
-      />  
-    </div>
-  );
-};
 
 const useStyleMinified = makeStyles((theme) => ({
   card: {
@@ -412,6 +319,5 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
 };
 
 export {
-  Profile,
   ProfileMinified
 };

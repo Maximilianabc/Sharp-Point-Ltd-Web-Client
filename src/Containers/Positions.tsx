@@ -3,8 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
   DataTable,
-  NamedIconButton,
-  StyledTable
+  NamedIconButton
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -58,91 +57,6 @@ const useStyles = makeStyles({
     width: 'calc(100% - 2px)',
   }
 });
-
-const Positions = (props: PositionProps): JSX.Element => {
-  const token = useSelector((state: UserState) => state.token);
-  const accNo = useSelector((state: UserState) => state.accName);
-  const [positions, setPositions] = useState<PositionRecordRow[]>([]);
-  const classes = useStyles();
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const hooks = getDispatchSelectCB(OPConsts.POSITION);
-  const title = "Positions";
-  const wsRef = useRef(null);
-
-  useEffect(() => {
-    const payload = {
-      sessionToken: token,
-      targetAccNo: accNo
-    };
-    const workFunction = () => {
-      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
-        try {
-          if (data && !data.closeSocket) {
-            dispatch(data.actionData);
-            onReceivePush(data.data);
-          } else {
-            history.push({
-              pathname: '/logout',
-              state: 'Session expired. Please login again.'
-            });
-            clearInterval(work);
-          }
-        } catch (error) {
-          console.error(error);
-          clearInterval(work);
-        }
-      });
-    };
-    workFunction();
-    let work = setInterval(workFunction, 1000); 
-    return () => {
-      clearInterval(work);
-    };
-  }, []);
-
-  const positionsToRows = (positions: any): PositionRecordRow[] => {
-    let p: PositionRecordRow[] = [];
-    if (positions) {
-      Array.prototype.forEach.call(positions, pos => {
-        p.push({
-          id: pos.prodCode,
-          name: '', // TODO name?
-          prev: `${pos.psQty}@${pos.previousAvg}`,
-          dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
-          dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
-          net: `${pos.netQty}@${pos.netAvg}`,
-          mkt: pos.mktPrice,
-          pl: pos.profitLoss,
-          prevClose: pos.closeQty, // ?
-          optVal: pos.totalAmt, //?
-          fx: 0,
-          contract: ''}
-        );
-      });
-    }
-    return p;
-  };
-
-  const onReceivePush = (data: any) => {
-    if (data !== undefined) {
-      let positions = data.positions ? data.positions : (data.recordData ? data.recordData : undefined);
-      if (positions) {
-        setPositions(positionsToRows(positions));
-      }
-    }
-  };
-
-  return (
-    <div id = {title.toLowerCase()} className={classes.root}>
-      <StyledTable
-        data={positions}
-        title={title}
-        headerCells={[headCells]}
-      />     
-    </div>
-  );
-};
 
 const headCellsMinified: { [name: string]: LabelBaseProps } = {
   stock: {
@@ -293,8 +207,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           headLabels={Object.values(headCellsMinified)}
           data={RowsToLabels(positions)}
           title="Positions"
-          addPageControl={false}
-          icons={<NamedIconButton name="DETAILS" size={30} onClick={workingInProgess}/>}
+          icons={[{ name: "DETAILS", size: 30, onClick: workingInProgess }]}
           containerClasses={classes.container}
         />
       </CardContent>
@@ -303,6 +216,5 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
 };
 
 export {
-  Positions,
   PositionsMinified
 }

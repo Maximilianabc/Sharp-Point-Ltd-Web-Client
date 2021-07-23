@@ -10,14 +10,6 @@ import {
 } from '../Components';
 import { ROBOTO_REGULAR, ROBOTO_SEMIBOLD, ROBOTO_SEMILIGHT, UserState, WHITE80, WHITE90 } from '../Util';
 import { Typography, Box } from '@material-ui/core/';
-import {
-  Profile,
-  Positions,
-  Orders,
-  Cash,
-  ClearTrade,
-  Fx
-} from './';
 import { ProfileMinified } from './Profile';
 import { PositionsMinified } from './Positions';
 import { OrdersMinified } from './Orders';
