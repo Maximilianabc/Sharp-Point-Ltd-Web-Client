@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { MouseEventHandler, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { rgb } from 'color';
 import { lighten, makeStyles } from '@material-ui/core/styles';
@@ -17,6 +17,8 @@ import {
   Typography,
   Collapse,
   Box,
+  BoxProps,
+  CardProps,
 } from '@material-ui/core';
 import {
   FLEX_ROW_CLASSES,
@@ -69,16 +71,19 @@ interface DataTableProps {
   openArray?: boolean[],
   icons?: (IconProps | undefined)[],
   containerClasses?: any,
-  setOpenArray?: any
+  setOpenArray?: any,
+  collapsibleContents?: React.ReactElement<CardProps|BoxProps>[]
 }
 
 interface DataRowProps {
   row: LabelBaseProps[],
   index: number,
-  open?: boolean
+  open?: boolean,
+  openArray?: boolean[],
   collapsible?: boolean,
   icons?: (IconProps | undefined)[],
-  classes?: any
+  classes?: any,
+  collapsibleContent?: React.ReactElement<CardProps|BoxProps>
 }
 
 const useStylesToolbar = makeStyles((theme) => ({
@@ -295,13 +300,15 @@ const DataTable = (props: DataTableProps) => {
     rowCollapsible,
     openArray,
     icons,
-    containerClasses
+    containerClasses,
+    collapsibleContents
   } = props;
   const classes = useStyleDataTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('id');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [scroll, setScroll] = useState(0);
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
   const handleRequestSort = (event: React.MouseEvent, property: string) => {
@@ -316,6 +323,12 @@ const DataTable = (props: DataTableProps) => {
     setRowsPerPage(parseInt((event?.target as HTMLInputElement)?.value, 10));
     setPage(0);
   };
+  /*
+  useEffect(() => {
+    window.onscroll = () => {
+      setScroll(window.pageYOffset);
+    }
+  }, [])*/
 
   return (
     <Paper className={classes.paper} elevation={0} key={genRandomHex(16)}>
@@ -330,9 +343,7 @@ const DataTable = (props: DataTableProps) => {
         }
         <TableContainer className={clsx(classes.container, containerClasses)} key={genRandomHex(16)}>
           <Table
-            aria-labelledby="tableTitle"
             size="medium"
-            aria-label="enhanced table"
             stickyHeader
             classes={{
               stickyHeader: classes.table
@@ -358,7 +369,9 @@ const DataTable = (props: DataTableProps) => {
                       classes={classes}
                       collapsible={rowCollapsible}
                       open={openArray && openArray[index]}
+                      openArray={openArray}
                       key={genRandomHex(16)}
+                      collapsibleContent={collapsibleContents && collapsibleContents[index]}
                     />
                   );
                 })}
@@ -398,8 +411,18 @@ const useStlyeDataRow = makeStyles((theme) => ({
 }));
 
 const DataRow = (props: DataRowProps) => {
-  const { row, icons, classes, collapsible, open, index } = props;
+  const {
+    row,
+    icons,
+    classes,
+    collapsible,
+    open,
+    openArray,
+    index,
+    collapsibleContent
+  } = props;
   const rowClasses = useStlyeDataRow();
+
   return (
     <React.Fragment>
       <TableRow
@@ -425,12 +448,14 @@ const DataRow = (props: DataRowProps) => {
                     icon={lbl.icon}
                     classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                     subLabels={lbl.subLabels}
+                    key={genRandomHex(16)}
                   />
                 : isStackedLabel(lbl)
                   ? <StackedLabel
                       classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                       otherLabels={lbl.otherLabels}
                       icon={lbl.icon}
+                      key={genRandomHex(16)}
                     />
                   : isLabelBaseProps(lbl)
                     ? <LabelBase 
@@ -438,6 +463,7 @@ const DataRow = (props: DataRowProps) => {
                         colorMode={lbl.colorMode}
                         classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                         icon={lbl.icon}
+                        key={genRandomHex(16)}
                       />
                     : null
               }
@@ -460,7 +486,8 @@ const DataRow = (props: DataRowProps) => {
                           buttonStyle={icon.buttonStyle}
                           otherProps={icon.otherProps}
                           classes={icon.classes}
-                          onClick={icon.onClick}
+                          onClick={icon.isRowBasedCallback ? () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val)) : icon.onClick} // TODO add support to other row-based callbacks
+                          key={genRandomHex(16)}
                         />
                       :
                         <NamedIconButton 
@@ -469,6 +496,7 @@ const DataRow = (props: DataRowProps) => {
                           buttonStyle={icon.buttonStyle}
                           otherProps={icon.otherProps}
                           onClick={icon.onClick}
+                          key={genRandomHex(16)}
                         />
                     }
                   </TableCell>
@@ -480,10 +508,10 @@ const DataRow = (props: DataRowProps) => {
       </TableRow>
       {collapsible && open
         ?
-          <TableRow>
-            <TableCell colSpan={row.length + (icons !== undefined ? icons.length : 0)}>
-              <Collapse in={open}>
-                <Box />
+          <TableRow className={rowClasses.root} key={genRandomHex(16)}>
+            <TableCell colSpan={row.length + (icons !== undefined ? icons.length : 0)} className={classes.cell} key={genRandomHex(16)}>
+              <Collapse in={open} key={genRandomHex(16)}>
+                {collapsibleContent}
               </Collapse>
             </TableCell>
           </TableRow>

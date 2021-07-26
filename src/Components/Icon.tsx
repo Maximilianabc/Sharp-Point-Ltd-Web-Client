@@ -39,7 +39,8 @@ interface IconProps {
   size?: number,
   buttonStyle?: object,
   otherProps?: object,
-  onClick?: MouseEventHandler
+  isRowBasedCallback?: boolean,
+  onClick?: any
 }
 
 interface TooltipIconProps extends IconProps {

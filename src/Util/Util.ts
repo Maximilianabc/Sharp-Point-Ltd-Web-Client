@@ -198,6 +198,9 @@ type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
 type OPType = 'account' | 'reporting' | 'order' | '';
+type FilterType = 'string' | 'number' | 'date';
+type NumberFilterOperation = 'lt' | 'leq' | 'neq' | 'eq' | 'gt' | 'geq' | 'all';
+type StringFilterOperation = 'neq' | 'eq' | 'include' | 'exclude';
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
 	const reqOpt = {
@@ -476,6 +479,9 @@ export {
 };
 export type {
 	OPType,
+	FilterType,
+	NumberFilterOperation,
+	StringFilterOperation,
 	SortOrder,
 	Response,
 	Result,

@@ -15,7 +15,9 @@ import {
   setLabelBasePropsValue,
   getIconTypeByStatus,
   TooltipIconButton,
-  TooltipIconProps
+  TooltipIconProps,
+  LabelTable,
+  LabelColumn
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -42,10 +44,16 @@ import {
   OrderHistoryRecord,
   SCROLL_BAR_CLASSES,
   BUY_COLOR,
-  SELL_COLOR
+  SELL_COLOR,
+  HEADER_LABEL_CLASSES,
+  LABEL_CLASSES,
+  WHITE40,
+  WHITE60,
+  WHITE80
 } from '../Util';
 import { useHistory } from 'react-router';
-import { Card, CardContent } from '@material-ui/core';
+import { Box, Card, CardContent } from '@material-ui/core';
+import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 
 interface OrdersProps {
 
@@ -114,16 +122,39 @@ const useStyleOrdersMinified = makeStyles((theme) => ({
   toolTipText: TOOLTIP_TEXT_CLASSES
 }));
 
+const useStyleCollapsibleContent = makeStyles((theme) => ({
+  container: {
+    borderBottom: `1px solid ${WHITE40}`
+  },
+  title: {
+
+  },
+  column: {
+    marginRight: '1rem'
+  },
+  label: {
+    ...HEADER_LABEL_CLASSES,
+    fontSize: '0.875rem',
+    color: WHITE60
+  },
+  content: {
+    ...LABEL_CLASSES,
+    fontSize: '1rem',
+    color: WHITE80
+  }
+}));
+
 const OrdersMinified = (props: OrdersMinifiedProps) => {
   type OrderType = "working"|"todays"|"history";
   const classes = useStyleOrdersMinified();
+  const collapsibleContentClasses = useStyleCollapsibleContent();
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const [orders, setOrders] = useState<OrderRecordRow[]>([]);
   const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
-  const [open, setOpen] = useState<boolean[]>([]);
+  const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const history = useHistory();
   const dispatch = useDispatch();
 
@@ -161,14 +192,6 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       }
     });
   };
-
-  useEffect(() => {
-    workFunction(getOperationType(selectedOrderType), selectedOrderType);
-    /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
-    return () => {
-      //clearInterval(work);
-    }
-  }, []);
   
   const ordersToRows = (orders: any) => {
     let o: OrderRecordRow[] = [];
@@ -322,19 +345,67 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     }
     return lbls;
   }
-
-  const setOpenArray = (index: number) => {
-    let bool: boolean[] = selectedOrderType === 'todays' 
-                            ? new Array<boolean>(orders.length).fill(false)
-                            : selectedOrderType === 'working' 
-                              ? new Array<boolean>(workingOrders.length).fill(false)
-                              : new Array<boolean>(orderHistory.length).fill(false);
-    if (index >= 0)
-    {
-      bool[index] = !bool[index];
-    }
-    setOpen(bool);
+ 
+  const getLabels = () => {
+    return selectedOrderType === 'todays' 
+            ? RowsToLabels(orders) 
+            : selectedOrderType === 'working' 
+              ? workingOrderRowsToLabels(workingOrders) 
+              : orderHistoryRowsToLabels(orderHistory);
   }
+
+  const getCollapsibleContent = (
+      row: OrderRecordRow | WorkingOrderRecordRow | OrderHistoryRecordRow,
+      classes: ClassNameMap<'container'|'title'|'column'|'label'|'content'>) => {
+    return (
+      <Box>
+        <LabelTable classes={classes}>
+          <LabelColumn
+            labels={[headCells.valid]}
+            content={[row.valid]} // TODO modify if 3 types of order records have different properties
+            classes={classes}
+          />
+          <LabelColumn
+            labels={[headCells.condition]}
+            content={[row.condition]} // TODO modify if 3 types of order records have different properties
+            classes={classes}
+          />
+          <LabelColumn 
+            labels={[headCells.init]}
+            content={[row.initiator]}
+            classes={classes}
+          />
+          <LabelColumn 
+            labels={[headCells.time]}
+            content={[row.time]}
+            classes={classes}
+          />
+          <LabelColumn 
+            labels={[headCells.ref]}
+            content={[row.ref]}
+            classes={classes}
+          />
+          <LabelColumn 
+            labels={[headCells.ext]}
+            content={[row.extOrder]}
+            classes={classes}
+          />
+        </LabelTable>
+      </Box>
+    );
+  }
+
+  const filterOrders = (rows: OrderRecordRow[] | WorkingOrderRecordRow[] | OrderHistoryRecordRow[], predicate: (property: string) => boolean) => {
+
+  };
+
+  useEffect(() => {
+    workFunction(getOperationType(selectedOrderType), selectedOrderType);
+    /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
+    return () => {
+      //clearInterval(work);
+    }
+  }, []);
 
   return (
     <Card elevation={0} className={classes.card}>
@@ -390,21 +461,18 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           </StyledTableToolbar>
         <DataTable
           headLabels={Object.values(headCellsMinified)}
-          data={selectedOrderType === 'todays' 
-                ? RowsToLabels(orders) 
-                : selectedOrderType === 'working' 
-                  ? workingOrderRowsToLabels(workingOrders) 
-                  : orderHistoryRowsToLabels(orderHistory)}
+          data={getLabels()}
           removeToolBar
           rowCollapsible
-          openArray={open}
-          icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, onClick: () => setOpenArray } as TooltipIconProps,
+          openArray={currentOpen}
+          icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentOpen } as TooltipIconProps,
             selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
             selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
             selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
             { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps 
           ]}
           containerClasses={classes.container}
+          collapsibleContents={orderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))}
         />
       </CardContent>
     </Card>

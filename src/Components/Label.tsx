@@ -49,7 +49,7 @@ interface CompositeLabelProps extends LabelBaseProps {
 interface LabelColumnProps {
   labels: any[],
   content: (string | undefined)[],
-  classes?: any
+  classes?: ClassNameMap<'column'|'label'|'content'>
 }
 
 interface LabelRowProps {
