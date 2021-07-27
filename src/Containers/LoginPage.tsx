@@ -17,7 +17,9 @@ import {
 	Response,
 	UserInfo,
 	store,
-	UserState
+	UserState,
+	locales,
+	messages
 } from '../Util';
 import {
 	useDispatch,
@@ -25,6 +27,7 @@ import {
 } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { FormControlProps } from '@material-ui/core';
+import { FormattedMessage, useIntl } from 'react-intl';
 
 interface LoginPageProps extends FormControlProps {
 
@@ -61,6 +64,7 @@ const LoginForm = (props: LoginPageProps) => {
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const location = useLocation<string>();
+	const intl = useIntl();
 
 	const [data, setData] = useState<UserInfo>({
 		password: '',
@@ -85,7 +89,7 @@ const LoginForm = (props: LoginPageProps) => {
 			postRequest('/accessRight/userLogin', data)
 				.then(result => handleResponse(result));
 		} else {
-			setInputErrorText('Invalid user name');
+			setInputErrorText(messages[intl.locale].invalid_username);
 		}
 	};
 
@@ -135,7 +139,7 @@ const LoginForm = (props: LoginPageProps) => {
 										<DefaultInputField
 											error={inputErrorText !== ''}
 											id="user-name"
-											label="User Name"
+											label={messages[intl.locale].user_name}
 											variant="filled"
 											onChange={(event: React.ChangeEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
 											helperText={inputErrorText}
@@ -144,7 +148,7 @@ const LoginForm = (props: LoginPageProps) => {
 									<DefaultLI>
 										<DefaultInputField
 											id="password"
-											label="Password"
+											label={messages[intl.locale].password}
 											type="password"
 											variant="filled"
 											onChange={(event: React.ChangeEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
@@ -155,7 +159,9 @@ const LoginForm = (props: LoginPageProps) => {
 											id="login-button"
 											variant="contained"
 											onClick={handleClick}
-										>LOGIN</Button>
+										>
+											<FormattedMessage id="login"/>
+										</Button>
 									</DefaultLI>
 									<DefaultLI>
 										<StyledFormHelperText
@@ -181,6 +187,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 	const userId = useSelector((state: UserState) => state.userId);
 	const dispatch = useDispatch();
 	const history = useHistory();
+	const intl = useIntl();
 
 	const handleClick = (event: React.MouseEvent) => {
 		event.preventDefault();
@@ -195,7 +202,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 			postRequest('/accessRight/userLogin2FA', payload)
 				.then(result => handleResponse(result));
 		} else {
-			setInputErrorText('Invalid 2FA code');
+			setInputErrorText(messages[intl.locale].invalid_twofa);
 		}
 	};
 
@@ -228,7 +235,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 								<DefaultInputField
 									error={inputErrorText !== ''}
 									id="2fa-code"
-									label="Code"
+									label={messages[intl.locale].twofa}
 									variant="filled"
 									onChange={(event: React.ChangeEvent) => setTwoFACode((event?.target as HTMLInputElement)?.value)}
 									helperText={inputErrorText}
@@ -239,7 +246,9 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 									id="submit-button"
 									variant="contained"
 									onClick={handleClick}
-								>SUBMIT</Button>
+								>
+									<FormattedMessage id="submit"/>
+								</Button>
 							</DefaultLI>			
 							<DefaultLI>
 								<StyledFormHelperText
@@ -260,6 +269,7 @@ const AccNumForm = (props: AccNameFormProps) => {
 	const [accNum, setAccNum] = useState('');
 	const dispatch = useDispatch();
 	const history = useHistory();
+	const intl = useIntl();
 
 	const handleClick = (event: React.MouseEvent) => {
 		dispatch(setAccountNumAction(accNum.toUpperCase()));
@@ -276,7 +286,7 @@ const AccNumForm = (props: AccNameFormProps) => {
 					<DefaultLI>
 						<DefaultInputField
 							id="acc-num"
-							label="Account Number"
+							label={messages[intl.locale].account_name}
 							variant="filled"
 							onChange={(event) => setAccNum(event.target.value)}
 						/>

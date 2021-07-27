@@ -3,3 +3,4 @@ export * from './Reducers';
 export * from './Actions';
 export * from './Store';
 export * from './Layout';
+export * from './Locales';

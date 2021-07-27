@@ -50,7 +50,7 @@ const Fx = (props: ClearTradeProps) => {
           } else {
             history.push({
               pathname: '/logout',
-              state: 'Session expired. Please login again.'
+              state: messages[intl.locale].session_expired
             });
             clearInterval(work);
           }

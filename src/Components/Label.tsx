@@ -10,10 +10,12 @@ import {
   LABEL_CLASSES,
   LABEL_CONTENT_POSITIVE_CLASSES,
   LABEL_CONTENT_NEGATIVE_CLASSES,
-  genRandomHex
+  genRandomHex,
+  messages
 } from "../Util";
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 import { IconProps, NamedIconButton } from "./Icon";
+import { useIntl } from "react-intl";
 
 interface LabelBaseProps {
   id?: string,
@@ -47,13 +49,13 @@ interface CompositeLabelProps extends LabelBaseProps {
 }
 
 interface LabelColumnProps {
-  labels: any[],
+  labels: LabelBaseProps[],
   content: (string | undefined)[],
   classes?: ClassNameMap<'column'|'label'|'content'>
 }
 
 interface LabelRowProps {
-  labels: any[],
+  labels: LabelBaseProps[],
   content: (string | undefined)[],
   classes?: any
 }
@@ -72,8 +74,8 @@ const QtyAvgLabelProps = (main: LabelBaseProps): CompositeLabelProps => {
     colorMode: main.colorMode,
     classes: main.classes,
     subLabels: [
-      { id: 'avg', label: 'Avg', align: 'right', colorMode: 'ignored' },
-      { id: 'qty', label: 'Qty', align: 'right', colorMode: 'ignored' }
+      { id: 'avg', label: 'average', align: 'right', colorMode: 'ignored' },
+      { id: 'qty', label: 'quantity', align: 'right', colorMode: 'ignored' }
     ]
   };
 };
@@ -160,6 +162,8 @@ const LabelBase = (props: LabelBaseProps) => {
   const n = tryParseToNumber(props.label);
   const customStyle = makeStyles<"root">(() => (classes))().root;
   const numberStyle =  getNumberContentClassString(labelRoot, n, colorMode, classes);
+  const intl = useIntl();
+  const content = label !== undefined ? messages[intl.locale][label] : label;
 
   return (
     <FormLabel
@@ -167,7 +171,7 @@ const LabelBase = (props: LabelBaseProps) => {
       key={genRandomHex(16)}
     >
       {icon ? <NamedIconButton name={icon.name} size={icon.size} buttonStyle={icon.buttonStyle} otherProps={icon.otherProps}/> : null}
-      {label}
+      {content ? content : label}
     </FormLabel>
   );
 }
@@ -191,7 +195,15 @@ const StackedLabel = (props: StackedLabelProps) => {
       {otherLabels?.map((lbl, index) => {
         const n = tryParseLabelToNumber(lbl);
         return (
-          <LabelBase id={lbl.id} label={lbl.label} align={lbl.align} colorMode={lbl.colorMode} classes={lbl.classes} icon={lbl.icon}/>
+          <LabelBase
+            id={lbl.id}
+            label={lbl.label}
+            align={lbl.align}
+            colorMode={lbl.colorMode}
+            classes={lbl.classes}
+            icon={lbl.icon}
+            key={genRandomHex(16)}
+          />
         );
       })}
     </div>
@@ -225,6 +237,8 @@ const CompositeLabel = (props: CompositeLabelProps) => {
   } = props;
   const labelRoot = useStyleCompositeLabel();
   const customClasses = makeStyles<"root">(() => (classes))().root;
+  const intl = useIntl();
+  const content = label !== undefined ? messages[intl.locale][label] : label;
 
   return (
     <div className={labelRoot.root}>
@@ -232,7 +246,7 @@ const CompositeLabel = (props: CompositeLabelProps) => {
         className={clsx(labelRoot.main, customClasses)}
         key={genRandomHex(16)}
       >
-        {label}
+        {content ? content : label}
       </FormLabel>
       <StackedLabel
         classes={labelRoot.stack}
@@ -243,19 +257,23 @@ const CompositeLabel = (props: CompositeLabelProps) => {
 };
 
 const LabelColumn = (props: LabelColumnProps) => {
-  const labelRoot = useStyleLabel();
   const { labels, content, classes } = props;
+  const labelRoot = useStyleLabel();
+  const intl = useIntl();
+
   return (
     <div className={classes?.column}>
       {labels.map((lbl, index) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
+        const label = lbl.label !== undefined ? messages[intl.locale][lbl.label] : lbl.label;
+
         return (
           <div id={lbl.id} className={labelRoot.root}>
             <FormLabel
               className={classes?.label ?? labelRoot.label}
               key={genRandomHex(16)}
             >
-              {lbl.label}
+              {label}
             </FormLabel>
             <FormLabel
               className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
@@ -283,18 +301,21 @@ const LabelRow = (props: LabelRowProps) => {
   const { labels, content, classes } = props;
   const labelRoot = useStyleLabel();
   const horizontalLabelRoot = useStyleLabelHorizontal();
+  const intl = useIntl();
 
   return (
     <div className={classes?.row}>
       {labels.map((lbl, index) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
+        const label = lbl.label !== undefined ? messages[intl.locale][lbl.label] : lbl.label;
+
         return (
           <div id={lbl.id} className={horizontalLabelRoot.root}>
             <FormLabel
               className={classes?.label}
               key={genRandomHex(16)}
             >
-              {lbl.label}
+              {label}
             </FormLabel>
             <FormLabel
               className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}

@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { useIntl } from 'react-intl';
 import { useDispatch,useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { 
@@ -6,7 +7,8 @@ import {
   getDispatchSelectCB,
   operations,
   UserState,
-  store
+  store,
+  messages
 } from '../Util';
 
 interface WebSocketProps {
@@ -20,6 +22,7 @@ const ClientWS = (props: WebSocketProps) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const ws = useRef<WebSocket | null>(null);
+  const intl = useIntl();
 
   useEffect(() => {
     ws.current = new WebSocket(address);
@@ -70,7 +73,7 @@ const ClientWS = (props: WebSocketProps) => {
     if (normal) return;
     history.push({
       pathname: '/logout',
-      state: 'Session expired. Please login again.'
+      state: messages[intl.locale].session_expired
     });
   };
 

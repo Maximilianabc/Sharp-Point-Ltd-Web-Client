@@ -29,7 +29,8 @@ import {
   CARD_CLASSES,
   CARD_TITLE_CLASSES,
   LABEL_CLASSES,
-  HEADER_LABEL_CLASSES
+  HEADER_LABEL_CLASSES,
+  messages
 } from '../Util';
 import { useHistory } from 'react-router';
 import {
@@ -40,6 +41,7 @@ import {
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
 import { LabelBaseProps } from '../Components/Label';
+import { useIntl } from 'react-intl';
 
 interface ProfileProps {
 
@@ -50,28 +52,28 @@ interface ProfileMinifiedProps {
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
-  buyPower: { id: 'buying-power', align: 'left', label: 'Buying Power', colorMode: 'normal' },
-  nav: { id: 'nav', align: 'right', label: 'NAV', colorMode: 'normal' },
-  commodityPL: { id: 'commodity-pl', align: 'right', label: 'Commodity P/L', colorMode: 'normal' },
-  currentI: { id: 'current-i-margin', align: 'right', label: 'Current I.', colorMode: 'normal' },
-  currentM: { id: 'current-m-margin', align: 'right', label: 'Current M.', colorMode: 'normal' },
-  mLevel: { id: 'm-level', align: 'right', label: 'Level', colorMode: 'normal' },
-  projOvn: { id: 'prj-ovn-margin', align: 'right', label: 'Projected Overnight.', colorMode: 'normal' },
-  maxMargin: { id: 'max-margin', align: 'right', label: 'Maximum', colorMode: 'normal' },
-  mCall: { id: 'margin-call', align: 'right', label: 'Call', colorMode: 'reverse' },
-  cashBal: { id: 'cash-bal', align: 'right', label: 'Cash Balance', colorMode: 'normal' },
-  tranAmt: { id: 'transact-amt', align: 'right', label: 'Transaction Amt.', colorMode: 'normal' },
-  lockAmt: { id: 'lockup-amt', align: 'right', label: 'Lockup Amt.', colorMode: 'normal' },
-  period: { id: 'period', align: 'right', label: 'Period', colorMode: 'ignored' },
-  credit: { id: 'credit-limit', align: 'right', label: 'Credit Limit', colorMode: 'normal' },
-  optVal: { id: 'av-net-opt-val', align: 'right', label: 'Av. Net Opt. Value', colorMode: 'normal' },
-  ctrl: { id: 'ctrl-lvl', align: 'right', label: 'Ctrl Level', colorMode: 'ignored' },
-  class: { id: 'margin-class', align: 'right', label: 'Class', colorMode: 'ignored' },
+  buyPower: { id: 'buying-power', align: 'left', label: 'buying_power', colorMode: 'normal' },
+  nav: { id: 'nav', align: 'right', label: 'nav', colorMode: 'normal' },
+  commodityPL: { id: 'commodity-pl', align: 'right', label: 'commodity_pl', colorMode: 'normal' },
+  currentI: { id: 'current-i-margin', align: 'right', label: 'margin_current_i', colorMode: 'normal' },
+  currentM: { id: 'current-m-margin', align: 'right', label: 'margin_current_m', colorMode: 'normal' },
+  mLevel: { id: 'm-level', align: 'right', label: 'margin_level', colorMode: 'normal' },
+  projOvn: { id: 'prj-ovn-margin', align: 'right', label: 'margin_project_overnight', colorMode: 'normal' },
+  maxMargin: { id: 'max-margin', align: 'right', label: 'margin_maximum', colorMode: 'normal' },
+  mCall: { id: 'margin-call', align: 'right', label: 'margin_call', colorMode: 'reverse' },
+  cashBal: { id: 'cash-bal', align: 'right', label: 'cash_balance', colorMode: 'normal' },
+  tranAmt: { id: 'transact-amt', align: 'right', label: 'transaction_amount', colorMode: 'normal' },
+  lockAmt: { id: 'lockup-amt', align: 'right', label: 'lockup_amount', colorMode: 'normal' },
+  period: { id: 'period', align: 'right', label: 'period', colorMode: 'ignored' },
+  credit: { id: 'credit-limit', align: 'right', label: 'credit_limit', colorMode: 'normal' },
+  optVal: { id: 'av-net-opt-val', align: 'right', label: 'average_net_option_value', colorMode: 'normal' },
+  ctrl: { id: 'ctrl-lvl', align: 'right', label: 'ctrl_level', colorMode: 'ignored' },
+  class: { id: 'margin-class', align: 'right', label: 'margin_class', colorMode: 'ignored' },
 };
 
-const plHeadCells = {
-  total: { id: 'total-pl', align: 'right', label: 'P/L', colorMode: 'normal' },
-  today: { id: 'today-pl', align: 'right', label: 'Today\'s P/L', colorMode: 'normal' }
+const plHeadCells: { [name: string]: LabelBaseProps } =  {
+  total: { id: 'total-pl', align: 'right', label: 'pl', colorMode: 'normal' },
+  today: { id: 'today-pl', align: 'right', label: 'todays_pl', colorMode: 'normal' }
 }
 
 const useStyleMinified = makeStyles((theme) => ({
@@ -179,6 +181,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.SUMMARY);
+  const intl = useIntl();
 
   const classes = useStyleMinified();
   const firstColumnClasses = useStyleFirstColumn();
@@ -203,7 +206,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
             //}
             history.push({
               pathname: '/logout',
-              state: 'Session expired. Please login again.'
+              state: messages[intl.locale].session_expired
             });
             clearInterval(work);
           }
@@ -256,10 +259,10 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
     <Card elevation={0} className={classes.card}>
       <CardContent className={classes.content}>
         <StyledTableToolbar
-          title="Summary"
+          title={messages[intl.locale].summary}
         >
           <Tooltip
-            title="Details"
+            title={messages[intl.locale].details}
             className={classes.toolTip}
           >
             <Button
@@ -273,7 +276,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
               }}
               disableElevation
             >
-              Details
+              {messages[intl.locale].details}
             </Button>
           </Tooltip>
         </StyledTableToolbar>
@@ -283,7 +286,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
             content={[summary.nav, summary.buyingPower, summary.cashBalance]}
             classes={firstColumnClasses}
           />
-          <LabelTable title="Margin" classes={marginTableClasses}>
+          <LabelTable title={messages[intl.locale].margin} classes={marginTableClasses}>
             <LabelColumn 
               labels={[headCells.currentI, headCells.mLevel]}
               content={[summary.currentIMargin, summary.mLevel]}

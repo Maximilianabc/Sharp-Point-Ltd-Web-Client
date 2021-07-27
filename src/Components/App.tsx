@@ -1,4 +1,5 @@
 import './App.css';
+import React from 'react';
 import {
   Dashboard,
   LoginForm,
@@ -11,6 +12,7 @@ import {
 import { useIdleTimer } from 'react-idle-timer';
 import { useSelector } from 'react-redux';
 import { stayAlive, UserState } from '../Util';
+import companyLogo from '../logo.svg';
 
 function App() {
   const authed = useSelector((state: UserState) => state.authed);
@@ -45,7 +47,10 @@ function App() {
     <div className="App">
       <Switch>
         <Route exact path="/">
-          <LoginForm />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <img src={companyLogo} style={{ height: '256px', width: '256px' }}/>
+            <LoginForm />
+          </div>
         </Route>
         <Route exact path="/dashboard">
           <Dashboard />

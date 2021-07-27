@@ -49,11 +49,13 @@ import {
   LABEL_CLASSES,
   WHITE40,
   WHITE60,
-  WHITE80
+  WHITE80,
+  messages
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
+import { useIntl } from 'react-intl';
 
 interface OrdersProps {
 
@@ -64,25 +66,25 @@ interface OrdersMinifiedProps {
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
-  stockID: { id: 'id', align: 'left', label: 'ID', colorMode: 'ignored' },
-  stockName: { id: 'name', align: 'left', label: 'Name', colorMode: 'ignored' },
-  buyQty: { id: 'os-bqty', align: 'right', label: 'OS BQty', colorMode: 'normal' },
-  sellQty: { id: 'os-sqty', align: 'right', label: 'OS SQty', colorMode: 'normal' },
-  price: { id: 'price', align: 'left', label: 'Price', colorMode: 'normal' },
-  valid: { id: 'valid', align: 'right', label: 'Valid', colorMode: 'ignored' },
-  condition: { id: 'condition', align: 'right', label: 'Cond.', colorMode: 'ignored' },
-  status: { id: 'status', align: 'right', label: 'Status', colorMode: 'ignored'},
-  traded: { id: 'traded', align: 'right', label: 'Traded', colorMode: 'ignored' },
-  init: { id: 'initiator', align: 'right', label: 'Initiator', colorMode: 'ignored' },
-  ref: { id: 'ref', align: 'right', label: 'Ref', colorMode: 'ignored' },
-  time: { id: 'time', align: 'right', label: 'Time', colorMode: 'ignored' },
-  ext: { id: 'external-order', align: 'right', label: 'Ext. Order', colorMode: 'ignored' },
+  stockID: { id: 'id', align: 'left', label: 'stock_id', colorMode: 'ignored' },
+  stockName: { id: 'name', align: 'left', label: 'stock_name', colorMode: 'ignored' },
+  buyQty: { id: 'os-bqty', align: 'right', label: 'quantity', colorMode: 'normal' },
+  sellQty: { id: 'os-sqty', align: 'right', label: 'quantity', colorMode: 'normal' },
+  price: { id: 'price', align: 'left', label: 'price', colorMode: 'normal' },
+  valid: { id: 'valid', align: 'right', label: 'valid', colorMode: 'ignored' },
+  condition: { id: 'condition', align: 'right', label: 'condition', colorMode: 'ignored' },
+  status: { id: 'status', align: 'right', label: 'status', colorMode: 'ignored'},
+  traded: { id: 'traded', align: 'right', label: 'traded', colorMode: 'ignored' },
+  init: { id: 'initiator', align: 'right', label: 'initiator', colorMode: 'ignored' },
+  ref: { id: 'ref', align: 'right', label: 'reference', colorMode: 'ignored' },
+  time: { id: 'time', align: 'right', label: 'time', colorMode: 'ignored' },
+  ext: { id: 'external-order', align: 'right', label: 'external_order', colorMode: 'ignored' },
 };
 
 const headCellsMinified : { [name: string]: LabelBaseProps } = {
   first: {
     otherLabels: [ 
-      { id: 'buy-sell', label: 'Buy/Sell', align: 'left', colorMode: 'ignored' }, 
+      { id: 'buy-sell', label: 'buy_sell', align: 'left', colorMode: 'ignored' }, 
       headCells.status ]
   } as StackedLabelProps,
   stock: {
@@ -91,7 +93,7 @@ const headCellsMinified : { [name: string]: LabelBaseProps } = {
   } as StackedLabelProps,
   price: headCells.price,
   qty: {
-    otherLabels: [ { id: 'qty', label: 'Qty', align: 'left', colorMode: 'ignored' }, headCells.traded ]
+    otherLabels: [ { id: 'qty', label: 'quantity', align: 'left', colorMode: 'ignored' }, headCells.traded ]
   } as StackedLabelProps
 };
 
@@ -156,6 +158,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const history = useHistory();
+  const intl = useIntl();
   const dispatch = useDispatch();
 
   const getStoreCallback = (type: OrderType): StoreCallbacks => {
@@ -184,7 +187,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         } else {
           history.push({
             pathname: '/logout',
-            state: 'Session expired. Please login again.'
+            state: messages[intl.locale].session_expired
           });
         }
       } catch (error) {
@@ -411,10 +414,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     <Card elevation={0} className={classes.card}>
       <CardContent>
         <StyledTableToolbar
-            title={selectedOrderType === "working" ? "Working Orders" : selectedOrderType === "todays" ? "Today's Orders" : "Order History"}
+            title={selectedOrderType === "working" 
+                    ? messages[intl.locale].working_orders 
+                    : selectedOrderType === "todays" 
+                      ? messages[intl.locale].todays_orders 
+                      : messages[intl.locale].order_history}
           >
             <TooltipIconButton
-              title="Filter List"
+              title={messages[intl.locale].filter_list}
               name="FILTER"
               buttonStyle={{ padding: '0 0.5rem 0 0' }}
               onClick={workingInProgess}
@@ -422,7 +429,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton
-                  title="Working Orders"
+                  title={messages[intl.locale].working_orders}
                   name="WORKING"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
@@ -435,7 +442,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             {selectedOrderType !== 'todays'
               ?
                 <TooltipIconButton
-                  title="Today's Orders"
+                  title={messages[intl.locale].todays_orders}
                   name="DONE_ALL"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
@@ -448,7 +455,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             {selectedOrderType !== 'history' 
               ?
                 <TooltipIconButton
-                  title="Order History"
+                  title={messages[intl.locale].order_history}
                   name="HISTORY"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }} 
                   onClick={(event: React.MouseEvent<EventTarget>) => {

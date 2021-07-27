@@ -8,9 +8,11 @@ import {
   ClearTradeRecordRow,
   store,
   getDoneTradeStatusString,
-  operations
+  operations,
+  messages
 } from '../Util';
 import { useHistory } from 'react-router';
+import { useIntl } from 'react-intl';
 
 interface ClearTradeProps {
 
@@ -49,6 +51,7 @@ const ClearTrade = (props: ClearTradeProps) => {
   const hooks = getDispatchSelectCB(OPConsts.DONE_TRADE);
   const title = 'ClearTrade';
   const wsRef = useRef(null);
+  const intl = useIntl();
   
   useEffect(() => {
     const payload = {
@@ -64,7 +67,7 @@ const ClearTrade = (props: ClearTradeProps) => {
           } else {
             history.push({
               pathname: '/logout',
-              state: 'Session expired. Please login again.'
+              state: messages[intl.locale].session_expired
             });
             clearInterval(work);
           }

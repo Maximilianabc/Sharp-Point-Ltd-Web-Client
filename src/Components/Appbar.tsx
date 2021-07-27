@@ -9,6 +9,8 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
+import { useIntl } from 'react-intl';
+import { messages } from '../Util';
 
 const drawerWidth: number = 240;
 const useStyles = makeStyles((theme) => ({
@@ -46,6 +48,8 @@ interface AppbarProps {
 
 const DefaultAppbar = (props: AppbarProps) => {
   const classes = useStyles();
+  const intl = useIntl();
+
   return (
     <AppBar
     position="fixed"
@@ -66,7 +70,14 @@ const DefaultAppbar = (props: AppbarProps) => {
         <Typography variant="h6" noWrap>
           {props.title}
         </Typography>
-        <Button color="inherit" className={clsx(classes.logoutButton)}>LogOut</Button>
+        <Button
+          color="inherit"
+          className={classes.logoutButton}
+          classes={{ disableElevation: 'true' }}
+          style={{ fontSize: '1.5rem' }}
+        >
+          {messages[intl.locale].logout}
+        </Button>
       </Toolbar>
     </AppBar>
   );

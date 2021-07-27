@@ -14,7 +14,8 @@ import {
   ROW_CONTAINER_CLASSES,
   CARD_CLASSES,
   workingInProgess,
-  SCROLL_BAR_CLASSES
+  SCROLL_BAR_CLASSES,
+  messages
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Card, CardContent } from '@material-ui/core';
@@ -28,6 +29,7 @@ import {
   setStackedLabelValues,
   StackedLabelProps
 } from '../Components/Label';
+import { useIntl } from 'react-intl';
 
 interface PositionProps {
 
@@ -38,18 +40,18 @@ interface PositionMinifiedProps {
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
-  stockID: { id: 'id', align: 'left', label: 'ID', colorMode: 'ignored' },
-  stockName: { id: 'name', align: 'right', label: 'Name', colorMode: 'ignored' },
-  prev: { id: 'prev', align: 'right', label: 'Prev', colorMode: 'ignored' },
-  long: { id: 'day-long', align: 'right', label: 'Long', colorMode: 'ignored' },
-  short: { id: 'day-short', align: 'right', label: 'Short', colorMode: 'ignored' },
-  net: { id: 'net', align: 'right', label: 'Net', colorMode: 'ignored' },
-  price: { id: 'market-price', align: 'right', label: 'Price', colorMode: 'normal' },
-  pl: { id: 'profit-loss', align: 'left', label: 'P/L', colorMode: 'normal' },
-  close: { id: 'prev-close', align: 'right', label: '(Prev)', colorMode: 'normal' },
-  opt: { id: 'avg-net-opt-val', align: 'right', label: 'Av.Net Opt.Val', colorMode: 'normal' },
-  fx: { id: 'ref-exchange-rate', align: 'right', label: 'Ref. Fx Rate', colorMode: 'ignored' },
-  contract: { id: 'contract', align: 'right', label: 'Contract', colorMode: 'ignored' }
+  stockID: { id: 'id', align: 'left', label: 'stock_id', colorMode: 'ignored' },
+  stockName: { id: 'name', align: 'right', label: 'stock_name', colorMode: 'ignored' },
+  prev: { id: 'prev', align: 'right', label: 'prev', colorMode: 'ignored' },
+  long: { id: 'day-long', align: 'right', label: 'long', colorMode: 'ignored' },
+  short: { id: 'day-short', align: 'right', label: 'short', colorMode: 'ignored' },
+  net: { id: 'net', align: 'right', label: 'net', colorMode: 'ignored' },
+  price: { id: 'market-price', align: 'right', label: 'price', colorMode: 'normal' },
+  pl: { id: 'profit-loss', align: 'left', label: 'pl', colorMode: 'normal' },
+  close: { id: 'prev-close', align: 'right', label: 'prev', colorMode: 'normal' },
+  opt: { id: 'avg-net-opt-val', align: 'right', label: 'average_net_option_value', colorMode: 'normal' },
+  fx: { id: 'ref-exchange-rate', align: 'right', label: 'fx', colorMode: 'ignored' },
+  contract: { id: 'contract', align: 'right', label: 'contract', colorMode: 'ignored' }
 };
 
 const useStyles = makeStyles({
@@ -96,7 +98,8 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.POSITION);
-  
+  const intl = useIntl();
+
   useEffect(() => {
     const payload = {
       sessionToken: token,
@@ -111,7 +114,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           } else {
             history.push({
               pathname: '/logout',
-              state: 'Session expired. Please login again.'
+              state: messages[intl.locale].session_expired
             });
             clearInterval(work);
           }
@@ -206,7 +209,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
         <DataTable
           headLabels={Object.values(headCellsMinified)}
           data={RowsToLabels(positions)}
-          title="Positions"
+          title={messages[intl.locale].positions}
           icons={[{ name: "DETAILS", size: 30, onClick: workingInProgess }]}
           containerClasses={classes.container}
         />

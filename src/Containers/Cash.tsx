@@ -7,9 +7,11 @@ import {
   OPConsts,
   UserState,
   BalanceRecordRow,
-  getCurrencyString
+  getCurrencyString,
+  messages
 } from '../Util';
 import { useHistory } from 'react-router';
+import { useIntl } from 'react-intl';
 
 interface CashProps {
 
@@ -42,6 +44,7 @@ const Cash = (props: CashProps) => {
   const hooks = getDispatchSelectCB(OPConsts.BALANCE);
   const title = 'Cash';
   const wsRef = useRef(null);
+  const intl = useIntl();
 
   useEffect(() => {
     const payload = {
@@ -60,7 +63,7 @@ const Cash = (props: CashProps) => {
             //}
             history.push({
               pathname: '/logout',
-              state: 'Session expired. Please login again.'
+              state: messages[intl.locale].session_expired
             });
             clearInterval(work);
           }

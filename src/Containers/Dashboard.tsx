@@ -13,6 +13,8 @@ import { Typography, Box } from '@material-ui/core/';
 import { ProfileMinified } from './Profile';
 import { PositionsMinified } from './Positions';
 import { OrdersMinified } from './Orders';
+import { FormattedMessage } from 'react-intl';
+import { getTimePhrase } from '../Util';
 
 interface DashboardProps {
 
@@ -81,20 +83,6 @@ const Dashboard = (props: DashboardProps) => {
     setSideMenuOpened(false);
   };
 
-  const getTimePhrase = (): string => {
-    const hour = new Date(Date.now()).getHours();
-    switch (true) {
-      case (hour >= 0 && hour < 12):
-        return 'morning';
-      case (hour >= 12 && hour < 18):
-        return 'afternoon';
-      case (hour >= 18 && hour <= 23):
-        return 'evening';
-      default:
-        throw new Error('unknown time.');
-    }
-  };
-
   return (
     <div className={classes.root}>
       <ClientWS />
@@ -114,8 +102,12 @@ const Dashboard = (props: DashboardProps) => {
       >
           <div className={classes.toolbar} />
           <div className={classes.welcomeBox}>
-            <Typography className={classes.welcomeMessage}>Welcome to Sharp Point Trading Platform.</Typography>
-            <Typography className={classes.greetings}>{`Good ${getTimePhrase()}, ${userId}.`}</Typography>
+            <Typography className={classes.welcomeMessage}>
+              <FormattedMessage id="welcome" />
+            </Typography>
+            <Typography className={classes.greetings}>
+              <FormattedMessage id={`greeting_${getTimePhrase()}`} values={{ user: userId }}/>
+            </Typography>
           </div>
           <ProfileMinified />
           <PositionsMinified />

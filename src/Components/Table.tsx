@@ -34,7 +34,8 @@ import {
   WHITE5,
   WHITE40,
   WHITE60,
-  WHITE80
+  WHITE80,
+  messages
 } from '../Util';
 import {
   CompositeLabel,
@@ -46,6 +47,7 @@ import {
   StackedLabel
 } from './Label';
 import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton } from './Icon';
+import { useIntl } from 'react-intl';
 
 interface StyledTableToolbarProps {
   title?: string,
@@ -104,7 +106,7 @@ const useStylesToolbar = makeStyles((theme) => ({
           backgroundColor: theme.palette.secondary.dark,
         },
   title: {
-    flex: '1 1 100%',
+    flex: '1 1 80%',
     textAlign: 'left',
     fontSize: '1.75rem',
     fontWeight: ROBOTO_SEMIBOLD,
@@ -187,8 +189,8 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
   const indices = [...Array(iconsLength).keys()];
 
   return (
-    <TableHead className={classes.root}>
-      <TableRow className={classes.row}>
+    <TableHead className={classes.root} key={genRandomHex(16)}>
+      <TableRow className={classes.row} key={genRandomHex(16)}>
         {labels.map((lbl, index) => {
           return (
             <TableCell
@@ -209,11 +211,22 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                       colorMode={lbl.colorMode}
                       classes={lbl.classes}
                       subLabels={lbl.subLabels}
+                      key={genRandomHex(16)}
                     />
                   : isStackedLabel(lbl)
-                    ? <StackedLabel classes={lbl.classes} otherLabels={lbl.otherLabels} />
+                    ? <StackedLabel
+                        classes={lbl.classes}
+                        otherLabels={lbl.otherLabels}
+                        key={genRandomHex(16)}
+                      />
                     : isLabelBaseProps(lbl)
-                      ? <LabelBase label={lbl.label} colorMode={lbl.colorMode} classes={lbl.classes} icon={lbl.icon}/>
+                      ? <LabelBase
+                          label={lbl.label}
+                          colorMode={lbl.colorMode}
+                          classes={lbl.classes}
+                          icon={lbl.icon}
+                          key={genRandomHex(16)}
+                        />
                       : null
                 }
                 <TableSortLabel
@@ -224,6 +237,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                     active: classes.icon,
                     icon: classes.icon
                   }}
+                  key={genRandomHex(16)}
                 >               
                   {
                     orderBy === lbl.id ? (
@@ -238,7 +252,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
         })}
         {indices.map(i => {
           return (
-            <TableCell className={classes.cell}/>
+            <TableCell className={classes.cell} key={genRandomHex(16)}/>
           )
         })}
       </TableRow>
@@ -310,6 +324,7 @@ const DataTable = (props: DataTableProps) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [scroll, setScroll] = useState(0);
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+  const intl = useIntl();
 
   const handleRequestSort = (event: React.MouseEvent, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -335,7 +350,7 @@ const DataTable = (props: DataTableProps) => {
         { removeToolBar ? null :
           <StyledTableToolbar title={title} key={genRandomHex(16)}>
             <TooltipIconButton
-              title="Filter list"
+              title={messages[intl.locale].filter_list}
               name="FILTER"
               key={genRandomHex(16)}
             />
