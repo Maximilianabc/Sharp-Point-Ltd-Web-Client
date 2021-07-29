@@ -87,7 +87,7 @@ interface AccSummaryRecord {
   tradingLimit?: number
   unpresented?: number
 }
-interface Info {
+interface Summary {
   data: AccSummaryRecord[]
 }
 interface AccInfoRecord {
@@ -119,7 +119,7 @@ interface AccInfoRecord {
   sms: string,
   tradeLimit: number
 }
-interface Summary {
+interface Info {
   data: AccInfoRecord[]
 }
 interface AccBalanceRecord {

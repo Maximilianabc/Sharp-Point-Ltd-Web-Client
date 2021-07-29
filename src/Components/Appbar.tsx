@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import React from 'react';
 import {
   AppBar,
   Button,
@@ -10,7 +9,9 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 import { useIntl } from 'react-intl';
-import { messages } from '../Util';
+import { genRandomHex, locales, messages } from '../Util';
+import companyLogo from '../logo.svg';
+import { useHistory } from 'react-router';
 
 const drawerWidth: number = 240;
 const useStyles = makeStyles((theme) => ({
@@ -43,41 +44,76 @@ const useStyles = makeStyles((theme) => ({
 interface AppbarProps {
   title: string,
   sidemenuopened: boolean,
-  handleDrawerOpen: () => void
+  handleDrawerOpen: () => void,
+  onChangeLang: (locale: string) => void
 }
 
 const DefaultAppbar = (props: AppbarProps) => {
+  const { onChangeLang } = props;
   const classes = useStyles();
   const intl = useIntl();
+  const history = useHistory();
+
+  const getLangButtonName = (label: string) => {
+    switch (label) {
+      case '繁':
+        return locales.CHINESE_TRADITIONAL;
+      case '简':
+        return locales.CHINESE_SIMPLIFIED;
+      case 'Eng':
+        return locales.ENGLISH;
+      default:
+        throw new Error('Unknown Language');
+    }
+  }
 
   return (
     <AppBar
-    position="fixed"
-    className={clsx(classes.appBar, {
-      [classes.appBarShift]: props.sidemenuopened,
-    })}
+      position="fixed"
+      className={clsx(classes.appBar, {
+        [classes.appBarShift]: props.sidemenuopened,
+      })}
+      key={genRandomHex(16)}
     >
-      <Toolbar>
+      <Toolbar key={genRandomHex(16)}>
         <IconButton
           color="inherit"
           aria-label="sidemenuopened drawer"
           onClick={props.handleDrawerOpen}
           edge="start"
           className={clsx(classes.menuButton, props.sidemenuopened && classes.hide)}
+          key={genRandomHex(16)}
         >
-          <MenuRoundedIcon />
+          <MenuRoundedIcon key={genRandomHex(16)}/>
         </IconButton>
+        <img src={companyLogo} style={{ height: '64px', width: '64px' }} key={genRandomHex(16)}/>
         <Typography variant="h6" noWrap>
           {props.title}
         </Typography>
-        <Button
-          color="inherit"
-          className={classes.logoutButton}
-          classes={{ disableElevation: 'true' }}
-          style={{ fontSize: '1.5rem' }}
-        >
-          {messages[intl.locale].logout}
-        </Button>
+        <div className={classes.logoutButton}>
+          {['繁', '简', 'Eng'].map(text => {
+            return (
+              <Button
+                color="inherit"
+                classes={{ disableElevation: 'true' }}
+                style={{ fontSize: '1rem' }}
+                onClick={() => onChangeLang(getLangButtonName(text))}
+                key={genRandomHex(16)}
+              >
+                {text}
+              </Button>
+            );
+          })}
+          <Button
+            color="inherit"
+            classes={{ disableElevation: 'true' }}
+            style={{ fontSize: '1rem' }}
+            onClick={() => history.push('/logout')}
+            key={genRandomHex(16)}
+          >
+            {messages[intl.locale].logout}
+          </Button>
+        </div>
       </Toolbar>
     </AppBar>
   );

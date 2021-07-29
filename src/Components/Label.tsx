@@ -129,7 +129,7 @@ const tryParseLabelToNumber = (lbl: LabelBaseProps): number => {
 };
 
 const tryParseLabelContentToNumber = (lbl: LabelBaseProps, content: string | undefined): number => {
-  return (lbl !== undefined || content !== undefined) ? NaN : tryParseToNumber(content);
+  return (lbl === undefined || content === undefined) ? NaN : tryParseToNumber(content);
 }
 
 const getNumberContentClassString = (rootClass: any, numberContent: number, colorMode?: ColorMode, overridingClass?: any): string => {
@@ -260,7 +260,7 @@ const LabelColumn = (props: LabelColumnProps) => {
   const { labels, content, classes } = props;
   const labelRoot = useStyleLabel();
   const intl = useIntl();
-
+  
   return (
     <div className={classes?.column}>
       {labels.map((lbl, index) => {
@@ -308,6 +308,7 @@ const LabelRow = (props: LabelRowProps) => {
       {labels.map((lbl, index) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
         const label = lbl.label !== undefined ? messages[intl.locale][lbl.label] : lbl.label;
+        console.log(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes));
 
         return (
           <div id={lbl.id} className={horizontalLabelRoot.root}>
@@ -318,7 +319,7 @@ const LabelRow = (props: LabelRowProps) => {
               {label}
             </FormLabel>
             <FormLabel
-              className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes))}
+              className={clsx(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes), classes.contentSpacing)}
               key={genRandomHex(16)}
             >
               {content[index] ?? '?'}

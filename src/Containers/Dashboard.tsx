@@ -17,7 +17,7 @@ import { FormattedMessage } from 'react-intl';
 import { getTimePhrase } from '../Util';
 
 interface DashboardProps {
-
+  onChangeLang: (locale: string) => void
 }
 
 const drawerWidth = 240;
@@ -70,6 +70,7 @@ const useStylesDashboard = makeStyles((theme) => ({
 }));
 
 const Dashboard = (props: DashboardProps) => {
+  const { onChangeLang } = props;
   const classes = useStylesDashboard();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
   const userId = useSelector((state: any) => state.userId);
@@ -90,6 +91,7 @@ const Dashboard = (props: DashboardProps) => {
         title="Dashboard"
         sidemenuopened={sidemenuopened}
         handleDrawerOpen={handleDrawerOpen}
+        onChangeLang={onChangeLang}
       />
       <DefaultDrawer
         sidemenuopened={sidemenuopened}

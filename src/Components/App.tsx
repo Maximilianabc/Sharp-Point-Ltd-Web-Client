@@ -1,5 +1,4 @@
 import './App.css';
-import React from 'react';
 import {
   Dashboard,
   LoginForm,
@@ -11,12 +10,15 @@ import {
 } from 'react-router-dom';
 import { useIdleTimer } from 'react-idle-timer';
 import { useSelector } from 'react-redux';
-import { stayAlive, UserState } from '../Util';
+import { locales, messages, stayAlive, UserState } from '../Util';
 import companyLogo from '../logo.svg';
+import { useState } from 'react';
+import { IntlProvider } from 'react-intl';
 
 function App() {
   const authed = useSelector((state: UserState) => state.authed);
   const token = useSelector((state: UserState) => state.token);
+  const [currentLocale, setCurrentLocale] = useState(locales.ENGLISH);
 
   const handleOnIdle = (event: any) => {
     //console.log('user is idle', event)
@@ -45,20 +47,22 @@ function App() {
   })
   return (
     <div className="App">
-      <Switch>
-        <Route exact path="/">
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <img src={companyLogo} style={{ height: '256px', width: '256px' }}/>
-            <LoginForm />
-          </div>
-        </Route>
-        <Route exact path="/dashboard">
-          <Dashboard />
-        </Route>
-        <Route exact path="/logout">
-          <LogOut/>
-        </Route>
-      </Switch>
+      <IntlProvider messages={messages[currentLocale]} locale={currentLocale} defaultLocale={locales.ENGLISH}>
+        <Switch>
+          <Route exact path="/">
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <img src={companyLogo} style={{ height: '256px', width: '256px' }}/>
+              <LoginForm />
+            </div>
+          </Route>
+          <Route exact path="/dashboard">
+            <Dashboard onChangeLang={setCurrentLocale}/>
+          </Route>
+          <Route exact path="/logout">
+            <LogOut/>
+          </Route>
+        </Switch>
+      </IntlProvider>
     </div>
   );
 }

@@ -30,13 +30,15 @@ import {
   CARD_TITLE_CLASSES,
   LABEL_CLASSES,
   HEADER_LABEL_CLASSES,
-  messages
+  messages,
+  operations
 } from '../Util';
 import { useHistory } from 'react-router';
 import {
   Button,
   Card,
   CardContent,
+  Table,
   Tooltip
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
@@ -92,7 +94,7 @@ const useStyleMinified = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     top: '20%',
-    right: '20%',
+    right: 0,
     textAlign: 'right'
   },
   detailsButton: CARD_BUTTON_CLASSES,
@@ -156,7 +158,7 @@ const useStyleMarginContent = makeStyles((theme) => ({
 
 const useStylePLContent = makeStyles((theme) => ({
   row: {
-    marginBottom: '0.25rem'
+    marginBottom: '0.25rem',
   },
   label: {
     ...HEADER_LABEL_CLASSES,
@@ -164,12 +166,10 @@ const useStylePLContent = makeStyles((theme) => ({
     fontSize: '1.25rem',
     margin: '0 0.375rem 0 0.375rem'
   },
-  content: {
-    ...LABEL_CLASSES,
-    color: WHITE80,
+  contentSpacing: {
     fontSize: '1.25rem',
-    margin: '0 0.375rem 0 0.375rem',
-    position: 'absolute',
+    marginRight: '0.375rem',
+    marginLeft: 'auto',
     right: 0
   }
 }));
@@ -188,14 +188,14 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
   const marginTableClasses = useStyleMarginTable();
   const marginColumnClasses = useStyleMarginContent();
   const plTableContentClasses = useStylePLContent();
-  /*
+  
   useEffect(() => {
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
     };
     const workFunction = () => {
-      operations(hooks.id, payload, undefined, hooks.action).then(data => {
+      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
         try {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
@@ -217,22 +217,22 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 1000); 
+    let work = setInterval(workFunction, 120000); 
     return () => {
       clearInterval(work);
     };
   }, []);
-  */
+  
   const summaryToTable = (sum: any): SummaryRecordRow => {
     let s: SummaryRecordRow = {};
     if (sum) {
       s = {
-        buyingPower: getCurrencyString(sum.avFund), // ?
+        buyingPower: getCurrencyString(sum.netEquity), // ?
         nav: getCurrencyString(sum.nav),
         commodityPL:getCurrencyString(sum.totalPl),
         currentIMargin: getCurrencyString(sum.imargin), // !! api: iMargin, actual response: imargin
         currentMMargin: getCurrencyString(sum.mmargin), // !! api: mMargin, actual response: mmargin
-        mLevel: getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
+        mLevel: sum.mlevel === Number.MAX_VALUE ? 'Unlimited' : getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
         prjOvnMargin: '?',
         maxMargin: '?',
         marginCall: getCurrencyString(sum.marginCall),
@@ -312,7 +312,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
           />
           <LabelRow
             labels={[plHeadCells.today]}
-            content={['?']}
+            content={['123,456.00 HKD']}
             classes={plTableContentClasses}
           />
         </div>

@@ -7,18 +7,12 @@ import { Provider } from 'react-redux';
 import { store, persistor } from './Util';
 import { BrowserRouter } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react';
-import { IntlProvider } from 'react-intl';
-import { locales, messages } from './Util/Locales';
-
-const locale = locales.CHINESE_TRADITIONAL;
 
 ReactDOM.render(
     <Provider store={store}>
       <PersistGate persistor={persistor}>
         <BrowserRouter>
-          <IntlProvider messages={messages[locale]} locale={locale} defaultLocale={locales.ENGLISH}>
             <App />
-          </IntlProvider>
         </BrowserRouter>
       </PersistGate>
     </Provider>,

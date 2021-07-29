@@ -17,7 +17,8 @@ import {
   TooltipIconButton,
   TooltipIconProps,
   LabelTable,
-  LabelColumn
+  LabelColumn,
+  FilterDropDownMenu
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -424,7 +425,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
               title={messages[intl.locale].filter_list}
               name="FILTER"
               buttonStyle={{ padding: '0 0.5rem 0 0' }}
-              onClick={workingInProgess}
+              onClick={() => <FilterDropDownMenu filterLabels={['abc', 'def']} filterTypes={['number', 'string']}/>}
             />
             {selectedOrderType !== 'working'
               ?
