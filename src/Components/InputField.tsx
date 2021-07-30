@@ -1,7 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { InputLabelProps, TextField } from '@material-ui/core';
+import { InputLabelProps, TextField, withStyles } from '@material-ui/core';
 import { BaseTextFieldProps } from '@material-ui/core';
+import { LABEL_CLASSES, WHITE40, WHITE60, WHITE80 } from '../Util';
 
 interface DefaultInputFieldProps extends BaseTextFieldProps {
 	variant?: any,
@@ -67,20 +68,69 @@ const DefaultInputField = (props: DefaultInputFieldProps) => {
 
 const useStyleForm = makeStyles((theme) => ({
 	root: {
-		margin: theme.spacing(1)
+		color: `${WHITE80} !important`,
+		margin: '0 0.5rem 0.25rem 0.5rem'
+	},
+	underline: {
+		'&::before': {
+			borderBottom: `1px solid ${WHITE40} !important`,
+		},
+		'&::after': {
+			borderBottom: `1px solid ${WHITE80}`
+		},
+		'&:hover': {
+			borderBottom: `1px solid ${WHITE60}`,
+		},
+		'&:focus': {
+			borderBottom: `1px solid ${WHITE80}`
+		}
+	},
+	input: {
+		'&::before': {
+			color: WHITE40
+		},
+		'&::after': {
+			color: WHITE80
+		}
 	}
 }));
+
+const WhiteTextField = withStyles({
+  root: {
+    '& .MuiInputBase-input': {
+      color: WHITE80,
+    },
+    '& .MuiInput-underline:before': {
+      borderBottom: `1px solid ${WHITE40}`,
+    },
+    '& .MuiInput-underline:hover:before': {
+      borderBottom: `1px solid ${WHITE60}`,
+    },
+    '& .MuiInput-underline:after': {
+      borderBottom: `1px solid ${WHITE80}`,
+    },
+		'& .MuiFormLabel-root': { 
+			...LABEL_CLASSES,
+			color: WHITE60,
+			fontSize: '1rem'
+		},
+		'& .MuiFormLabel-root.Mui-focused': { 
+			...LABEL_CLASSES,
+			color: WHITE80,
+			fontSize: '1rem'
+		},
+  },
+})(TextField);
 
 const FormInputField = (props: FormInputFieldProps) => {
 	const { variant, label, type, labelProps } = props;
 	const classes = useStyleForm();
 	return (
-		<TextField
+		<WhiteTextField
 			className={classes.root}
+			variant="standard"
 			label={label}
-			variant={variant}
 			type={type}
-			InputLabelProps={labelProps}
 		/>
 	)
 };

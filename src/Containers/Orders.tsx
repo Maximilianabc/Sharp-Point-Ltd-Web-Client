@@ -153,11 +153,13 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const collapsibleContentClasses = useStyleCollapsibleContent();
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
+
   const [orders, setOrders] = useState<OrderRecordRow[]>([]);
   const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
+
   const history = useHistory();
   const intl = useIntl();
   const dispatch = useDispatch();
@@ -421,12 +423,16 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                       ? messages[intl.locale].todays_orders 
                       : messages[intl.locale].order_history}
           >
-            <TooltipIconButton
-              title={messages[intl.locale].filter_list}
-              name="FILTER"
-              buttonStyle={{ padding: '0 0.5rem 0 0' }}
-              onClick={() => <FilterDropDownMenu filterLabels={['abc', 'def']} filterTypes={['number', 'string']}/>}
-            />
+              <FilterDropDownMenu
+                controlButton=
+                  {{
+                    title: messages[intl.locale].filter_list,
+                    name: "FILTER",
+                    buttonStyle: { padding: '0 0.5rem 0 0' }
+                  } as TooltipIconProps}
+                filterLabels={['name', 'price', 'time']}
+                filterTypes={['string', 'number', 'date']}
+              />
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton

@@ -199,7 +199,7 @@ type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
 type OPType = 'account' | 'reporting' | 'order' | '';
 type FilterType = 'string' | 'number' | 'date';
-type NumberFilterOperation = 'lt' | 'leq' | 'neq' | 'eq' | 'gt' | 'geq' | 'all';
+type NumberFilterOperation = 'lt' | 'leq' | 'neq' | 'eq' | 'gt' | 'geq';
 type StringFilterOperation = 'neq' | 'eq' | 'include' | 'exclude';
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
@@ -453,6 +453,35 @@ const getValidTypeString = (valid: number): string => {
 	}
 };
 
+const getOperators = (type: FilterType): (NumberFilterOperation | StringFilterOperation)[] => {
+	switch (type) {
+		case 'date':
+		case 'number':
+			return ['eq', 'neq', 'lt', 'gt', 'leq', 'geq'];
+		case 'string':
+			return ['eq', 'neq', 'include', 'exclude'];
+	}
+};
+
+const getOperatorDisplayText = (op: NumberFilterOperation | StringFilterOperation): string => {
+	switch (op) {
+		case 'eq':
+			return '=';
+		case 'geq':
+			return '≥';
+		case 'gt':
+			return '>';
+		case 'leq':
+			return '≤';
+		case 'lt':
+			return '<';
+		case 'neq':
+			return '≠';
+		default:
+			return op;
+	}
+};
+
 const workingInProgess = () => {
 	alert('Working in Progress...');
 };
@@ -475,6 +504,8 @@ export {
 	getDoneTradeStatusString,
 	getOrderStatusString,
 	getValidTypeString,
+	getOperators,
+	getOperatorDisplayText,
 	workingInProgess
 };
 export type {

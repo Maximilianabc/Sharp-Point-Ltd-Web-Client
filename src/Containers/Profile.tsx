@@ -312,7 +312,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
           />
           <LabelRow
             labels={[plHeadCells.today]}
-            content={['123,456.00 HKD']}
+            content={['?']}
             classes={plTableContentClasses}
           />
         </div>

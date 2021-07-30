@@ -22,13 +22,14 @@ import {
   Delete,
   CheckCircle,
   History,
-  DoneAll
+  DoneAll,
+  KeyboardArrowDown
 } from '@material-ui/icons';
 import React, { forwardRef, MouseEventHandler } from 'react';
 import { OrderStatus, TOOLTIP_CLASSES, TOOLTIP_TEXT_CLASSES } from '../Util';
 import clsx from 'clsx';
 
-type IconTypes = 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 
+type IconTypes = 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 'EXPAND' |
                  'EDIT' | 'DELETE' | 'DELETED' | 'FILTER' | 
                  'INACTIVE' | 'ACTIVATE' | 'DEACTIVATE' | 
                  'WORKING' | 'PENDING' | 'UPLOADING' | 
@@ -40,7 +41,8 @@ interface IconProps {
   buttonStyle?: object,
   otherProps?: object,
   isRowBasedCallback?: boolean,
-  onClick?: any
+  onClick?: any,
+  buttonRef?: React.RefObject<HTMLButtonElement> | ((instance: HTMLButtonElement | null) => void) | null
 }
 
 interface TooltipIconProps extends IconProps {
@@ -49,14 +51,15 @@ interface TooltipIconProps extends IconProps {
 }
 
 const NamedIconButton = forwardRef((props: IconProps, ref) => {
-  const { name, size, buttonStyle, otherProps, onClick } = props;
+  const { name, size, buttonStyle, otherProps, onClick, buttonRef } = props;
   const style = { color: 'white', fontSize: size, ...otherProps };
   return (
-    <IconButton style={buttonStyle} onClick={onClick}>
+    <IconButton style={buttonStyle} onClick={onClick} ref={buttonRef}>
       {{
         'DETAILS':<ChevronRight style={style}/>,
         'MORE_HORIZ': <MoreHoriz style={style}/>,
         'MORE_VERT': <MoreVert style={style}/>,
+        'EXPAND': <KeyboardArrowDown style={style}/>,
         'EDIT': <Edit style={style}/>,
         'DELETE': <DeleteForever style={style}/>,
         'DELETED': <Delete style={style}/>,
@@ -88,6 +91,7 @@ const TooltipIconButton = (props: TooltipIconProps) => {
     name,
     size,
     buttonStyle,
+    buttonRef,
     otherProps,
     onClick
   } = props;
@@ -108,6 +112,7 @@ const TooltipIconButton = (props: TooltipIconProps) => {
           name={name}
           size={size}
           buttonStyle={buttonStyle}
+          buttonRef={buttonRef}
           otherProps={otherProps}
           onClick={onClick}
         />

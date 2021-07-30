@@ -1,16 +1,23 @@
-import { ClickAwayListener, FormLabel, MenuList, Paper } from "@material-ui/core";
+import { ClickAwayListener, FormLabel, IconButton, MenuList, Paper } from "@material-ui/core";
 import { makeStyles, Button, Popper, MenuItem } from "@material-ui/core";
-import React, { useEffect, useState } from "react";
+import React, { RefObject, useEffect, useState } from "react";
 import { useRef } from "react";
-import { CARD_CLASSES, FilterType } from "../Util";
-import { FormInputField } from "./InputField";
+import { CARD_BUTTON_HEADER_LABEL_CLASSES, CARD_CLASSES, FilterType, getOperatorDisplayText, getOperators, LABEL_CLASSES, NumberFilterOperation, ROW_CONTAINER_CLASSES, StringFilterOperation, WHITE60, WHITE80 } from "../Util";
+import { IconProps, isTooltipIconButton, NamedIconButton, TooltipIconButton, TooltipIconProps } from "./Icon";
+import { DefaultInputField, FormInputField } from "./InputField";
+import { LabelBase } from "./Label";
 
 interface StyledDropDownMenuProps {
   title: string,
-  children: JSX.Element[]
+  children: JSX.Element[],
+  open?: boolean,
+  anchor?: RefObject<HTMLButtonElement>,
+  handleClose?: (event: React.MouseEvent<Document, MouseEvent>) => void,
+  handleToggle?: (event: React.MouseEvent) => void
 }
 
 interface FilterDropDownMenuProps {
+  controlButton: IconProps | TooltipIconProps,
   title?: string,
   // label & type
   filterLabels: string[],
@@ -18,59 +25,54 @@ interface FilterDropDownMenuProps {
 }
 
 interface FilterOperatorDropDownMenuProps {
-  filterType: FilterType
+  operators: (NumberFilterOperation | StringFilterOperation)[]
 }
 
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
-    margin: theme.spacing(2)
+    width: '15%'
+  },
+  label: {
+    root: {
+      ...LABEL_CLASSES,
+      color: 'white',
+      fontSize: '1rem'
+    }
+  },
+  button: {
+    ...CARD_BUTTON_HEADER_LABEL_CLASSES,
+    fontSize: '1rem',
   },
   menu: {
     zIndex: theme.zIndex.modal + 1
+  },
+  paper: {
+    borderRadius: 0,
+    backgroundColor: '#282c34'
   }
 }));
 
 const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
-  const { children: menuItems, title } = props;
+  const { children: menuItems, title, open, anchor, handleToggle, handleClose } = props;
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const prevOpen = useRef(open);
-  const anchor = useRef<HTMLButtonElement>(null);
-
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event: React.MouseEvent<EventTarget>) => {
-    if (anchor.current && anchor.current.contains(event.target as HTMLElement)) {
-      return;
-    }
-    setOpen(false);
-  };
-
-  useEffect(() => {
-    if (prevOpen.current === true && open === false) {
-      anchor.current!.focus();
-    }
-    prevOpen.current = open;
-  }, [open]);
 
   return (
     <div className={classes.root}>
-      <Button
-        ref={anchor}
+      <NamedIconButton
+        name="EXPAND"
+        size={16}
         onClick={handleToggle}
-      >
-        {title}
-      </Button>
+        buttonRef={anchor}
+      />
+      <LabelBase label={title} classes={classes.label} />
       <Popper
-        open={open}
-        anchorEl={anchor.current}
+        open={open ?? false}
+        anchorEl={anchor?.current}
         className={classes.menu}
       >
-        <Paper elevation={0}>
-          <ClickAwayListener onClickAway={handleClose}>
+        <Paper elevation={0} className={classes.paper}>
+          <ClickAwayListener onClickAway={handleClose ?? (() => {})}>
             <MenuList autoFocusItem={open}>
               {menuItems.map(item => {
                 return (
@@ -86,17 +88,27 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
 };
 
 const useStyleFilterDropDown = makeStyles((theme) => ({
+  popper: {
+    ...CARD_CLASSES,
+    zIndex: theme.zIndex.modal + 1
+  },
   paper: {
-    ...CARD_CLASSES
+    background: '#282c34'
+  },
+  row: {
+    ...ROW_CONTAINER_CLASSES,
+    color: WHITE60,
+    padding: 0
   }
 }));
 
 const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
-  const { title, filterLabels, filterTypes } = props;
+  const { controlButton, title, filterLabels, filterTypes } = props;
+  const classes = useStyleFilterDropDown();
+  
   const [open, setOpen] = useState(false);
   const prevOpen = useRef(open);
   const anchor = useRef<HTMLButtonElement>(null);
-  const classes = useStyleFilterDropDown();
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -117,35 +129,103 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
   }, [open]);
 
   return (
-    <Popper
-      open={open}
-      anchorEl={anchor.current}
-      className={classes.paper}
-    >
-      <Paper elevation={0}>
-        <ClickAwayListener onClickAway={handleClose}>
-          <MenuList autoFocusItem={open}>
-            {
-              filterLabels.map((f, index) => {
-                return (
-                  <div>
-                    <FormLabel title={f}/>
-                    <FilterOperatorDropDownMenu filterType={filterTypes[index]} />
-                    <FormInputField label={f} variant="outlined"/>
-                  </div>
-                )
-              })
-            }
-          </MenuList>
-        </ClickAwayListener>
-      </Paper>
-    </Popper>
+    <div style={{ flex: '1 1 10%' }}>
+      { isTooltipIconButton(controlButton)
+        ?
+          <TooltipIconButton
+            name={controlButton.name}
+            title={controlButton.title}
+            size={controlButton.size}
+            buttonStyle={controlButton.buttonStyle}
+            buttonRef={anchor}
+            otherProps={controlButton.otherProps}
+            isRowBasedCallback={controlButton.isRowBasedCallback}
+            onClick={handleToggle}
+            classes={controlButton.classes}
+          />
+        :
+          <NamedIconButton
+            name={controlButton.name}
+            size={controlButton.size}
+            buttonStyle={controlButton.buttonStyle}
+            buttonRef={anchor}
+            otherProps={controlButton.otherProps}
+            isRowBasedCallback={controlButton.isRowBasedCallback}
+            onClick={handleToggle}
+          />
+      }
+      <Popper
+        open={open}
+        anchorEl={anchor.current}
+        className={classes.popper}
+      >
+        <Paper elevation={0} className={classes.paper}>
+          <ClickAwayListener onClickAway={handleClose}>
+            <MenuList autoFocusItem={false}>
+              {
+                filterLabels.map((f, index) => {
+                  return (
+                    <MenuItem className={classes.row} button={false}>
+                      <FilterOperatorDropDownMenu operators={getOperators(filterTypes[index])} />
+                      <FormInputField label={f} variant="filled"/>
+                    </MenuItem>
+                  )
+                })
+              }
+            </MenuList>
+          </ClickAwayListener>
+        </Paper>
+      </Popper>
+    </div>
   );
 };
 
 const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
+  const { operators } = props;
+  const [op, setOP] = useState<NumberFilterOperation | StringFilterOperation | null>(null);
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const prevOpen = useRef(open);
+  const anchor = useRef<HTMLButtonElement>(null);
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event: React.MouseEvent<EventTarget>) => {
+    if (anchor.current && anchor.current.contains(event.target as HTMLElement)) {
+      return;
+    }
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (prevOpen.current === true && open === false) {
+      anchor.current!.focus();
+    }
+    prevOpen.current = open;
+  }, [open]);
+
   return (
-    <div></div>
+    <StyledDropDownMenu
+      title={title}
+      open={open}
+      anchor={anchor}
+      handleClose={handleClose}
+      handleToggle={handleToggle}
+    >
+      { operators.map(op => {
+        return (
+          <MenuItem onClick={(event: React.MouseEvent) => { 
+            setOP(op);
+            setTitle(getOperatorDisplayText(op));
+            handleClose(event);
+          }}>
+            <LabelBase label={getOperatorDisplayText(op)} classes={{ root: { color: WHITE80, fontSize: '0.875rem' } }}/>
+          </MenuItem>
+        );
+      })}
+    </StyledDropDownMenu>
   );
 };
 
