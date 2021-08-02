@@ -429,6 +429,11 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
         ...state,
         token: action.payload
       };
+    case actionConsts.SET_SERVER_KEY:
+      return {
+        ...state,
+        serverKey: action.payload
+      }
     case actionConsts.SET_ACC_NUM:
       return {
         ...state,

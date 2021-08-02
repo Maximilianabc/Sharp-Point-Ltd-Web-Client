@@ -94,7 +94,7 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
     ws.current = new WebSocket(wsPriceAddress);
     ws.current.onopen = () => {
       console.log('opening');
-      ws.current!.send(`4104,0,${accNo},${serverKey},3,8.7,1.0,1.0,SPMARIADB_F,${Date.now()},0`);
+      ws.current!.send(`4104,0,${accNo},${serverKey},3,8.7,1.0,1.0,SPMARIADB_F,${Date.now()},0\r\n`);
       console.log('price opened');
     }
     ws.current.onclose = () => console.log('price closed');
