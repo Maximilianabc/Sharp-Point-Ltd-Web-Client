@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import {
+  ClientPriceWS,
   ClientWS,
   DefaultAppbar,
   DefaultDrawer,
@@ -87,6 +88,7 @@ const Dashboard = (props: DashboardProps) => {
   return (
     <div className={classes.root}>
       <ClientWS />
+      <ClientPriceWS />
       <DefaultAppbar
         title="Dashboard"
         sidemenuopened={sidemenuopened}

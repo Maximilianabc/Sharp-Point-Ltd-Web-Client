@@ -5,6 +5,7 @@ interface UserState {
   authed?: boolean,
   userId?: string,
   token?: string,
+  serverKey?: string,
   accName?: string,
   info?: Account<Info>,
   summary?: Account<Summary>,
@@ -21,13 +22,16 @@ type StateContentTypes = Empty | UserTypes | Account<Details> | unknown;
 
 interface Empty { }
 
-type UserTypes = UserId | SessionToken | Name;
+type UserTypes = UserId | SessionToken | ServerKey | Name;
 interface UserId {
   userId: string
   password: string
 }
 interface SessionToken {
   token: string
+}
+interface ServerKey {
+  key: string
 }
 interface Name {
   accName: string
@@ -522,6 +526,7 @@ export type {
   UserTypes,
   UserId as UserInfo,
   SessionToken,
+  ServerKey,
   Name,
   Account,
   Details,

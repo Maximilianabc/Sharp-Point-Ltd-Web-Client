@@ -23,13 +23,14 @@ import {
   CheckCircle,
   History,
   DoneAll,
-  KeyboardArrowDown
+  KeyboardArrowDown,
+  Add
 } from '@material-ui/icons';
 import React, { forwardRef, MouseEventHandler } from 'react';
 import { OrderStatus, TOOLTIP_CLASSES, TOOLTIP_TEXT_CLASSES } from '../Util';
 import clsx from 'clsx';
 
-type IconTypes = 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 'EXPAND' |
+type IconTypes = 'ADD' | 'DETAILS' | 'MORE_HORIZ' | 'MORE_VERT' | 'EXPAND' |
                  'EDIT' | 'DELETE' | 'DELETED' | 'FILTER' | 
                  'INACTIVE' | 'ACTIVATE' | 'DEACTIVATE' | 
                  'WORKING' | 'PENDING' | 'UPLOADING' | 
@@ -56,6 +57,7 @@ const NamedIconButton = forwardRef((props: IconProps, ref) => {
   return (
     <IconButton style={buttonStyle} onClick={onClick} ref={buttonRef}>
       {{
+        'ADD':<Add style={style}/>,
         'DETAILS':<ChevronRight style={style}/>,
         'MORE_HORIZ': <MoreHoriz style={style}/>,
         'MORE_VERT': <MoreVert style={style}/>,

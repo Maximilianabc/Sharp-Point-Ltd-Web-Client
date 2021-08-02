@@ -19,7 +19,8 @@ import {
 	store,
 	UserState,
 	locales,
-	messages
+	messages,
+	setServerKeyAction
 } from '../Util';
 import {
 	useDispatch,
@@ -106,6 +107,7 @@ const LoginForm = (props: LoginPageProps) => {
 					const info = resdata.data;
 					if (info.sessionToken !== undefined) {
 						dispatch(setTokenAction(info.sessionToken));
+						dispatch(setServerKeyAction(info.spServerKey));
 						if (info.isAdmin) {
 							isAE = true;
 							setShow(false);
@@ -210,6 +212,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 		if (resdata.result_code === '0') {
 			const info = resdata.data;
 			dispatch(setTokenAction(info.sessionToken));
+			dispatch(setServerKeyAction(info.spServerKey));
 			if (info.isAdmin) {
 				isAE = true;
 				setShow(false);

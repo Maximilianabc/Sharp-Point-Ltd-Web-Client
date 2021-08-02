@@ -14,8 +14,10 @@ import {
 const internal = true;
 const host = internal ? "192.168.123.136" : "futures.spsystem.info";
 const port = internal ? "99" : "9026";
+const pricePort = "8093";
 const wsPort = "12000";
 const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
+const wsPriceAddress = `wss://${host}:${pricePort}`;
 const path = `http${internal ? '' : 's'}://${host}:${port}/apiCustomer`;
 
 enum OPConsts {
@@ -487,7 +489,8 @@ const workingInProgess = () => {
 };
 
 export {
-	wsAddress, 
+	wsAddress,
+	wsPriceAddress,
 	OPConsts,
 	postRequest,
 	getDispatchSelectCB,

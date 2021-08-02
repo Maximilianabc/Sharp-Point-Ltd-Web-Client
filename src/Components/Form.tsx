@@ -23,6 +23,7 @@ import {
   FormInputField,
   FormNumericUpDown
 } from "./";
+import { TooltipIconButton } from "./Icon";
 
 interface StyledPopoverFormProps {
   id: string
@@ -65,13 +66,11 @@ const StyledPopoverForm = (props: StyledPopoverFormProps) => {
 
   return (
     <div>
-      <Button
-        id="add-order-button"
-        variant="contained"
+      <TooltipIconButton
+        title="Add Order"
+        name="ADD"
         onClick={(event: React.MouseEvent) => setBackdropOpen(!backdropOpen)}
-      >
-        ADD
-      </Button>
+      />
       <Popover
         className={classes.root}
         open={backdropOpen} 

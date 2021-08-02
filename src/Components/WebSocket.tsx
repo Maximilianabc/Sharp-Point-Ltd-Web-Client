@@ -8,10 +8,15 @@ import {
   operations,
   UserState,
   store,
-  messages
+  messages,
+  wsPriceAddress
 } from '../Util';
 
 interface WebSocketProps {
+
+}
+
+interface PriceWebSocketProps {
 
 }
 
@@ -32,9 +37,8 @@ const ClientWS = (props: WebSocketProps) => {
         "event" : "subscribe",
         "accNo" : "*"
       }));
-      console.log('opened');
     }
-    ws.current.onclose = () => console.log('closed');
+    ws.current.onclose = () => {};
     return () => closeSocket(true);
   }, []);
 
@@ -80,6 +84,26 @@ const ClientWS = (props: WebSocketProps) => {
   return null;
 };
 
+const ClientPriceWS = (props: PriceWebSocketProps) => {
+  const accNo = useSelector((state: UserState) => state.accName);
+  const serverKey = useSelector((state: UserState) => state.serverKey);
+  const ws = useRef<WebSocket | null>(null);
+  const intl = useIntl();
+
+  useEffect(() => {
+    ws.current = new WebSocket(wsPriceAddress);
+    ws.current.onopen = () => {
+      console.log('opening');
+      ws.current!.send(`4104,0,${accNo},${serverKey},3,8.7,1.0,1.0,SPMARIADB_F,${Date.now()},0`);
+      console.log('price opened');
+    }
+    ws.current.onclose = () => console.log('price closed');
+  }, []);
+
+  return null;
+};
+
 export {
-  ClientWS
+  ClientWS,
+  ClientPriceWS
 }

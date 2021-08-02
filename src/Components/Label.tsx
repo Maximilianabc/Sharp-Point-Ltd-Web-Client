@@ -308,7 +308,6 @@ const LabelRow = (props: LabelRowProps) => {
       {labels.map((lbl, index) => {
         const n = tryParseLabelContentToNumber(lbl, content[index]);
         const label = lbl.label !== undefined ? messages[intl.locale][lbl.label] : lbl.label;
-        console.log(getNumberContentClassString(labelRoot, n, lbl.colorMode, classes));
 
         return (
           <div id={lbl.id} className={horizontalLabelRoot.root}>

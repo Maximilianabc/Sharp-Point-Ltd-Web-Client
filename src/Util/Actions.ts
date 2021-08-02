@@ -7,6 +7,7 @@ const actionConsts: Record<string, string> = {
   LOGIN2FA: 'LOGIN2FA',
   LOGOUT: 'LOGOUT',
   SET_TOKEN: 'SET_TOKEN',
+  SET_SERVER_KEY: 'SET_SERVER_KEY',
   SET_ACC_NUM: 'SET_ACC_NUM',
   SET_ACC_BAL: 'SET_ACC_BAL',
   SET_ACC_INFO: 'SET_ACC_INFO',
@@ -33,6 +34,13 @@ const setTokenAction = (token: string): ActionData => {
   return {
     type: actionConsts.SET_TOKEN,
     payload: token
+  };
+};
+
+const setServerKeyAction = (key: string): ActionData => {
+  return {
+    type: actionConsts.SET_SERVER_KEY,
+    payload: key
   };
 };
 
@@ -90,6 +98,7 @@ export {
   loginAction,
   logoutAction,
   setTokenAction,
+  setServerKeyAction,
   setAccountNumAction,
   setAccountInfoAction,
   setAccountOrderAction,

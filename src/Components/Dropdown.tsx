@@ -1,9 +1,37 @@
-import { ClickAwayListener, FormLabel, IconButton, MenuList, Paper } from "@material-ui/core";
-import { makeStyles, Button, Popper, MenuItem } from "@material-ui/core";
+import {
+  makeStyles,
+  Button,
+  Popper, 
+  MenuItem,
+  Backdrop,
+  ClickAwayListener,
+  FormLabel,
+  IconButton,
+  MenuList,
+  Paper
+} from "@material-ui/core";
 import React, { RefObject, useEffect, useState } from "react";
 import { useRef } from "react";
-import { CARD_BUTTON_HEADER_LABEL_CLASSES, CARD_CLASSES, FilterType, getOperatorDisplayText, getOperators, LABEL_CLASSES, NumberFilterOperation, ROW_CONTAINER_CLASSES, StringFilterOperation, WHITE60, WHITE80 } from "../Util";
-import { IconProps, isTooltipIconButton, NamedIconButton, TooltipIconButton, TooltipIconProps } from "./Icon";
+import { 
+  CARD_BUTTON_HEADER_LABEL_CLASSES,
+  CARD_CLASSES,
+  FilterType,
+  getOperatorDisplayText,
+  getOperators,
+  LABEL_CLASSES,
+  NumberFilterOperation,
+  ROW_CONTAINER_CLASSES, 
+  StringFilterOperation,
+  WHITE60,
+  WHITE80
+} from "../Util";
+import {
+  IconProps,
+  isTooltipIconButton,
+  NamedIconButton,
+  TooltipIconButton,
+  TooltipIconProps
+} from "./Icon";
 import { DefaultInputField, FormInputField } from "./InputField";
 import { LabelBase } from "./Label";
 
@@ -112,6 +140,7 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
+    console.log(open);
   };
 
   const handleClose = (event: React.MouseEvent<EventTarget>) => {
@@ -153,7 +182,7 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
             isRowBasedCallback={controlButton.isRowBasedCallback}
             onClick={handleToggle}
           />
-      }
+      }     
       <Popper
         open={open}
         anchorEl={anchor.current}
