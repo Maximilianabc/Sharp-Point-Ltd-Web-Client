@@ -423,16 +423,17 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                       ? messages[intl.locale].todays_orders 
                       : messages[intl.locale].order_history}
           >
-              <FilterDropDownMenu
-                controlButton=
-                  {{
-                    title: messages[intl.locale].filter_list,
-                    name: "FILTER",
-                    buttonStyle: { padding: '0 0.5rem 0 0' }
-                  } as TooltipIconProps}
-                filterLabels={['name', 'price', 'time']}
-                filterTypes={['string', 'number', 'date']}
-              />
+            <StyledPopoverForm />
+            <FilterDropDownMenu
+              controlButton=
+                {{
+                  title: messages[intl.locale].filter_list,
+                  name: "FILTER",
+                  buttonStyle: { padding: '0 0.5rem 0 0' }
+                } as TooltipIconProps}
+              filterLabels={['name', 'price', 'time']}
+              filterTypes={['string', 'number', 'date']}
+            />
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton

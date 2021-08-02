@@ -16,7 +16,7 @@ import {
  } from "@material-ui/core";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { UserState } from "../Util";
+import { UserState, WHITE80 } from "../Util";
 import Color, { rgb } from 'color';
 import {
   StyledDropDownMenu,
@@ -26,16 +26,15 @@ import {
 import { TooltipIconButton } from "./Icon";
 
 interface StyledPopoverFormProps {
-  id: string
+
 }
 
 const useStyles = makeStyles(theme => ({
   root: {
-    backgroundColor: rgb(40, 44, 52).alpha(0.5).string(),
-    color: '#ffffff',
+
   },
   paper: {
-    marginRight: theme.spacing(2),
+    backgroundColor: '#282c34',
     minWidth: '20vw',
     minHeight: '30vh'
   },

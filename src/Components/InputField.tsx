@@ -139,7 +139,7 @@ const FormNumericUpDown = (props: FormNumericUpDownProps) => {
 	const classes = useStyleForm();
 	const { label } = props;
 	return (
-		<TextField className={classes.root} label={label} type="number"/>
+		<WhiteTextField className={classes.root} label={label} type="number"/>
 	);
 };
 

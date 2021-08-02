@@ -88,7 +88,7 @@ const Dashboard = (props: DashboardProps) => {
   return (
     <div className={classes.root}>
       <ClientWS />
-      <ClientPriceWS />
+      {/*<ClientPriceWS />*/}
       <DefaultAppbar
         title="Dashboard"
         sidemenuopened={sidemenuopened}

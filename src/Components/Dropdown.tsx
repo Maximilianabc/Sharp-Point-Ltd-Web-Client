@@ -38,6 +38,7 @@ import { LabelBase } from "./Label";
 interface StyledDropDownMenuProps {
   title: string,
   children: JSX.Element[],
+  iconSize?: number,
   open?: boolean,
   anchor?: RefObject<HTMLButtonElement>,
   handleClose?: (event: React.MouseEvent<Document, MouseEvent>) => void,
@@ -82,14 +83,14 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
-  const { children: menuItems, title, open, anchor, handleToggle, handleClose } = props;
+  const { children: menuItems, title, iconSize, open, anchor, handleToggle, handleClose } = props;
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <NamedIconButton
         name="EXPAND"
-        size={16}
+        size={iconSize ?? 16}
         onClick={handleToggle}
         buttonRef={anchor}
       />
@@ -108,7 +109,7 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
                 );
               })}
             </MenuList>
-          </ClickAwayListener>     
+          </ClickAwayListener>
         </Paper>
       </Popper>
     </div>
