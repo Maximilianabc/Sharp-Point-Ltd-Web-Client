@@ -1,8 +1,9 @@
 import React, { MouseEventHandler, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { rgb } from 'color';
-import { lighten, makeStyles } from '@material-ui/core/styles';
+import { lighten } from '@material-ui/core/styles';
 import {
+  makeStyles,
   Paper,
   Slide,
   Table,
@@ -263,7 +264,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
 const useStyleDataTable = makeStyles((theme) => ({
   paper: {
     width: '100%',
-    marginBottom: theme.spacing(2),
+    marginBottom: '1rem',
     backgroundColor: '#282c34'
   },
   toolBar: {
@@ -405,8 +406,8 @@ const DataTable = (props: DataTableProps) => {
               count={data.length}
               rowsPerPage={rowsPerPage}
               page={page}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
               key={genRandomHex(16)}
             />
           : null

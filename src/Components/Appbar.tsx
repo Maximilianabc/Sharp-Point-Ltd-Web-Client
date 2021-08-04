@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     }),
   },
   menuButton: {
-    marginRight: theme.spacing(2),
+    marginRight: '1rem',
   },
   logoutButton: {
     marginRight: 0,

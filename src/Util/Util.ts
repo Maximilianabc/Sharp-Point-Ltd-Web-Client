@@ -14,7 +14,8 @@ import {
 const internal = true;
 const host = internal ? "192.168.123.136" : "futures.spsystem.info";
 const port = internal ? "99" : "9026";
-const pricePort = "8093";
+const priceHost = "localhost";
+const pricePort = "8063";
 const wsPort = "12000";
 const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
 const wsPriceAddress = `ws://${host}:${pricePort}`;

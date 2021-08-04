@@ -8,9 +8,12 @@ import {
   FormLabel,
   IconButton,
   MenuList,
-  Paper
+  Paper,
+  MenuItemProps,
+  Zoom,
+  Collapse
 } from "@material-ui/core";
-import React, { RefObject, useEffect, useState } from "react";
+import React, { ReactNode, RefObject, useEffect, useState } from "react";
 import { useRef } from "react";
 import { 
   CARD_BUTTON_HEADER_LABEL_CLASSES,
@@ -37,7 +40,7 @@ import { LabelBase } from "./Label";
 
 interface StyledDropDownMenuProps {
   title: string,
-  children: JSX.Element[],
+  children: JSX.Element | JSX.Element[],
   iconSize?: number,
   open?: boolean,
   anchor?: RefObject<HTMLButtonElement>,
@@ -57,9 +60,15 @@ interface FilterOperatorDropDownMenuProps {
   operators: (NumberFilterOperation | StringFilterOperation)[]
 }
 
-const useStyles = makeStyles(theme => ({
+interface GenericDropDownMenuProps {
+  title: string,
+  children: React.ReactElement<MenuItemProps> | React.ReactElement<MenuItemProps>[]
+}
+
+const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    flexDirection: 'row',
     width: '15%'
   },
   label: {
@@ -78,40 +87,57 @@ const useStyles = makeStyles(theme => ({
   },
   paper: {
     borderRadius: 0,
-    backgroundColor: '#282c34'
+    backgroundColor: '#282c34',
+    color: WHITE80
   }
 }));
 
 const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
-  const { children: menuItems, title, iconSize, open, anchor, handleToggle, handleClose } = props;
+  const {
+    children: menuItems,
+    title,
+    iconSize,
+    open,
+    anchor,
+    handleToggle,
+    handleClose,
+  } = props;
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <NamedIconButton
-        name="EXPAND"
-        size={iconSize ?? 16}
-        onClick={handleToggle}
-        buttonRef={anchor}
-      />
-      <LabelBase label={title} classes={classes.label} />
-      <Popper
-        open={open ?? false}
-        anchorEl={anchor?.current}
-        className={classes.menu}
-      >
-        <Paper elevation={0} className={classes.paper}>
-          <ClickAwayListener onClickAway={handleClose ?? (() => {})}>
-            <MenuList autoFocusItem={open}>
-              {menuItems.map(item => {
-                return (
-                  item
-                );
-              })}
-            </MenuList>
-          </ClickAwayListener>
-        </Paper>
-      </Popper>
+      <div className={classes.root}>
+        <NamedIconButton
+          name="EXPAND"
+          size={iconSize ?? 16}
+          onClick={handleToggle}
+          buttonRef={anchor}
+        />
+        <LabelBase label={title} classes={classes.label} />
+        <Collapse in={open}>
+        <Popper
+          open={open ?? false}
+          anchorEl={anchor?.current}
+          className={classes.menu}
+        >
+          <Paper elevation={0} className={classes.paper}>
+            <ClickAwayListener onClickAway={handleClose ?? (() => {})}>
+              <MenuList autoFocusItem={open}>
+                {Array.isArray(menuItems)
+                  ?
+                    menuItems.map(item => {
+                      return (
+                        item
+                      );
+                    })
+                  : menuItems
+                }
+              </MenuList>
+            </ClickAwayListener>
+          </Paper>
+          
+        </Popper>
+        </Collapse>
+      
     </div>
   );
 };
@@ -141,7 +167,6 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
-    console.log(open);
   };
 
   const handleClose = (event: React.MouseEvent<EventTarget>) => {
@@ -259,8 +284,47 @@ const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
   );
 };
 
+const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
+  const { title, children } = props;
+  const [open, setOpen] = useState(false);
+  const [selection, setSelection] = useState();
+  const prevOpen = useRef(open);
+  const anchor = useRef<HTMLButtonElement>(null);
+
+  const handleToggle = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const handleClose = (event: React.MouseEvent<EventTarget>) => {
+    if (anchor.current && anchor.current.contains(event.target as HTMLElement)) {
+      return;
+    }
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (prevOpen.current === true && open === false) {
+      anchor.current!.focus();
+    }
+    prevOpen.current = open;
+  }, [open]);
+
+  return (
+    <StyledDropDownMenu
+      title={title}
+      open={open}
+      anchor={anchor}
+      handleClose={handleClose}
+      handleToggle={handleToggle}
+    >
+      {children}
+    </StyledDropDownMenu>
+  );
+};
+
 export {
   StyledDropDownMenu,
   FilterDropDownMenu,
-  FilterOperatorDropDownMenu
+  FilterOperatorDropDownMenu,
+  GenericDropDownMenu
 }
