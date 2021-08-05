@@ -63,7 +63,7 @@ interface OrdersProps {
 }
 
 interface OrdersMinifiedProps {
-
+  setMessage?: (message: string) => void
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -148,6 +148,7 @@ const useStyleCollapsibleContent = makeStyles((theme) => ({
 }));
 
 const OrdersMinified = (props: OrdersMinifiedProps) => {
+  const { setMessage } = props;
   type OrderType = "working"|"todays"|"history";
   const classes = useStyleOrdersMinified();
   const collapsibleContentClasses = useStyleCollapsibleContent();
@@ -159,6 +160,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
+  let prods: string[] = [];
 
   const history = useHistory();
   const intl = useIntl();
@@ -202,7 +204,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const ordersToRows = (orders: any) => {
     let o: OrderRecordRow[] = [];
     if (orders) {
-      Array.prototype.forEach.call(orders, (order: AccOrderRecord)=> {
+      Array.prototype.forEach.call(orders, (order: AccOrderRecord) => {
         o.push({
           id: order.prodCode ?? '?',
           name: '?',
@@ -218,6 +220,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           time: order.timeStampStr ?? '?',
           extOrder: order.extOrderNo ?? '?'
         });
+        if (order.prodCode && prods.findIndex(s => s === order.prodCode) === -1) {
+          prods.push(order.prodCode);
+        }
       });
     }
     return o;
@@ -412,6 +417,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       //clearInterval(work);
     }
   }, []);
+
+  useEffect(() => {
+    Array.prototype.forEach.call(prods, (prod: string) => {
+      if (setMessage) {
+        setMessage(`4107,3,0,${prod},1,0`);
+      };
+    });
+  }, [prods]);
 
   return (
     <Card elevation={0} className={classes.card}>

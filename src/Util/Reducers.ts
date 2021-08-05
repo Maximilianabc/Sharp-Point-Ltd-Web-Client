@@ -16,6 +16,8 @@ interface UserState {
   order?: Account<Order>,
   doneTrade?: Account<DoneTrade>,
   working?: Account<WorkingOrder>,
+  marketDataShort?: MarketDataShort,
+  marketDataLong?: MarketDataLong,
 }
 
 type StateContentTypes = Empty | UserTypes | Account<Details> | unknown;
@@ -142,31 +144,34 @@ interface Balance {
   data: AccBalanceRecord[]
 }
 interface AccPositionRecord {
-  accNo?: string
-  aeCode?: string
-  closeQty?: number
-  decInPrc?: number
-  instCode?: string
-  longAvg?: number
-  longQty?: number
-  longShort?: string
-  longTotalAmt?: number
-  netAvg?: number
-  netLongQty?: number
-  netQty?: number
-  netShortQty?: number
-  netTotalAmt?: number
-  previousAvg?: number
-  prodCode?: string
-  profitLoss?: number
-  psQty?: number
-  psTotalAmt?: number
-  qty?: number
-  shortAvg?: number
-  shortQty?: number
-  shortTotalAmt?: number
-  totalAmt?: number
-  updateTime?: number
+  accNo?: string,
+  closeQty?: number,
+  covered?: number,
+  decInPrc?: number,
+  longAvg?: number,
+  longQty?: number,
+  longShort?: string,
+  longTotalAmount?: number,
+  longTotalAmt?: number,
+  mktPrice?: number,
+  netAvg?: number,
+  netLongQty?: number,
+  netQty?: number,
+  netShortQty?: number,
+  netTotalAmt?: number,
+  previousAvg?: number,
+  prodCode?: string,
+  prodProfitLoss?: number,
+  profitLoss?: number,
+  psQty?: number,
+  psTotalAmount?: number,
+  psTotalAmt?: number,
+  qty?: number,
+  shortAvg?: number,
+  shortQty?: number,
+  shortTotalAmount?: number,
+  shortTotalAmt?: number,
+  totalAmount?: number,
 }
 interface Position {
   data: AccPositionRecord[]
@@ -413,6 +418,67 @@ interface FxRate {
   ccy: string,
   rate: string
 }
+interface MarketDataLong {
+  prodCode: string,
+  productName: string,
+  productType: number,
+  contractSize: number,
+  expiryDate: number,
+  instrumentCode: string,
+  currency: string,
+  strike: number,
+  callPut: string,
+  underlying: string,
+  bidPrice1: number,
+  bidPrice2: number,
+  bidPrice3: number,
+  bidPrice4: number,
+  bidPrice5: number,
+  bidQty1: number,
+  bidQty2: number,
+  bidQty3: number,
+  bidQty4: number,
+  bidQty5: number,
+  askPrice1: number,
+  askPrice2: number,
+  askPrice3: number,
+  askPrice4: number,
+  askPrice5: number,
+  askQty1: number,
+  askQty2: number,
+  askQty3: number,
+  askQty4: number,
+  askQty5: number,
+  lastPrice1: number,
+  lastPrice2: number,
+  lastPrice3: number,
+  lastPrice4: number,
+  lastPrice5: number,
+  lastQty1: number,
+  lastQty2: number,
+  lastQty3: number,
+  lastQty4: number,
+  lastQty5: number,
+  openInterest: number,
+  turnoverAmount: number,
+  turnoverVolume: number,
+  reserved1: number,
+  reserved2: number,
+  equilibriumPrice: number,
+  open: number,
+  high: number,
+  low: number,
+  previousClose: number,
+  previousCloseDate: number,
+  notUsed: number,
+  tradeStateNo: number,
+}
+interface MarketDataShort {
+  prodCode: string,
+  mktPrice: number,
+  previousClose: number,
+  time: number
+}
 
 const currentUser = (state: UserState = {}, action: ActionData): UserState => {
   switch (action?.type) {
@@ -517,6 +583,75 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
           totalPage: action.payload?.totalPage
         } as Account<DoneTrade>
       };
+    case actionConsts.UPDATE_MARKET_PRICE_SHORT:
+      return {
+        ...state,
+        marketDataShort: {
+          prodCode: action.payload?.prodCode,
+          mktPrice: action.payload?.mktPrice,
+          previousClose: action.payload?.prevClose,
+          time: action.payload?.time
+        }
+      }
+    case actionConsts.UPDATE_MARKET_PRICE_LONG:
+      return {
+        ...state,
+        marketDataLong: {
+          prodCode: action.payload?.prodCode,
+          productName: action.payload?.productName,
+          productType: action.payload?.productType,
+          contractSize: action.payload?.contractSize,
+          expiryDate: action.payload?.expiryDate,
+          instrumentCode: action.payload?.instrumentCode,
+          currency: action.payload?.currency,
+          strike: action.payload?.strike,
+          callPut: action.payload?.callPut,
+          underlying: action.payload?.underlying,
+          bidPrice1: action.payload?.bidPrice1,
+          bidPrice2: action.payload?.bidPrice2,
+          bidPrice3: action.payload?.bidPrice3,
+          bidPrice4: action.payload?.bidPrice4,
+          bidPrice5: action.payload?.bidPrice5,
+          bidQty1: action.payload?.bidQty1,
+          bidQty2: action.payload?.bidQty2,
+          bidQty3: action.payload?.bidQty3,
+          bidQty4: action.payload?.bidQty4,
+          bidQty5: action.payload?.bidQty5,
+          askPrice1: action.payload?.askPrice1,
+          askPrice2: action.payload?.askPrice2,
+          askPrice3: action.payload?.askPrice3,
+          askPrice4: action.payload?.askPrice4,
+          askPrice5: action.payload?.askPrice5,
+          askQty1: action.payload?.askQty1,
+          askQty2: action.payload?.askQty2,
+          askQty3: action.payload?.askQty3,
+          askQty4: action.payload?.askQty4,
+          askQty5: action.payload?.askQty5,
+          lastPrice1: action.payload?.lastPrice1,
+          lastPrice2: action.payload?.lastPrice2,
+          lastPrice3: action.payload?.lastPrice3,
+          lastPrice4: action.payload?.lastPrice4,
+          lastPrice5: action.payload?.lastPrice5,
+          lastQty1: action.payload?.lastQty1,
+          lastQty2: action.payload?.lastQty2,
+          lastQty3: action.payload?.lastQty3,
+          lastQty4: action.payload?.lastQty4,
+          lastQty5: action.payload?.lastQty5,
+          openInterest: action.payload?.openInterest,
+          turnoverAmount: action.payload?.turnoverAmount,
+          turnoverVolume: action.payload?.turnoverVolume,
+          reserved1: action.payload?.reserved1,
+          reserved2: action.payload?.reserved2,
+          equilibriumPrice: action.payload?.equilibriumPrice,
+          open: action.payload?.open,
+          high: action.payload?.high,
+          low: action.payload?.low,
+          previousClose: action.payload?.previousClose,
+          previousCloseDate: action.payload?.previousCloseDate,
+          notUsed: action.payload?.notUsed,
+          tradeStateNo: action.payload?.tradeStateNo
+        }
+      }
     default:
       return state;
   }
@@ -546,6 +681,8 @@ export type {
   WorkingOrder,
   OrderHistory,
   FxRate,
+  MarketDataLong,
+  MarketDataShort,
   AccInfoRecord,
   AccSummaryRecord,
   AccBalanceRecord,

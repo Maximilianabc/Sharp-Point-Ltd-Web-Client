@@ -14,7 +14,9 @@ const actionConsts: Record<string, string> = {
   SET_ACC_ORDER: 'SET_ACC_ORDER',
   SET_ACC_POS: 'SET_ACC_POS',
   SET_ACC_SUM: 'SET_ACC_SUM',
-  SET_DONE_TRADE: 'SET_DONE_TRADE'
+  SET_DONE_TRADE: 'SET_DONE_TRADE',
+  UPDATE_MARKET_PRICE_SHORT: 'UPDATE_MARKET_PRICE_SHORT',
+  UPDATE_MARKET_PRICE_LONG: 'UPDATE_MARKET_PRICE_LONG',
 };
 
 const loginAction = (data: any): ActionData => {
@@ -93,6 +95,20 @@ const setDoneTradeReportAction = (doneTrade: any): ActionData => {
   }
 };
 
+const updateMarketDataShortAction = (mktDataShort: any): ActionData => {
+  return {
+    type: actionConsts.UPDATE_MARKET_PRICE_SHORT,
+    payload: mktDataShort
+  }
+};
+
+const updateMarketDataLongAction = (mktDataLong: any): ActionData => {
+  return {
+    type: actionConsts.UPDATE_MARKET_PRICE_LONG,
+    payload: mktDataLong
+  }
+};
+
 export {
   actionConsts,
   loginAction,
@@ -105,7 +121,9 @@ export {
   setAccountPositionAction,
   setAccountSummaryAction,
   setAccountBalanaceAction,
-  setDoneTradeReportAction
+  setDoneTradeReportAction,
+  updateMarketDataShortAction,
+  updateMarketDataLongAction,
 };
 export type {
   ActionData

@@ -15,7 +15,11 @@ import {
   CARD_CLASSES,
   workingInProgess,
   SCROLL_BAR_CLASSES,
-  messages
+  messages,
+  AccPositionRecord,
+  MarketDataShort,
+  store,
+  MarketDataLong
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Card, CardContent } from '@material-ui/core';
@@ -36,7 +40,7 @@ interface PositionProps {
 }
 
 interface PositionMinifiedProps {
-
+  setMessage?: (message: string) => void
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -91,14 +95,22 @@ const useStyleMinified = makeStyles((theme) => ({
 }));
 
 const PositionsMinified = (props : PositionMinifiedProps) => {
+  const { setMessage } = props;
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
+
   const [positions, setPositions] = useState<PositionRecordRow[]>([]);
+  const [prods, setProds] = useState<string[]>([]);
+  const [longMode, setLongMode] = useState(true);
+
   const classes = useStyleMinified();
   const dispatch = useDispatch();
   const history = useHistory();
   const hooks = getDispatchSelectCB(OPConsts.POSITION);
   const intl = useIntl();
+
+  let mktDataShort: MarketDataShort | undefined;
+  let mktDataLong: MarketDataLong | undefined;
 
   useEffect(() => {
     const payload = {
@@ -111,6 +123,11 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
+            if (longMode) {
+              mktDataLong = store.getState().marketDataLong
+            } else {
+              mktDataShort = store.getState().marketDataShort;
+            }
           } else {
             history.push({
               pathname: '/logout',
@@ -125,7 +142,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 60000); 
+    let work = setInterval(workFunction, 1000); 
     return () => {
       clearInterval(work);
     };
@@ -133,24 +150,32 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
 
   const positionsToRows = (positions: any): PositionRecordRow[] => {
     let p: PositionRecordRow[] = [];
+    let products: string[] = prods;
     if (positions) {
-      Array.prototype.forEach.call(positions, pos => {
+      Array.prototype.forEach.call(positions, (pos: AccPositionRecord) => {
         p.push({
-          id: pos.prodCode,
-          name: '?',
+          id: pos.prodCode ?? '?',
+          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
           prev: `${pos.psQty}@${pos.previousAvg}`,
           dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
           dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
-          mkt: pos.mktPrice,
-          pl: pos.profitLoss,
-          prevClose: '?',
-          optVal: pos.totalAmt, //?
+          mkt: longMode ? (mktDataLong?.bidPrice1?.toString() ?? '?') : (mktDataShort?.mktPrice?.toString() ?? '?'),
+          pl: pos.profitLoss?.toString() ?? '?',
+          prevClose: longMode ? (mktDataLong?.previousClose?.toString() ?? '?') : (mktDataShort?.previousClose?.toString() ?? '?'),
+          optVal: '?',
           fx: 0,
           contract: ''}
         );
+        if (pos.prodCode && products.findIndex(s => s === pos.prodCode) === -1) {
+          if (setMessage) {
+            products.push(pos.prodCode);
+            setMessage(`4107,0,${pos.prodCode},${longMode ? '0' : '1'},0\r\n`);
+          };
+        }
       });
     }
+    setProds(products);
     return p;
   };
   
