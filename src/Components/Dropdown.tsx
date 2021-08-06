@@ -69,14 +69,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
     flexDirection: 'row',
-    width: '15%'
-  },
-  label: {
-    root: {
-      ...LABEL_CLASSES,
-      color: 'white',
-      fontSize: '1rem'
-    }
+    minWidth: 'fit-content'
   },
   button: {
     ...CARD_BUTTON_HEADER_LABEL_CLASSES,
@@ -105,39 +98,42 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
   const classes = useStyles();
 
   return (
-      <div className={classes.root}>
-        <NamedIconButton
-          name="EXPAND"
-          size={iconSize ?? 16}
-          onClick={handleToggle}
-          buttonRef={anchor}
-        />
-        <LabelBase label={title} classes={classes.label} />
-        <Collapse in={open}>
-        <Popper
-          open={open ?? false}
-          anchorEl={anchor?.current}
-          className={classes.menu}
-        >
-          <Paper elevation={0} className={classes.paper}>
-            <ClickAwayListener onClickAway={handleClose ?? (() => {})}>
-              <MenuList autoFocusItem={open}>
-                {Array.isArray(menuItems)
-                  ?
-                    menuItems.map(item => {
-                      return (
-                        item
-                      );
-                    })
-                  : menuItems
-                }
-              </MenuList>
-            </ClickAwayListener>
-          </Paper>
-          
-        </Popper>
-        </Collapse>
-      
+    <div className={classes.root}>
+      <NamedIconButton
+        name="EXPAND"
+        size={iconSize ?? 16}
+        onClick={handleToggle}
+        buttonRef={anchor}
+      />
+      <LabelBase label={title} classes={{ 
+        root: { 
+          color: WHITE80, 
+          fontSize: '1rem',
+          display: 'flex',
+          alignItems: 'center'
+        }}}/>
+      <Popper
+        open={open ?? false}
+        anchorEl={anchor?.current}
+        className={classes.menu}
+        placement="bottom-start"
+      >
+        <Paper elevation={0} className={classes.paper}>
+          <ClickAwayListener onClickAway={handleClose ?? (() => {})}>
+            <MenuList autoFocusItem={open}>
+              {Array.isArray(menuItems)
+                ?
+                  menuItems.map(item => {
+                    return (
+                      item
+                    );
+                  })
+                : menuItems
+              }
+            </MenuList>
+          </ClickAwayListener>
+        </Paper>
+      </Popper>
     </div>
   );
 };
@@ -287,7 +283,6 @@ const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
 const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
   const { title, children } = props;
   const [open, setOpen] = useState(false);
-  const [selection, setSelection] = useState();
   const prevOpen = useRef(open);
   const anchor = useRef<HTMLButtonElement>(null);
 
