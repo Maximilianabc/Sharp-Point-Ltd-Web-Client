@@ -190,14 +190,14 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
   const indices = [...Array(iconsLength).keys()];
 
   return (
-    <TableHead className={classes.root} key={genRandomHex(16)}>
-      <TableRow className={classes.row} key={genRandomHex(16)}>
+    <TableHead className={classes.root} key={genRandomHex(8)}>
+      <TableRow className={classes.row} key={genRandomHex(8)}>
         {labels.map((lbl, index) => {
           return (
             <TableCell
               className={classes.cell}
               align={lbl.align}
-              key={genRandomHex(16)}
+              key={genRandomHex(8)}
               classes={{
                 stickyHeader: classes.cell
               }}
@@ -212,13 +212,13 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                       colorMode={lbl.colorMode}
                       classes={lbl.classes}
                       subLabels={lbl.subLabels}
-                      key={genRandomHex(16)}
+                      key={genRandomHex(8)}
                     />
                   : isStackedLabel(lbl)
                     ? <StackedLabel
                         classes={lbl.classes}
                         otherLabels={lbl.otherLabels}
-                        key={genRandomHex(16)}
+                        key={genRandomHex(8)}
                       />
                     : isLabelBaseProps(lbl)
                       ? <LabelBase
@@ -226,7 +226,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                           colorMode={lbl.colorMode}
                           classes={lbl.classes}
                           icon={lbl.icon}
-                          key={genRandomHex(16)}
+                          key={genRandomHex(8)}
                         />
                       : null
                 }
@@ -238,7 +238,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
                     active: classes.icon,
                     icon: classes.icon
                   }}
-                  key={genRandomHex(16)}
+                  key={genRandomHex(8)}
                 >               
                   {
                     orderBy === lbl.id ? (
@@ -253,7 +253,7 @@ const DataTableHeader = (props: DataTableHeaderProps) => {
         })}
         {indices.map(i => {
           return (
-            <TableCell className={classes.cell} key={genRandomHex(16)}/>
+            <TableCell className={classes.cell} key={genRandomHex(8)}/>
           )
         })}
       </TableRow>
@@ -347,34 +347,34 @@ const DataTable = (props: DataTableProps) => {
   }, [])*/
 
   return (
-    <Paper className={classes.paper} elevation={0} key={genRandomHex(16)}>
+    <Paper className={classes.paper} elevation={0} key={genRandomHex(8)}>
         { removeToolBar ? null :
-          <StyledTableToolbar title={title} key={genRandomHex(16)}>
+          <StyledTableToolbar title={title} key={genRandomHex(8)}>
             <TooltipIconButton
               title={messages[intl.locale].filter_list}
               name="FILTER"
-              key={genRandomHex(16)}
+              key={genRandomHex(8)}
             />
           </StyledTableToolbar>
         }
-        <TableContainer className={clsx(classes.container, containerClasses)} key={genRandomHex(16)}>
+        <TableContainer className={clsx(classes.container, containerClasses)} key={genRandomHex(8)}>
           <Table
             size="medium"
             stickyHeader
             classes={{
               stickyHeader: classes.table
             }}
-            key={genRandomHex(16)}
+            key={genRandomHex(8)}
           >
             <DataTableHeader
               labels={headLabels}
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              key={genRandomHex(16)}
+              key={genRandomHex(8)}
               iconsLength={icons?.length ?? 0}
             />
-            <TableBody key={genRandomHex(16)}>            
+            <TableBody key={genRandomHex(8)}>            
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
                   return (
@@ -386,13 +386,13 @@ const DataTable = (props: DataTableProps) => {
                       collapsible={rowCollapsible}
                       open={openArray && openArray[index]}
                       openArray={openArray}
-                      key={genRandomHex(16)}
+                      key={genRandomHex(8)}
                       collapsibleContent={collapsibleContents && collapsibleContents[index]}
                     />
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(16)}/>
+                <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(8)}/>
               )}   
             </TableBody>
           </Table>
@@ -408,7 +408,7 @@ const DataTable = (props: DataTableProps) => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
-              key={genRandomHex(16)}
+              key={genRandomHex(8)}
             />
           : null
         }
@@ -440,9 +440,9 @@ const DataRow = (props: DataRowProps) => {
   const rowClasses = useStlyeDataRow();
 
   return (
-    <React.Fragment>
+    <React.Fragment key={genRandomHex(8)}>
       <TableRow
-        key={genRandomHex(16)}
+        key={genRandomHex(8)}
         className={rowClasses.root}
       >
         {row.map((lbl, index) => {
@@ -452,7 +452,7 @@ const DataRow = (props: DataRowProps) => {
               scope={index === 0 ? "row" : undefined}
               className={classes.cell}
               align={lbl.align}
-              key={genRandomHex(16)}
+              key={genRandomHex(8)}
             >
               {
                 isCompositeLabel(lbl)
@@ -464,14 +464,14 @@ const DataRow = (props: DataRowProps) => {
                     icon={lbl.icon}
                     classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                     subLabels={lbl.subLabels}
-                    key={genRandomHex(16)}
+                    key={genRandomHex(8)}
                   />
                 : isStackedLabel(lbl)
                   ? <StackedLabel
                       classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                       otherLabels={lbl.otherLabels}
                       icon={lbl.icon}
-                      key={genRandomHex(16)}
+                      key={genRandomHex(8)}
                     />
                   : isLabelBaseProps(lbl)
                     ? <LabelBase 
@@ -479,7 +479,7 @@ const DataRow = (props: DataRowProps) => {
                         colorMode={lbl.colorMode}
                         classes={{root: { ...lbl.classes?.root, marginRight: '1rem'}}}
                         icon={lbl.icon}
-                        key={genRandomHex(16)}
+                        key={genRandomHex(8)}
                       />
                     : null
               }
@@ -491,7 +491,7 @@ const DataRow = (props: DataRowProps) => {
               return (
                 icon 
                 ?
-                  <TableCell className={classes.iconCell}>
+                  <TableCell className={classes.iconCell} key={genRandomHex(8)}>
                     {
                       isTooltipIconButton(icon)
                       ? 
@@ -503,7 +503,7 @@ const DataRow = (props: DataRowProps) => {
                           otherProps={icon.otherProps}
                           classes={icon.classes}
                           onClick={icon.isRowBasedCallback ? () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val)) : icon.onClick} // TODO add support to other row-based callbacks
-                          key={genRandomHex(16)}
+                          key={genRandomHex(8)}
                         />
                       :
                         <NamedIconButton 
@@ -512,7 +512,7 @@ const DataRow = (props: DataRowProps) => {
                           buttonStyle={icon.buttonStyle}
                           otherProps={icon.otherProps}
                           onClick={icon.onClick}
-                          key={genRandomHex(16)}
+                          key={genRandomHex(8)}
                         />
                     }
                   </TableCell>
@@ -524,9 +524,9 @@ const DataRow = (props: DataRowProps) => {
       </TableRow>
       {collapsible && open
         ?
-          <TableRow className={rowClasses.root} key={genRandomHex(16)}>
-            <TableCell colSpan={row.length + (icons !== undefined ? icons.length : 0)} className={classes.cell} key={genRandomHex(16)}>
-              <Collapse in={open} key={genRandomHex(16)}>
+          <TableRow className={rowClasses.root} key={genRandomHex(8)}>
+            <TableCell colSpan={row.length + (icons !== undefined ? icons.length : 0)} className={classes.cell} key={genRandomHex(8)}>
+              <Collapse in={open} key={genRandomHex(8)}>
                 {collapsibleContent}
               </Collapse>
             </TableCell>

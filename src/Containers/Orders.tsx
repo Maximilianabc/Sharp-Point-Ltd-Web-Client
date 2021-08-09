@@ -51,7 +51,8 @@ import {
   WHITE40,
   WHITE60,
   WHITE80,
-  messages
+  messages,
+  localeTypes
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
@@ -300,14 +301,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     }
   };
 
-  const RowsToLabels = (rows: OrderRecordRow[]): LabelBaseProps[][] => {
+  const RowsToLabels = (rows: OrderRecordRow[], locale: localeTypes): LabelBaseProps[][] => {
     let lbls: LabelBaseProps[][] = [];
     if (rows)
     {
       Array.prototype.forEach.call(rows, (r: OrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
@@ -319,14 +320,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return lbls;
   };
 
-  const workingOrderRowsToLabels = (rows: WorkingOrderRecordRow[]): LabelBaseProps[][] => {
+  const workingOrderRowsToLabels = (rows: WorkingOrderRecordRow[], locale: localeTypes): LabelBaseProps[][] => {
     let lbls: LabelBaseProps[][] = [];
     if (rows)
     {
       Array.prototype.forEach.call(rows, (r: WorkingOrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
@@ -338,14 +339,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return lbls;
   };
 
-  const orderHistoryRowsToLabels = (rows: OrderHistoryRecordRow[]): LabelBaseProps[][] => {
+  const orderHistoryRowsToLabels = (rows: OrderHistoryRecordRow[], locale: localeTypes): LabelBaseProps[][] => {
     let lbls: LabelBaseProps[][] = [];
     if (rows)
     {
       Array.prototype.forEach.call(rows, (r: OrderHistoryRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? 'Sell' : 'Buy', r.status.toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
@@ -357,12 +358,12 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return lbls;
   }
  
-  const getLabels = () => {
+  const getLabels = (locale: string) => {
     return selectedOrderType === 'todays' 
-            ? RowsToLabels(orders) 
+            ? RowsToLabels(orders, locale as localeTypes) 
             : selectedOrderType === 'working' 
-              ? workingOrderRowsToLabels(workingOrders) 
-              : orderHistoryRowsToLabels(orderHistory);
+              ? workingOrderRowsToLabels(workingOrders, locale as localeTypes) 
+              : orderHistoryRowsToLabels(orderHistory, locale as localeTypes);
   }
 
   const getCollapsibleContent = (
@@ -489,7 +490,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           </StyledTableToolbar>
         <DataTable
           headLabels={Object.values(headCellsMinified)}
-          data={getLabels()}
+          data={getLabels(intl.locale)}
           removeToolBar
           rowCollapsible
           openArray={currentOpen}
@@ -500,7 +501,13 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps 
           ]}
           containerClasses={classes.container}
-          collapsibleContents={orderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))}
+          collapsibleContents={
+            selectedOrderType === 'history'
+              ? orderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))
+              : selectedOrderType == 'todays'
+                ? orders.map(o => getCollapsibleContent(o, collapsibleContentClasses))
+                : workingOrders.map(w => getCollapsibleContent(w, collapsibleContentClasses))
+          }
         />
       </CardContent>
     </Card>

@@ -19,6 +19,7 @@ import {
   CARD_BUTTON_HEADER_LABEL_CLASSES,
   CARD_CLASSES,
   FilterType,
+  genRandomHex,
   getOperatorDisplayText,
   getOperators,
   LABEL_CLASSES,
@@ -44,6 +45,7 @@ interface StyledDropDownMenuProps {
   iconSize?: number,
   open?: boolean,
   anchor?: RefObject<HTMLButtonElement>,
+  disabled?: boolean,
   handleClose?: (event: React.MouseEvent<Document, MouseEvent>) => void,
   handleToggle?: (event: React.MouseEvent) => void
 }
@@ -62,7 +64,8 @@ interface FilterOperatorDropDownMenuProps {
 
 interface GenericDropDownMenuProps {
   title: string,
-  children: React.ReactElement<MenuItemProps> | React.ReactElement<MenuItemProps>[]
+  children: React.ReactElement<MenuItemProps> | React.ReactElement<MenuItemProps>[],
+  disabled?: boolean
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -92,6 +95,7 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
     iconSize,
     open,
     anchor,
+    disabled,
     handleToggle,
     handleClose,
   } = props;
@@ -102,12 +106,12 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
       <NamedIconButton
         name="EXPAND"
         size={iconSize ?? 16}
-        onClick={handleToggle}
+        onClick={disabled ? () => {} : handleToggle}
         buttonRef={anchor}
       />
       <LabelBase label={title} classes={{ 
         root: { 
-          color: WHITE80, 
+          color: `${WHITE80} !important`, 
           fontSize: '1rem',
           display: 'flex',
           alignItems: 'center'
@@ -193,6 +197,7 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
             isRowBasedCallback={controlButton.isRowBasedCallback}
             onClick={handleToggle}
             classes={controlButton.classes}
+            key={genRandomHex(8)}
           />
         :
           <NamedIconButton
@@ -203,22 +208,24 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
             otherProps={controlButton.otherProps}
             isRowBasedCallback={controlButton.isRowBasedCallback}
             onClick={handleToggle}
+            key={genRandomHex(8)}
           />
       }     
       <Popper
         open={open}
         anchorEl={anchor.current}
         className={classes.popper}
+        key={genRandomHex(8)}
       >
-        <Paper elevation={0} className={classes.paper}>
-          <ClickAwayListener onClickAway={handleClose}>
-            <MenuList autoFocusItem={false}>
+        <Paper elevation={0} className={classes.paper} key={genRandomHex(8)}>
+          <ClickAwayListener onClickAway={handleClose} key={genRandomHex(8)}>
+            <MenuList autoFocusItem={false} key={genRandomHex(8)}>
               {
                 filterLabels.map((f, index) => {
                   return (
-                    <MenuItem className={classes.row} button={false}>
-                      <FilterOperatorDropDownMenu operators={getOperators(filterTypes[index])} />
-                      <FormInputField label={f} variant="filled"/>
+                    <MenuItem className={classes.row} button={false} key={genRandomHex(8)}>
+                      <FilterOperatorDropDownMenu operators={getOperators(filterTypes[index])} key={genRandomHex(8)}/>
+                      <FormInputField label={f} variant="filled" key={genRandomHex(8)}/>
                     </MenuItem>
                   )
                 })
@@ -281,7 +288,7 @@ const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
 };
 
 const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
-  const { title, children } = props;
+  const { title, children, disabled } = props;
   const [open, setOpen] = useState(false);
   const prevOpen = useRef(open);
   const anchor = useRef<HTMLButtonElement>(null);
@@ -309,6 +316,7 @@ const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
       title={title}
       open={open}
       anchor={anchor}
+      disabled={disabled}
       handleClose={handleClose}
       handleToggle={handleToggle}
     >

@@ -73,20 +73,20 @@ const DefaultAppbar = (props: AppbarProps) => {
       className={clsx(classes.appBar, {
         [classes.appBarShift]: props.sidemenuopened,
       })}
-      key={genRandomHex(16)}
+      key={genRandomHex(8)}
     >
-      <Toolbar key={genRandomHex(16)}>
+      <Toolbar key={genRandomHex(8)}>
         <IconButton
           color="inherit"
           aria-label="sidemenuopened drawer"
           onClick={props.handleDrawerOpen}
           edge="start"
           className={clsx(classes.menuButton, props.sidemenuopened && classes.hide)}
-          key={genRandomHex(16)}
+          key={genRandomHex(8)}
         >
-          <MenuRoundedIcon key={genRandomHex(16)}/>
+          <MenuRoundedIcon key={genRandomHex(8)}/>
         </IconButton>
-        <img src={companyLogo} style={{ height: '64px', width: '64px' }} key={genRandomHex(16)}/>
+        <img src={companyLogo} style={{ height: '64px', width: '64px' }} key={genRandomHex(8)}/>
         <Typography variant="h6" noWrap>
           {props.title}
         </Typography>
@@ -98,7 +98,7 @@ const DefaultAppbar = (props: AppbarProps) => {
                 classes={{ disableElevation: 'true' }}
                 style={{ fontSize: '1rem' }}
                 onClick={() => onChangeLang(getLangButtonName(text))}
-                key={genRandomHex(16)}
+                key={genRandomHex(8)}
               >
                 {text}
               </Button>
@@ -109,7 +109,7 @@ const DefaultAppbar = (props: AppbarProps) => {
             classes={{ disableElevation: 'true' }}
             style={{ fontSize: '1rem' }}
             onClick={() => history.push('/logout')}
-            key={genRandomHex(16)}
+            key={genRandomHex(8)}
           >
             {messages[intl.locale].logout}
           </Button>

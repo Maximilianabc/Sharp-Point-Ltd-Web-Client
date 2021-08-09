@@ -32,7 +32,7 @@ enum OPConsts {
 	SINGLE = SUMMARY | BALANCE | POSITION | ORDER,
 	REPORT = DONE_TRADE | WORKING | HISTORY
 };
-type OrderStatus = 'Sending' | 'Inactive' | 'Pending' | 'Working' | 'Traded' | 'Deleted';
+type OrderStatus = 'Adding' | 'Sending' | 'Inactive' | 'Pending' | 'Working' | 'Traded' | 'Deleted';
 
 // TODO: replace any with push message json format
 interface Response {
@@ -485,6 +485,42 @@ const getOperatorDisplayText = (op: NumberFilterOperation | StringFilterOperatio
 	}
 };
 
+const getValidTypeNumber = (type: string): number => {
+	switch (type) {
+		case 'Today':
+			return 0;
+		case 'FaK':
+			return 1;
+		case 'FoK':
+			return 2;
+		case 'GTC':
+			return 3;
+		case 'Date':
+			return 4;
+		default:
+			throw new Error(`Unknown valid type ${type}`);
+	}
+};
+
+const getConditionTypeNumber = (type: string): number => {
+	switch (type) {
+		case 'Normal':
+			return 0;
+		case 'Enchanced Stop':
+			return 1;
+		case 'OCO':
+			return 4;
+		case 'Time To Send':
+			return 3;
+		case 'Bull & Bear':
+		case 'Trade Booking':
+			alert('Unmatched condType in api with options available');
+			return 0;
+		default:
+			throw new Error(`Unknwown condition type ${type}`);
+	}
+};
+
 const workingInProgess = () => {
 	alert('Working in Progress...');
 };
@@ -510,6 +546,8 @@ export {
 	getValidTypeString,
 	getOperators,
 	getOperatorDisplayText,
+	getConditionTypeNumber,
+	getValidTypeNumber,
 	workingInProgess
 };
 export type {

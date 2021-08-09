@@ -125,6 +125,7 @@ const TooltipIconButton = (props: TooltipIconProps) => {
 
 const getIconTypeByStatus = (status: OrderStatus): IconTypes => {
   switch (status) {
+    case 'Adding':
     case 'Sending':
       return 'UPLOADING';
     case 'Pending':

@@ -1,3 +1,5 @@
+type localeTypes = "en-US" | "zh-HK" | "zh-CN";
+
 const locales = {
   ENGLISH: "en-US",
   CHINESE_TRADITIONAL: "zh-HK",
@@ -67,9 +69,17 @@ const messages: { [key: string]: { [key: string]: string } }= {
     buy: 'Buy',
     sell: 'Sell',
     status: 'Status',
+    adding: 'Adding',
+    sending: 'Sending',
     working: 'Working',
     deleted: 'Deleted',
-    traded: 'Traded'
+    traded: 'Traded',
+    valid: 'Validity',
+    condition: 'Condition',
+    initiator: 'Initiator',
+    time: 'Time',
+    reference: 'Reference',
+    external_order: 'External Order No.'
   },
   [locales.CHINESE_TRADITIONAL]: {
     login: '登入',
@@ -133,9 +143,17 @@ const messages: { [key: string]: { [key: string]: string } }= {
     buy: '買',
     sell: '賣',
     status: '狀態',
+    adding: '新增中',
+    sending: '傳送中',
     working: '工作中',
     deleted: '已刪除',
-    traded: '已成交'
+    traded: '已成交',
+    valid: '有效期',
+    condition: '條件',
+    initiator: '原發者',
+    time: '時間標記',
+    reference: '參考',
+    external_order: '外部指示#'
   },
   [locales.CHINESE_SIMPLIFIED]: {
     login: '登录',
@@ -199,9 +217,17 @@ const messages: { [key: string]: { [key: string]: string } }= {
     buy: '买',
     sell: '卖',
     status: '状态',
+    adding: '新增中',
+    sending: '传送中',
     working: '工作中',
     deleted: '已删除',
-    traded: '已成交'
+    traded: '已成交',
+    valid: '有效期',
+    condition: '条件',
+    initiator: '原发者',
+    time: '时间标记',
+    reference: '参考',
+    external_order: '外部指示#'
   }
 };
 
@@ -223,4 +249,8 @@ export {
   locales,
   messages,
   getTimePhrase
+}
+
+export type {
+  localeTypes
 }

@@ -1,4 +1,5 @@
-import { Button, createMuiTheme, MuiThemeProvider } from "@material-ui/core";
+import { Button, MuiThemeProvider } from "@material-ui/core";
+import { createTheme } from '@material-ui/core/styles';
 import ThemeProvider from "@material-ui/styles/ThemeProvider";
 import { ROBOTO_SEMILIGHT } from "../Util";
 
@@ -8,7 +9,7 @@ interface CardActionButtonProps {
   iconPosition?: 'start' | 'end'
 }
 
-const CardActionButtonTheme = createMuiTheme({
+const CardActionButtonTheme = createTheme({
   typography: {
     button: {
       backgroundColor: 'transparent',
