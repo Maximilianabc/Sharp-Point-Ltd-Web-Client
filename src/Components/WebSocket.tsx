@@ -191,9 +191,18 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
   }, []);
 
   useEffect(() => {
-    if (message !== undefined && message !== '') {
-      ws.current?.send(message);
+    const sendMessage = () => {
+      if (message !== undefined && message !== '' && ws.current?.readyState === WebSocket.OPEN) {
+        ws.current?.send(message);
+      } else {
+        if (ws.current?.readyState === WebSocket.CLOSING || ws.current?.readyState === WebSocket.CLOSED) {
+          return;
+        }
+        console.log('connecting to price server...');
+        setTimeout(sendMessage, 1000);
+      }
     }
+
   }, [message]);
 
   return null;

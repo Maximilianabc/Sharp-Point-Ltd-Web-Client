@@ -18,7 +18,7 @@ const priceHost = "localhost";
 const pricePort = "8063";
 const wsPort = "12000";
 const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
-const wsPriceAddress = `ws://${host}:${pricePort}`;
+const wsPriceAddress = /*`ws://${host}:${pricePort}`*/ `ws://192.168.123.136:${pricePort}`;
 const path = `http${internal ? '' : 's'}://${host}:${port}/apiCustomer`;
 
 enum OPConsts {
