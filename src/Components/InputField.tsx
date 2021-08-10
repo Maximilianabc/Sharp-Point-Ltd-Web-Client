@@ -1,13 +1,17 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
+	createTheme,
+	FormControl,
 	FormControlLabel,
+	InputLabel,
 	InputLabelProps,
 	TextField,
 	withStyles
 } from '@material-ui/core';
 import { BaseTextFieldProps } from '@material-ui/core';
 import { LABEL_CLASSES, WHITE40, WHITE5, WHITE60, WHITE80 } from '../Util';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 
 interface DefaultInputFieldProps extends BaseTextFieldProps {
 	variant?: any,
@@ -77,7 +81,7 @@ const DefaultInputField = (props: DefaultInputFieldProps) => {
 const useStyleForm = makeStyles((theme) => ({
 	root: {
 		color: `${WHITE80}`,
-		margin: '0 0.5rem 0.25rem 0.5rem'
+		margin: '0.25rem 0.5rem 0.25rem 0.5rem'
 	}
 }));
 
@@ -116,6 +120,121 @@ const WhiteTextField = withStyles({
   },
 })(TextField);
 
+const WhiteSelectFormControl = withStyles({
+  root: {
+    '& .MuiInput-underline:before': {
+      borderBottom: `1px solid ${WHITE60}`,
+    },
+    '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+      borderBottom: `1px solid ${WHITE80}`,
+    },
+    '& .MuiInput-underline:after': {
+      borderBottom: '1px solid white'
+    },
+		'& .MuiFormLabel-root': {
+			color: WHITE60
+		},
+		'& .MuiFormLabel-root.Mui-focused': {
+			color: 'white'
+		},
+		'& .MuiSelect-select': {
+			color: 'aquamarine'
+		},
+		'& .MuiFormLabel-root.Mui-disabled': {
+			color: WHITE40
+		},
+		'& .MuiPopover-paper': {
+			borderRadius: 0,
+			backgroundColor: '#282c34',
+			color: WHITE80
+		},
+		'& .MuiListItem-root.Mui-selected': {
+			color: 'aquamarine'
+		},
+		'& .MuiListItem-button:hover': {
+			backgroundColor: WHITE5
+		}
+  }
+})(FormControl);
+/*
+const materialTheme = createTheme({
+  overrides: {
+    MuiPickersToolbar: {
+      toolbar: {
+        backgroundColor: lightBlue.A200,
+      },
+    },
+    MuiPickersCalendarHeader: {
+      switchHeader: {
+        // backgroundColor: lightBlue.A200,
+        // color: "white",
+      },
+    },
+    MuiPickersDay: {
+      day: {
+        color: lightBlue.A700,
+      },
+      daySelected: {
+        backgroundColor: lightBlue["400"],
+      },
+      dayDisabled: {
+        color: lightBlue["100"],
+      },
+      current: {
+        color: lightBlue["900"],
+      },
+    },
+    MuiPickersModal: {
+      dialogAction: {
+        color: lightBlue["400"],
+      },
+    },
+  },
+});*/
+
+const WhiteDatePicker = withStyles({
+  root: {
+    '& .MuiInput-underline:before': {
+      borderBottom: `1px solid ${WHITE60}`,
+    },
+    '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+      borderBottom: `1px solid ${WHITE80}`,
+    },
+    '& .MuiInput-underline:after': {
+      borderBottom: '1px solid white'
+    },
+		'& .MuiFormLabel-root': {
+			color: WHITE60
+		},
+		'& .MuiFormLabel-root.Mui-focused': {
+			color: 'white'
+		},
+		'& .MuiFormLabel-root.Mui-disabled': {
+			color: WHITE40
+		},
+		'& .MuiInputBase-input': {
+			color: 'aquamarine'
+		},
+		'& .MuiPickersBasePicker-container': {
+			backgroundColor: '#282c34',
+			color: WHITE80
+		},
+		'& .MuiPickersDay-dayDisabled': {
+			color: WHITE40
+		},
+		'& .MuiPickersDay-current': {
+			color: WHITE80
+		},
+		'& .MuiPickersDay-day': {
+			color: 'mediumaquamarine'
+		},
+		'& .MuiPickersDay-daySelected': {
+			color: 'aquamarine',
+			backgroundColor: WHITE5
+		}
+  }
+})(KeyboardDatePicker);
+
 const FormInputField = (props: FormInputFieldProps) => {
 	const { variant, label, type, labelProps, onChange} = props;
 	const classes = useStyleForm();
@@ -126,6 +245,7 @@ const FormInputField = (props: FormInputFieldProps) => {
 			label={label}
 			type={type}
 			onChange={onChange}
+			defaultValue=""
 		/>
 	)
 };
@@ -162,5 +282,7 @@ export {
 	DefaultInputField,
 	FormInputField,
 	FormNumericUpDown,
-	CheckBoxField
+	CheckBoxField,
+	WhiteSelectFormControl,
+	WhiteDatePicker
 }

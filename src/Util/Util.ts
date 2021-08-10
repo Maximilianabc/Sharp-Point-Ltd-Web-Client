@@ -11,7 +11,7 @@ import {
 } from './Reducers';
 
 // NOTE: Change this to false when deploying to server for external use
-const internal = true;
+const internal = false;
 const host = internal ? "192.168.123.136" : "futures.spsystem.info";
 const port = internal ? "99" : "9026";
 const priceHost = "localhost";
