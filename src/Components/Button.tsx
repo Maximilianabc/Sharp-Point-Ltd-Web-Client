@@ -1,6 +1,5 @@
 import { Button, MuiThemeProvider } from "@material-ui/core";
 import { createTheme } from '@material-ui/core/styles';
-import ThemeProvider from "@material-ui/styles/ThemeProvider";
 import { ROBOTO_SEMILIGHT } from "../Util";
 
 interface CardActionButtonProps {

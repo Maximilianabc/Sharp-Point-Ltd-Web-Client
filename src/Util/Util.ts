@@ -11,13 +11,13 @@ import {
 } from './Reducers';
 
 // NOTE: Change this to false when deploying to server for external use
-const internal = false;
+const internal = true;
 const host = internal ? "192.168.123.136" : "futures.spsystem.info";
 const port = internal ? "99" : "9026";
 const priceHost = "localhost";
 const pricePort = "8063";
 const wsPort = "12000";
-const wsAddress = `ws://${host}:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
+const wsAddress = `ws://192.168.123.136:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
 const wsPriceAddress = /*`ws://${host}:${pricePort}`*/ `ws://192.168.123.136:${pricePort}`;
 const path = `http${internal ? '' : 's'}://${host}:${port}/apiCustomer`;
 
@@ -118,6 +118,7 @@ interface ClearTradeRecordRow {
 }
 
 interface OrderRecordRow {
+	accOrderNo: string | number,
 	id: string,
   name: string,
 	buySell: string,
@@ -130,10 +131,12 @@ interface OrderRecordRow {
   initiator: string,
   ref: string,
   time: string,
+	orderNo: string,
   extOrder: string
 }
 
 interface DoneTradeRecordRow {
+	accOrderNo: string | number,
 	id: string,
   name: string,
   bQty: string | number,
@@ -151,6 +154,7 @@ interface DoneTradeRecordRow {
 }
 
 interface WorkingOrderRecordRow {
+	accOrderNo: string | number,
 	id: string,
   name: string,
 	buySell: string,
@@ -168,6 +172,7 @@ interface WorkingOrderRecordRow {
 }
 
 interface OrderHistoryRecordRow {
+	accOrderNo: string | number,
 	id: string,
   name: string,
 	buySell: string,

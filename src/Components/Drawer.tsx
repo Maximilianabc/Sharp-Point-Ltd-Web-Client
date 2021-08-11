@@ -52,7 +52,7 @@ const DefaultDrawer = (props: DrawerProps) => {
         </IconButton>
       </div>
       <List>
-        {['Dashboard', 'Profile', 'Positions', 'Orders', 'Settings', 'LogOut'].map((text, index) => (
+        {['Dashboard', 'LogOut'].map((text, index) => (
           <ListItem
             button
             key={text}

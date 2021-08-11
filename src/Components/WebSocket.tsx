@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useIntl } from 'react-intl';
 import { useDispatch,useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -7,7 +7,6 @@ import {
   getDispatchSelectCB,
   operations,
   UserState,
-  store,
   messages,
   wsPriceAddress,
   updateMarketDataShortAction,
@@ -194,15 +193,18 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
     const sendMessage = () => {
       if (message !== undefined && message !== '' && ws.current?.readyState === WebSocket.OPEN) {
         ws.current?.send(message);
+        clearTimeout(check);
+        return;
       } else {
         if (ws.current?.readyState === WebSocket.CLOSING || ws.current?.readyState === WebSocket.CLOSED) {
-          return;
+          console.log('socket closed return');
+          clearTimeout(check);
+        } else {
+          console.log('connecting to price server...');
         }
-        console.log('connecting to price server...');
-        setTimeout(sendMessage, 1000);
       }
     }
-
+    const check = setTimeout(sendMessage, 1000);
   }, [message]);
 
   return null;

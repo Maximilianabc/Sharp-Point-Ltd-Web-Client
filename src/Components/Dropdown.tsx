@@ -1,21 +1,13 @@
 import {
   makeStyles,
-  Button,
   Popper, 
   MenuItem,
-  Backdrop,
   ClickAwayListener,
-  FormLabel,
-  IconButton,
   MenuList,
   Paper,
-  MenuItemProps,
-  Zoom,
-  Collapse,
-  withStyles,
-  Select
+  MenuItemProps
 } from "@material-ui/core";
-import React, { ReactNode, RefObject, useEffect, useState } from "react";
+import React, { RefObject, useEffect, useState } from "react";
 import { useRef } from "react";
 import { 
   CARD_BUTTON_HEADER_LABEL_CLASSES,
@@ -24,7 +16,6 @@ import {
   genRandomHex,
   getOperatorDisplayText,
   getOperators,
-  LABEL_CLASSES,
   NumberFilterOperation,
   ROW_CONTAINER_CLASSES, 
   StringFilterOperation,
@@ -38,7 +29,7 @@ import {
   TooltipIconButton,
   TooltipIconProps
 } from "./Icon";
-import { DefaultInputField, FormInputField } from "./InputField";
+import { FormInputField } from "./InputField";
 import { LabelBase } from "./Label";
 
 interface StyledDropDownMenuProps {

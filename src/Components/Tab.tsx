@@ -2,10 +2,8 @@ import React from 'react';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import {
   AppBar,
-  Box,
   Tabs,
-  Tab,
-  Typography
+  Tab
 } from '@material-ui/core';
 import SwipeableViews from 'react-swipeable-views';
 import { ROBOTO_SEMILIGHT, WHITE60 } from '../Util';

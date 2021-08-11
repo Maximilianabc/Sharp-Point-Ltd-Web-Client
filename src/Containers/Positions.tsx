@@ -123,11 +123,6 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           if (data && !data.closeSocket) {
             dispatch(data.actionData);
             onReceivePush(data.data);
-            if (longMode) {
-              mktDataLong = store.getState().marketDataLong
-            } else {
-              mktDataShort = store.getState().marketDataShort;
-            }
           } else {
             history.push({
               pathname: '/logout',
@@ -146,6 +141,18 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     return () => {
       clearInterval(work);
     };
+  }, []);
+
+  useEffect(() => {
+    const getStoreData = () => {
+      if (longMode) {
+        mktDataLong = store.getState().marketDataLong;
+      } else {
+        mktDataShort = store.getState().marketDataShort;
+      }
+    };
+    const get = setInterval(getStoreData, 1000);
+    return () => clearInterval(get);
   }, []);
 
   const positionsToRows = (positions: any): PositionRecordRow[] => {

@@ -18,7 +18,8 @@ import {
   TooltipIconProps,
   LabelTable,
   LabelColumn,
-  FilterDropDownMenu
+  FilterDropDownMenu,
+  OrderForm
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -52,7 +53,10 @@ import {
   WHITE60,
   WHITE80,
   messages,
-  localeTypes
+  localeTypes,
+  MarketDataShort,
+  MarketDataLong,
+  store
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
@@ -161,7 +165,16 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
+  const [currentEdit, setCurrentEdit] = useState(-1);
+  const [currentDelete, setCurrentDelete] = useState(-1);
+
+  const [longMode, setLongMode] = useState(true);
+  const [reset, setReset] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+
   let prods: string[] = [];
+  let mktDataShort: MarketDataShort | undefined;
+  let mktDataLong: MarketDataLong | undefined;
 
   const history = useHistory();
   const intl = useIntl();
@@ -182,6 +195,21 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     sessionToken: token,
     targetAccNo: accNo
   };
+
+  const deleteOrder = (row: number) => {
+    const payload = {
+      accNo: accNo,
+      accOrderNo: !isNaN(+(orders[row].accOrderNo)) ? +(orders[row].accOrderNo) : -1,
+      prodCode: orders[row].id,
+      qty: orders[row].qty,
+      buySell: orders[row].buySell,
+      extOrderNo: !isNaN(+(orders[row].orderNo)) ? +(orders[row].orderNo) : -1,
+      sessionToken: token
+    };
+    operations('order', 'delete', payload, undefined, undefined).then(data => {
+      setRefresh(true);
+    });
+  }
 
   const workFunction = (opType: OPType, orderType: OrderType) => {
     let hooks = getStoreCallback(orderType);
@@ -207,8 +235,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     if (orders) {
       Array.prototype.forEach.call(orders, (order: AccOrderRecord) => {
         o.push({
+          accOrderNo: order.accOrderNo ?? '?',
           id: order.prodCode ?? '?',
-          name: '?',
+          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
           buySell: order.buySell ?? '',
           qty: order.totalQty ?? '?',
           tradedQty: order.tradedQty ?? '?',
@@ -219,6 +248,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           initiator: order.sender ?? '?', // !! not present in API
           ref: order.ref ?? '?',
           time: order.timeStampStr ?? '?',
+          orderNo: order.orderNoStr ?? '?',
           extOrder: order.extOrderNo ?? '?'
         });
         if (order.prodCode && prods.findIndex(s => s === order.prodCode) === -1) {
@@ -235,8 +265,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     if (working) {
       Array.prototype.forEach.call(working, (work: WorkingOrderRecord)=> {
         w.push({
+          accOrderNo: work.accOrderNo ?? '?',
           id: work.prodCode ?? '?',
-          name: '?',
+          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
           buySell: work.buySell ?? '',
           qty: work.totalQty ?? '?',
           tradedQty: work.tradedQty ?? '?',
@@ -248,6 +279,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           initiator: work.sender ?? '?', // !! not present in API
           ref: work.ref ?? '?',
           time: work.timeStampStr ?? '?',
+          orderNo: work.orderNoStr ?? '?',
           extOrder: work.extOrderNo ?? '?'
         } as WorkingOrderRecordRow);
       });
@@ -261,8 +293,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     if (history) {
       Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
         h.push({
+          accOrderNo: hist.accOrderNo ?? '?',
           id: hist.prodCode ?? '?',
-          name: '?',
+          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
           buySell: hist.buySell ?? '',
           qty: hist.totalQty ?? '?',
           tradedQty: hist.tradedQty ?? '?',
@@ -274,6 +307,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           initiator: hist.sender ?? '?', // !! not present in API
           ref: hist.ref ?? '?',
           time: hist.timeStampStr ?? '?',
+          orderNo: hist.orderNoStr ?? '?',
           extOrder: hist.extOrderNo ?? '?'
         } as OrderHistoryRecordRow);
       });
@@ -412,7 +446,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   };
 
   useEffect(() => {
-    workFunction(getOperationType(selectedOrderType), selectedOrderType);
+    setRefresh(true);
     /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
     return () => {
       //clearInterval(work);
@@ -427,6 +461,30 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     });
   }, [prods]);
 
+  useEffect(() => {
+    if (refresh) {
+      workFunction(getOperationType(selectedOrderType), selectedOrderType);
+      const userState = store.getState();
+      const getStoreData = () => {
+        if (longMode) {
+          mktDataLong = userState.marketDataLong;
+        } else {
+          mktDataShort = userState.marketDataShort;
+        }
+      };
+      getStoreData();
+      setRefresh(false);
+      return () => {};
+    }
+  }, [refresh]);
+
+  useEffect(() => {
+    if (reset) {
+      setCurrentEdit(-1);
+      setReset(false);
+    }
+  }, [reset])
+
   return (
     <Card elevation={0} className={classes.card}>
       <CardContent>
@@ -437,7 +495,17 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                       ? messages[intl.locale].todays_orders 
                       : messages[intl.locale].order_history}
           >
-            <StyledPopoverForm />
+            <StyledPopoverForm refresh={() => setRefresh(true)}/>
+            {currentEdit !== -1 
+              ? 
+                <OrderForm 
+                  refresh={() => setRefresh(true)}
+                  reset={() => setReset(true)}
+                  open={currentEdit !== -1}
+                  editContent={orders[currentEdit]}
+                /> 
+              : <></>
+            }
             <FilterDropDownMenu
               controlButton=
                 {{
@@ -495,10 +563,10 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           rowCollapsible
           openArray={currentOpen}
           icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentOpen } as TooltipIconProps,
-            selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
+            selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentEdit } as TooltipIconProps : undefined,
             selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
-            selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
-            { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps 
+            selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: deleteOrder } as TooltipIconProps : undefined,
+            { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps
           ]}
           containerClasses={classes.container}
           collapsibleContents={

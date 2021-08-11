@@ -51,7 +51,7 @@ function App() {
         <Switch>
           <Route exact path="/">
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <img src={companyLogo} style={{ height: '256px', width: '256px' }}/>
+              <img src={companyLogo} alt="company logo" style={{ height: '256px', width: '256px' }}/>
               <LoginForm />
             </div>
           </Route>

@@ -4,9 +4,7 @@ import {
   ClickAwayListener, 
   FormControl,
   FormControlLabel,
-  FormGroup,
   FormLabel,
-  Grid,
   makeStyles, 
   MenuItem,
   InputLabel,
@@ -15,33 +13,47 @@ import {
   Radio,
   RadioGroup,
   Select,
-  TextField,
-  Typography
  } from "@material-ui/core";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { FLEX_COLUMN_CLASSES, getConditionTypeNumber, getValidTypeNumber, operations, ROBOTO_SEMIBOLD, UserState, WHITE40, WHITE5, WHITE60, WHITE80 } from "../Util";
-import Color, { rgb } from 'color';
 import {
-  StyledDropDownMenu,
+  FLEX_COLUMN_CLASSES,
+  getConditionTypeNumber,
+  getValidTypeNumber,
+  LABEL_CLASSES,
+  operations,
+  OrderRecordRow,
+  ROBOTO_SEMIBOLD,
+  UserState,
+  WHITE40,
+  WHITE5,
+  WHITE60,
+  WHITE80
+} from "../Util";
+import {
   FormInputField,
   FormNumericUpDown
 } from "./";
 import { TooltipIconButton } from "./Icon";
-import { LabelBase } from "./Label";
-import { GenericDropDownMenu } from "./Dropdown";
 import { CheckBoxField, WhiteDatePicker, WhiteSelectFormControl } from "./InputField";
-import { Event, KeyboardArrowDown } from "@material-ui/icons";
+import { Event, KeyboardArrowDown, Refresh } from "@material-ui/icons";
 import DateFnsUtils from '@date-io/date-fns';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/pickers";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 interface StyledPopoverFormProps {
+  refresh: () => void;
+}
 
+interface OrderFormProps {
+  refresh: () => void,
+  reset?: () => void,
+  editContent?: OrderRecordRow
+  open: boolean
 }
 
 const useStyles = makeStyles(theme => ({
   root: {
-    
+      flex: '1 1 10%'
   },
   paper: {
     backgroundColor: '#282c34',
@@ -111,11 +123,50 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+const useStylesResult = makeStyles((theme) => ({
+  label: {
+    ...LABEL_CLASSES,
+    color: WHITE80
+  },
+  paper: {
+    backgroundColor: '#282c34',
+    padding: '0.5rem 0.5rem 0.5rem 0.5rem',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+}));
+
 const StyledPopoverForm = (props: StyledPopoverFormProps) => {
   const classes = useStyles();
+  const { refresh } = props;
+  const [backdropOpen, setBackdropOpen] = useState(false);
+
+  const handleToggle = (event: React.MouseEvent<EventTarget>) => {
+    setBackdropOpen(!backdropOpen);
+  };
+
+  return (
+    <div className={classes.root}>
+      <TooltipIconButton
+        title="Add Order"
+        name="ADD"
+        onClick={handleToggle}
+      />
+      <OrderForm refresh={refresh} open={backdropOpen}/>
+    </div>
+  )
+};
+
+const OrderForm = (props: OrderFormProps) => {
+  const { refresh, reset, editContent, open } = props;
+  const isEdit = editContent !== undefined;
+
+  const classes = useStyles();
+  const resultClasses = useStylesResult();
+
   const accNo = useSelector((state: UserState) => state.accName);
   const token = useSelector((state: UserState) => state.token);
-  const [backdropOpen, setBackdropOpen] = useState(false);
+
   const [newAccNo, setNewAccNo] = useState(accNo);
   const [Id, setId] = useState('');
   const [price, setPrice] = useState(0);
@@ -126,15 +177,12 @@ const StyledPopoverForm = (props: StyledPopoverFormProps) => {
   const [stopTriggerType, setStopTriggerType] = useState<''|'Stop Limit'|'Stop Market'|'Up Trigger Limit'|'Down Trigger Limit'>('');
   const [enhancedBuySell, setEnhancedBuySell] = useState<'Buy'|'Sell'|''>('');
   const [tPlusOne, setTPlusOne] = useState(false);
-  const [openAfterAdd, setOpenAfterAdd] = useState<'success'|'failed'|''>('');
-
-  const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
-    setBackdropOpen(false);
-  };
-
-  const handleToggle = (event: React.MouseEvent<EventTarget>) => {
-    setBackdropOpen(!backdropOpen);
-  };
+  const [result, setResult] = useState<'success'|'failed'|''>('');
+  const [backdropOpen, setBackdropOpen] = useState(true);
+  
+  useEffect(() => {
+    setBackdropOpen(open);
+  }, [open]);
 
   const sendOrder = (event: React.MouseEvent<EventTarget>, buySell: 'buy' | 'sell') => {
     const payload = {
@@ -149,84 +197,154 @@ const StyledPopoverForm = (props: StyledPopoverFormProps) => {
       validType: getValidTypeNumber(validity)
     };
     operations('order', 'add', payload, undefined, undefined).then(data => {
-      if (data !== undefined) {
-        console.log(data);
-        setBackdropOpen(false);
+      if (data !== undefined && data.data !== undefined) {
         if (data.data.errorMsg === "No Error") {
-          setOpenAfterAdd('success');
-          console.log('add success');
+          setResult('success');
+          refresh();
         } else {
-          setOpenAfterAdd('failed');
+          setResult('failed');
         }
       }
     });
   };
 
+  const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
+    setBackdropOpen(false);
+    setResult('');
+    if (reset) {
+      reset();
+    }
+  };
+
   return (
-    <div className={classes.root}>
-      <TooltipIconButton
-        title="Add Order"
-        name="ADD"
-        onClick={handleToggle}
-      />
-      <Popover
-        className={classes.popover}
-        open={backdropOpen} 
-        anchorReference="anchorPosition"
-        anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
-        anchorOrigin={{
-          vertical: 'center',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'center',
-          horizontal: 'center',
-        }}
-      >
-        {openAfterAdd === ''
-          ?
-            <ClickAwayListener onClickAway={handleClickAway}>
-              <Paper elevation={0} className={classes.paper}>
-                <FormControl id="order-form" className={classes.formControl}>
-                  <div className={classes.firstColumn}>
-                    <FormInputField
-                      label="Account Name"
-                      variant="standard"
-                      onChange={(event: React.ChangeEvent) => setNewAccNo((event?.target as HTMLInputElement)?.value)}
+    <Popover
+      className={classes.popover}
+      open={backdropOpen} 
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
+      anchorOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+      transformOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+    >
+      <ClickAwayListener onClickAway={handleClickAway}>
+        <Paper elevation={0} className={classes.paper}>
+          <FormControl id="order-form" className={classes.formControl}>
+            <div className={classes.firstColumn}>
+              <FormInputField
+                label="Account Name"
+                variant="standard"
+                onChange={(event: React.ChangeEvent) => setNewAccNo((event?.target as HTMLInputElement)?.value)}
+                defaultValue={isEdit ? editContent?.initiator : ""}
+                disable={isEdit}
+              />
+              <FormInputField
+                label="Id"
+                variant="standard"
+                onChange={(event: React.ChangeEvent) => setId((event?.target as HTMLInputElement)?.value)}
+                defaultValue={isEdit ? editContent?.id : ""}
+                disable={isEdit}
+              />
+              <FormNumericUpDown
+                label="Price"
+                defaultValue={+(editContent?.price ?? 0)}
+                disable={condition === "Enchanced Stop" || stopTriggerType === "Stop Market" || isEdit}
+                onChange={(event: React.ChangeEvent) => setPrice(+(event?.target as HTMLInputElement)?.value)}
+              />
+              <div className={classes.checkboxDiv}>
+                <CheckBoxField
+                  label="AO"
+                  className={classes.checkbox}
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  disabled={validity !== "Today" || stopTriggerType !== "" || isEdit}
+                />
+                <CheckBoxField
+                  label="Market"
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  disabled={validity !== "Today" || stopTriggerType !== "" || isEdit}
+                />
+              </div>
+              <FormNumericUpDown
+                label="Quantity"
+                defaultValue={+(editContent?.qty ?? 1)}
+                onChange={(event: React.ChangeEvent) => setQty(+(event?.target as HTMLInputElement)?.value)}
+              />
+            </div>
+            <div className={classes.secondColumn}>
+              <WhiteSelectFormControl className={classes.select} disabled={isEdit}>
+                <InputLabel>Condition</InputLabel>
+                <Select
+                  value={condition as string}
+                  IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                  MenuProps={{ 
+                    disablePortal: true,
+                    anchorOrigin: {
+                      vertical: "bottom",
+                      horizontal: "left"
+                    },
+                    getContentAnchorEl: null
+                  }}
+                >
+                  <MenuItem value="Normal" onClick={(event: React.MouseEvent) => setCondition('Normal')}>Normal</MenuItem>
+                  <MenuItem value="Enchanced Stop" onClick={(event: React.MouseEvent) => setCondition('Enchanced Stop')}>Enchanced Stop</MenuItem>
+                  <MenuItem value="Bull & Bear" onClick={(event: React.MouseEvent) => setCondition('Bull & Bear')}>Bull & Bear</MenuItem>
+                  <MenuItem value="Time To Send" onClick={(event: React.MouseEvent) => setCondition('Time To Send')}>Time To Send</MenuItem>
+                  <MenuItem value="Trade Booking" onClick={(event: React.MouseEvent) => setCondition('Trade Booking')}>Trade Booking</MenuItem>
+                </Select>
+              </WhiteSelectFormControl>
+              {condition === "Normal" 
+                ?
+                  <WhiteSelectFormControl className={classes.select} disabled={isEdit}>
+                    <InputLabel>Validity</InputLabel>
+                    <Select
+                      value={validity as string}
+                      IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                      MenuProps={{ 
+                        disablePortal: true,
+                        anchorOrigin: {
+                          vertical: "bottom",
+                          horizontal: "left"
+                        },
+                        getContentAnchorEl: null
+                      }}
+                    >
+                      <MenuItem value="Today" onClick={(event: React.MouseEvent) => setValidity('Today')}>Today</MenuItem>
+                      <MenuItem value="FaK" onClick={(event: React.MouseEvent) => { setValidity('FaK'); setStopTriggerType(''); }}>FaK</MenuItem>
+                      <MenuItem value="FoK" onClick={(event: React.MouseEvent) => { setValidity('FoK'); setStopTriggerType(''); }}>FoK</MenuItem>
+                      <MenuItem value="GTC" onClick={(event: React.MouseEvent) => { setValidity('GTC'); setStopTriggerType(''); }}>GTC</MenuItem>
+                      <MenuItem value="Date" onClick={(event: React.MouseEvent) => { setValidity('Date'); setStopTriggerType(''); }}>Date</MenuItem>
+                    </Select>
+                  </WhiteSelectFormControl>
+                : null
+              }
+              {condition === "Normal" && validity === "Date"
+                ?
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <WhiteDatePicker
+                      disabled={isEdit}
+                      disableToolbar
+                      disablePast
+                      variant="inline"
+                      format="dd/MM/yyyy"
+                      value={date}
+                      onChange={setDate}
+                      keyboardIcon={<Event style={{ fontSize: 24, color: 'white' }}/>}
+                      className={classes.datePicker}
                     />
-                    <FormInputField
-                      label="Id"
-                      variant="standard"
-                      onChange={(event: React.ChangeEvent) => setId((event?.target as HTMLInputElement)?.value)}
-                    />
-                    <FormNumericUpDown
-                      label="Price"
-                      disable={condition === "Enchanced Stop" || stopTriggerType === "Stop Market"}
-                      onChange={(event: React.ChangeEvent) => setPrice(+(event?.target as HTMLInputElement)?.value)}
-                    />
-                    <div className={classes.checkboxDiv}>
-                      <CheckBoxField
-                        label="AO"
-                        className={classes.checkbox}
-                        control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
-                        disabled={validity !== "Today" || stopTriggerType !== ""}
-                      />
-                      <CheckBoxField
-                        label="Market"
-                        control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
-                        disabled={validity !== "Today" || stopTriggerType !== ""}
-                      />
-                    </div>
-                    <FormNumericUpDown
-                      label="Quantity"
-                      onChange={(event: React.ChangeEvent) => setQty(+(event?.target as HTMLInputElement)?.value)}
-                    />
-                  </div>
-                  <div className={classes.secondColumn}>
-                    <WhiteSelectFormControl className={classes.select}>
-                      <InputLabel>Condition</InputLabel>
+                  </MuiPickersUtilsProvider>
+                : null
+              }
+              {condition === "Normal"
+                ?
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <WhiteSelectFormControl className={classes.select} disabled={validity === "FaK" || validity === "FoK" || isEdit}>
+                      <InputLabel>Stop/Trigger Limit</InputLabel>
                       <Select
-                        value={condition as string}
+                        value={stopTriggerType as string}
                         IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
                         MenuProps={{ 
                           disablePortal: true,
@@ -237,163 +355,98 @@ const StyledPopoverForm = (props: StyledPopoverFormProps) => {
                           getContentAnchorEl: null
                         }}
                       >
-                        <MenuItem value="Normal" onClick={(event: React.MouseEvent) => setCondition('Normal')}>Normal</MenuItem>
-                        <MenuItem value="Enchanced Stop" onClick={(event: React.MouseEvent) => setCondition('Enchanced Stop')}>Enchanced Stop</MenuItem>
-                        <MenuItem value="Bull & Bear" onClick={(event: React.MouseEvent) => setCondition('Bull & Bear')}>Bull & Bear</MenuItem>
-                        <MenuItem value="Time To Send" onClick={(event: React.MouseEvent) => setCondition('Time To Send')}>Time To Send</MenuItem>
-                        <MenuItem value="Trade Booking" onClick={(event: React.MouseEvent) => setCondition('Trade Booking')}>Trade Booking</MenuItem>
+                        <MenuItem value="Stop Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Stop Limit')}>Stop Limit</MenuItem>
+                        <MenuItem value="Stop Market" onClick={(event: React.MouseEvent) => setStopTriggerType('Stop Market')}>Stop Market</MenuItem>
+                        <MenuItem value="Up Trigger Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Up Trigger Limit')}>Up Trigger Limit</MenuItem>
+                        <MenuItem value="Down Trigger Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Down Trigger Limit')}>Down Trigger Limit</MenuItem>
                       </Select>
                     </WhiteSelectFormControl>
-                    {condition === "Normal" 
-                      ?
-                        <WhiteSelectFormControl className={classes.select}>
-                          <InputLabel>Validity</InputLabel>
-                          <Select
-                            value={validity as string}
-                            IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
-                            MenuProps={{ 
-                              disablePortal: true,
-                              anchorOrigin: {
-                                vertical: "bottom",
-                                horizontal: "left"
-                              },
-                              getContentAnchorEl: null
-                            }}
-                          >
-                            <MenuItem value="Today" onClick={(event: React.MouseEvent) => setValidity('Today')}>Today</MenuItem>
-                            <MenuItem value="FaK" onClick={(event: React.MouseEvent) => { setValidity('FaK'); setStopTriggerType(''); }}>FaK</MenuItem>
-                            <MenuItem value="FoK" onClick={(event: React.MouseEvent) => { setValidity('FoK'); setStopTriggerType(''); }}>FoK</MenuItem>
-                            <MenuItem value="GTC" onClick={(event: React.MouseEvent) => { setValidity('GTC'); setStopTriggerType(''); }}>GTC</MenuItem>
-                            <MenuItem value="Date" onClick={(event: React.MouseEvent) => { setValidity('Date'); setStopTriggerType(''); }}>Date</MenuItem>
-                          </Select>
-                        </WhiteSelectFormControl>
-                      : null
-                    }
-                    {condition === "Normal" && validity === "Date"
-                      ?
-                        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                          <WhiteDatePicker
-                            disableToolbar
-                            disablePast
-                            variant="inline"
-                            format="dd/MM/yyyy"
-                            value={date}
-                            onChange={setDate}
-                            keyboardIcon={<Event style={{ fontSize: 24, color: 'white' }}/>}
-                            className={classes.datePicker}
-                          />
-                        </MuiPickersUtilsProvider>
-                      : null
-                    }
-                    {condition === "Normal"
-                      ?
-                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                          <WhiteSelectFormControl className={classes.select} disabled={validity === "FaK" || validity === "FoK"}>
-                            <InputLabel>Stop/Trigger Limit</InputLabel>
-                            <Select
-                              value={stopTriggerType as string}
-                              IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
-                              MenuProps={{ 
-                                disablePortal: true,
-                                anchorOrigin: {
-                                  vertical: "bottom",
-                                  horizontal: "left"
-                                },
-                                getContentAnchorEl: null
-                              }}
-                            >
-                              <MenuItem value="Stop Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Stop Limit')}>Stop Limit</MenuItem>
-                              <MenuItem value="Stop Market" onClick={(event: React.MouseEvent) => setStopTriggerType('Stop Market')}>Stop Market</MenuItem>
-                              <MenuItem value="Up Trigger Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Up Trigger Limit')}>Up Trigger Limit</MenuItem>
-                              <MenuItem value="Down Trigger Limit" onClick={(event: React.MouseEvent) => setStopTriggerType('Down Trigger Limit')}>Down Trigger Limit</MenuItem>
-                            </Select>
-                          </WhiteSelectFormControl>
-                          <FormNumericUpDown label="Price" disable={stopTriggerType === ""}></FormNumericUpDown>
-                        </div>
-                        
-                      : null
-                    }
-                    {condition === "Enchanced Stop"
-                      ?
-                        <div>
-                          <RadioGroup row value={enhancedBuySell} onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEnhancedBuySell(enhancedBuySell)}>
-                            <FormControlLabel
-                              value="Buy"
-                              control={
-                                <Radio
-                                  style={{ color: WHITE60 }}
-                                  classes={{ root: classes.radio, checked: classes.checked }}
-                                />
-                              }
-                              label="Buy"
-                              labelPlacement="end"
-                              classes={{ label: classes.checkboxLabel }}
-                            />
-                            <FormControlLabel
-                              value="Sell"
-                              control={
-                                <Radio
-                                  style={{ color: WHITE60 }}
-                                  classes={{ root: classes.radio, checked: classes.checked }}
-                                />
-                              }
-                              label="Sell"
-                              labelPlacement="end"
-                              classes={{ label: classes.checkboxLabel }}
-                            />
-                          </RadioGroup>
-                          <div style={{ display: 'flex', flexDirection: 'row' }} >
-                            <FormNumericUpDown label="Level"/>
-                            <FormNumericUpDown label="Tolerance"/>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <FormControlLabel
-                                classes={{ label: classes.checkboxLabel }}
-                                control={<Checkbox style={{ color: 'white' }}/>}
-                                label="Trailing Stop"
-                                labelPlacement="end"/>
-                              <FormNumericUpDown label="Step" />
-                          </div>
-                        </div>
-                      : null
-                    }
-                    <FormInputField label="Ref" variant="standard"/>
-                    <CheckBoxField
-                      label="T+1"
-                      className={classes.checkbox}
-                      control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
-                      onChange={(event: React.ChangeEvent<{}>, checked: boolean) => setTPlusOne(checked)}
-                    />
+                    <FormNumericUpDown label="Price" disable={stopTriggerType === "" || isEdit}></FormNumericUpDown>
                   </div>
-                </FormControl>
-                <FormControl style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Button
-                    variant="contained"
-                    className={classes.button}
-                    style={{ backgroundColor: 'rgba(0, 176, 255, 0.8)' }}
-                    onClick={(event: React.MouseEvent) => sendOrder(event, 'buy')}
-                  >
-                    BUY
-                  </Button>
-                  <Button
-                    variant="contained"
-                    className={classes.button}
-                    style={{ backgroundColor: 'rgba(255, 187, 0, 0.8)' }}
-                    onClick={(event: React.MouseEvent) => sendOrder(event, 'sell')}
-                  >
-                    SELL
-                  </Button>
-                </FormControl>
-              </Paper>
-            </ClickAwayListener>
-         : null
-        }     
-      </Popover>
-      
-    </div>
-  )
-};
+                  
+                : null
+              }
+              {condition === "Enchanced Stop"
+                ?
+                  <div>
+                    <RadioGroup row value={enhancedBuySell} onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEnhancedBuySell(enhancedBuySell)}>
+                      <FormControlLabel
+                        value="Buy"
+                        control={
+                          <Radio
+                            style={{ color: WHITE60 }}
+                            classes={{ root: classes.radio, checked: classes.checked }}
+                          />
+                        }
+                        label="Buy"
+                        labelPlacement="end"
+                        classes={{ label: classes.checkboxLabel }}
+                      />
+                      <FormControlLabel
+                        value="Sell"
+                        control={
+                          <Radio
+                            style={{ color: WHITE60 }}
+                            classes={{ root: classes.radio, checked: classes.checked }}
+                          />
+                        }
+                        label="Sell"
+                        labelPlacement="end"
+                        classes={{ label: classes.checkboxLabel }}
+                      />
+                    </RadioGroup>
+                    <div style={{ display: 'flex', flexDirection: 'row' }} >
+                      <FormNumericUpDown label="Level"/>
+                      <FormNumericUpDown label="Tolerance"/>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <FormControlLabel
+                          classes={{ label: classes.checkboxLabel }}
+                          control={<Checkbox style={{ color: 'white' }}/>}
+                          label="Trailing Stop"
+                          labelPlacement="end"/>
+                        <FormNumericUpDown label="Step" />
+                    </div>
+                  </div>
+                : null
+              }
+              <FormInputField label="Ref" variant="standard"/>
+              <CheckBoxField
+                label="T+1"
+                className={classes.checkbox}
+                control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                onChange={(event: React.ChangeEvent<{}>, checked: boolean) => setTPlusOne(checked)}
+              />
+            </div>
+          </FormControl>
+          <FormControl style={{ display: 'flex', flexDirection: 'row' }}>
+            <Button
+              variant="contained"
+              className={classes.button}
+              style={{ backgroundColor: 'rgba(0, 176, 255, 0.8)' }}
+              onClick={(event: React.MouseEvent) => sendOrder(event, 'buy')}
+              disabled={isEdit && editContent?.buySell === 'S'}
+            >
+              BUY
+            </Button>
+            <Button
+              variant="contained"
+              className={classes.button}
+              style={{ backgroundColor: 'rgba(255, 187, 0, 0.8)' }}
+              onClick={(event: React.MouseEvent) => sendOrder(event, 'sell')}
+              disabled={isEdit && editContent?.buySell === 'B'}
+            >
+              SELL
+            </Button>
+          </FormControl>
+          {result !== '' ? <FormLabel className={resultClasses.label}>Add order {result}</FormLabel> : null}
+        </Paper>
+      </ClickAwayListener>
+    </Popover>
+  );
+}
 
 export {
-  StyledPopoverForm
+  StyledPopoverForm,
+  OrderForm
 }

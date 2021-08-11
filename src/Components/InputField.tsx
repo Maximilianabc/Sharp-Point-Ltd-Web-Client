@@ -1,10 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import {
-	createTheme,
 	FormControl,
 	FormControlLabel,
-	InputLabel,
 	InputLabelProps,
 	TextField,
 	withStyles
@@ -23,11 +21,14 @@ interface FormInputFieldProps {
 	label: string,
 	type?: string,
 	labelProps?: InputLabelProps,
+	defaultValue?: string | number,
+	disable?: boolean,
 	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
 }
 
 interface FormNumericUpDownProps {
 	label: string,
+	defaultValue?: number,
 	disable?: boolean,
 	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
 }
@@ -236,7 +237,7 @@ const WhiteDatePicker = withStyles({
 })(KeyboardDatePicker);
 
 const FormInputField = (props: FormInputFieldProps) => {
-	const { variant, label, type, labelProps, onChange} = props;
+	const { variant, label, type, labelProps, defaultValue, disable, onChange} = props;
 	const classes = useStyleForm();
 	return (
 		<WhiteTextField
@@ -245,18 +246,21 @@ const FormInputField = (props: FormInputFieldProps) => {
 			label={label}
 			type={type}
 			onChange={onChange}
-			defaultValue=""
+			defaultValue={defaultValue}
+			disabled={disable}
 		/>
 	)
 };
 
 const FormNumericUpDown = (props: FormNumericUpDownProps) => {
 	const classes = useStyleForm();
-	const { label, disable, onChange } = props;
+	const { label, defaultValue, disable, onChange } = props;
 	return (
 		<WhiteTextField
 			className={classes.root}
-			label={label} type="number"
+			label={label}
+			type="number"
+			defaultValue={defaultValue}
 			disabled={disable}
 			onChange={onChange}
 		/>

@@ -86,7 +86,7 @@ const DefaultAppbar = (props: AppbarProps) => {
         >
           <MenuRoundedIcon key={genRandomHex(8)}/>
         </IconButton>
-        <img src={companyLogo} style={{ height: '64px', width: '64px' }} key={genRandomHex(8)}/>
+        <img src={companyLogo} alt="company logo" style={{ height: '64px', width: '64px' }} key={genRandomHex(8)}/>
         <Typography variant="h6" noWrap>
           {props.title}
         </Typography>

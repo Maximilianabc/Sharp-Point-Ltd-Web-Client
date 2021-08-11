@@ -26,7 +26,7 @@ import {
   KeyboardArrowDown,
   Add
 } from '@material-ui/icons';
-import React, { forwardRef, MouseEventHandler } from 'react';
+import React, { forwardRef } from 'react';
 import { OrderStatus, TOOLTIP_CLASSES, TOOLTIP_TEXT_CLASSES } from '../Util';
 import clsx from 'clsx';
 

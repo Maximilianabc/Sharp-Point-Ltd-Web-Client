@@ -1,11 +1,9 @@
-import React, { MouseEventHandler, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
-import { rgb } from 'color';
 import { lighten } from '@material-ui/core/styles';
 import {
   makeStyles,
   Paper,
-  Slide,
   Table,
   TableBody,
   TableCell,
@@ -17,17 +15,13 @@ import {
   TableSortLabel,
   Typography,
   Collapse,
-  Box,
   BoxProps,
   CardProps,
 } from '@material-ui/core';
 import {
   FLEX_ROW_CLASSES,
   genRandomHex,
-  getComparator,
-  LABEL_CONTENT_POSITIVE_CLASSES,
   ROBOTO_SEMIBOLD,
-  stableSort,
   SVG_ICON_CLASSES,
   TABLE_CELL_CLASSES,
   TABLE_HEAD_CLASSES,
@@ -47,7 +41,7 @@ import {
   LabelBaseProps,
   StackedLabel
 } from './Label';
-import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton } from './Icon';
+import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton, IconTypes } from './Icon';
 import { useIntl } from 'react-intl';
 
 interface StyledTableToolbarProps {
@@ -439,6 +433,16 @@ const DataRow = (props: DataRowProps) => {
   } = props;
   const rowClasses = useStlyeDataRow();
 
+  const getRowCallback = (icon: IconProps, index: number) => {
+    switch (icon.name) {
+      case 'MORE_HORIZ':
+        return () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val));
+      case 'EDIT':
+      case 'DELETE':
+        return () => icon.onClick && icon.onClick(index);
+    };
+  };
+
   return (
     <React.Fragment key={genRandomHex(8)}>
       <TableRow
@@ -502,7 +506,7 @@ const DataRow = (props: DataRowProps) => {
                           buttonStyle={icon.buttonStyle}
                           otherProps={icon.otherProps}
                           classes={icon.classes}
-                          onClick={icon.isRowBasedCallback ? () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val)) : icon.onClick} // TODO add support to other row-based callbacks
+                          onClick={icon.isRowBasedCallback ? getRowCallback(icon, index) : icon.onClick} // TODO add support to other row-based callbacks
                           key={genRandomHex(8)}
                         />
                       :

@@ -121,7 +121,7 @@ const LableBasesToStackedLabel = (lbls: LabelBaseProps[]): StackedLabelProps => 
 };
 
 const tryParseToNumber = (value: string | undefined): number => {
-  return value ? +(value.toString().replace(/\,/gi,'').replace(' HKD', '')) : NaN;
+  return value ? +(value.toString().replace(/,/gi,'').replace(' HKD', '')) : NaN;
 };
 
 const tryParseLabelToNumber = (lbl: LabelBaseProps): number => {
