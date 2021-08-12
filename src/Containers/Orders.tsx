@@ -166,15 +166,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const [currentEdit, setCurrentEdit] = useState(-1);
-  const [currentDelete, setCurrentDelete] = useState(-1);
 
   const [longMode, setLongMode] = useState(true);
   const [reset, setReset] = useState(false);
   const [refresh, setRefresh] = useState(false);
 
   let prods: string[] = [];
-  let mktDataShort: MarketDataShort | undefined;
-  let mktDataLong: MarketDataLong | undefined;
+  let mktDataShort: { [id: string]: MarketDataShort } | undefined;
+  let mktDataLong: { [id: string]: MarketDataLong } | undefined;
 
   const history = useHistory();
   const intl = useIntl();
@@ -196,7 +195,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     targetAccNo: accNo
   };
 
-  const deleteOrder = (row: number) => {
+  const deleteOrder = (row: number, op: 'delete' | 'active' | 'inactive') => {
     const payload = {
       accNo: accNo,
       accOrderNo: !isNaN(+(orders[row].accOrderNo)) ? +(orders[row].accOrderNo) : -1,
@@ -206,10 +205,10 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       extOrderNo: !isNaN(+(orders[row].orderNo)) ? +(orders[row].orderNo) : -1,
       sessionToken: token
     };
-    operations('order', 'delete', payload, undefined, undefined).then(data => {
+    operations('order', op, payload, undefined, undefined).then(data => {
       setRefresh(true);
     });
-  }
+  };
 
   const workFunction = (opType: OPType, orderType: OrderType) => {
     let hooks = getStoreCallback(orderType);
@@ -237,9 +236,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         o.push({
           accOrderNo: order.accOrderNo ?? '?',
           id: order.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[order?.prodCode ?? ''].productName ?? '?') : '?',
           buySell: order.buySell ?? '',
-          qty: order.totalQty ?? '?',
+          qty: order.qty ?? '?',
           tradedQty: order.tradedQty ?? '?',
           price: order.orderPrice ?? '?',
           valid: getValidTypeString(order.validType ?? -1),
@@ -267,9 +266,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         w.push({
           accOrderNo: work.accOrderNo ?? '?',
           id: work.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[working?.prodCode ?? '']?.productName ?? '?') : '?',
           buySell: work.buySell ?? '',
-          qty: work.totalQty ?? '?',
+          qty: work.qty ?? '?',
           tradedQty: work.tradedQty ?? '?',
           price: work.orderPrice ?? '?',
           valid: getValidTypeString(work.validType ?? -1),
@@ -295,9 +294,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         h.push({
           accOrderNo: hist.accOrderNo ?? '?',
           id: hist.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[hist?.prodCode ?? '']?.productName ?? '?') : '?',
           buySell: hist.buySell ?? '',
-          qty: hist.totalQty ?? '?',
+          qty: hist.qty ?? '?',
           tradedQty: hist.tradedQty ?? '?',
           price: hist.orderPrice ?? '?',
           valid: getValidTypeString(hist.validType ?? -1),
@@ -564,7 +563,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           openArray={currentOpen}
           icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentOpen } as TooltipIconProps,
             selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentEdit } as TooltipIconProps : undefined,
-            selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps : undefined,
+            selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: deleteOrder } as TooltipIconProps : undefined,
             selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: deleteOrder } as TooltipIconProps : undefined,
             { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps
           ]}

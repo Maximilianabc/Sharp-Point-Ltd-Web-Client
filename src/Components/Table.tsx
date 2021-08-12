@@ -438,8 +438,13 @@ const DataRow = (props: DataRowProps) => {
       case 'MORE_HORIZ':
         return () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val));
       case 'EDIT':
-      case 'DELETE':
         return () => icon.onClick && icon.onClick(index);
+      case 'DELETE':
+        return () => icon.onClick && icon.onClick(index, 'delete');
+      case 'ACTIVATE':
+        return () => icon.onClick && icon.onClick(index, 'active');
+      case 'DEACTIVATE':
+        return () => icon.onClick && icon.onClick(index, 'inactive');
     };
   };
 
@@ -506,7 +511,7 @@ const DataRow = (props: DataRowProps) => {
                           buttonStyle={icon.buttonStyle}
                           otherProps={icon.otherProps}
                           classes={icon.classes}
-                          onClick={icon.isRowBasedCallback ? getRowCallback(icon, index) : icon.onClick} // TODO add support to other row-based callbacks
+                          onClick={icon.isRowBasedCallback ? getRowCallback(icon, index) : icon.onClick}
                           key={genRandomHex(8)}
                         />
                       :

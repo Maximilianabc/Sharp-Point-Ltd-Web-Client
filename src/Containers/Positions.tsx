@@ -109,8 +109,8 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
   const hooks = getDispatchSelectCB(OPConsts.POSITION);
   const intl = useIntl();
 
-  let mktDataShort: MarketDataShort | undefined;
-  let mktDataLong: MarketDataLong | undefined;
+  let mktDataShort: { [id: string]: MarketDataShort } | undefined;
+  let mktDataLong: { [id: string]: MarketDataLong } | undefined;
 
   useEffect(() => {
     const payload = {
@@ -162,14 +162,18 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       Array.prototype.forEach.call(positions, (pos: AccPositionRecord) => {
         p.push({
           id: pos.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[pos?.prodCode ?? '']?.productName ?? '?') : '?',
           prev: `${pos.psQty}@${pos.previousAvg}`,
           dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
           dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
-          mkt: longMode ? (mktDataLong?.bidPrice1?.toString() ?? '?') : (mktDataShort?.mktPrice?.toString() ?? '?'),
+          mkt: longMode 
+            ? (mktDataLong?.[pos?.prodCode ?? '']?.bidPrice1?.toString() ?? '?') 
+            : (mktDataShort?.[pos?.prodCode ?? '']?.mktPrice?.toString() ?? '?'),
           pl: pos.profitLoss?.toString() ?? '?',
-          prevClose: longMode ? (mktDataLong?.previousClose?.toString() ?? '?') : (mktDataShort?.previousClose?.toString() ?? '?'),
+          prevClose: longMode 
+            ? (mktDataLong?.[pos?.prodCode ?? '']?.previousClose?.toString() ?? '?') 
+            : (mktDataShort?.[pos?.prodCode ?? '']?.previousClose?.toString() ?? '?'),
           optVal: '?',
           fx: 0,
           contract: ''}

@@ -117,6 +117,10 @@ const WhiteTextField = withStyles({
 			...LABEL_CLASSES,
 			color: WHITE40,
 			fontSize: '1rem'
+		},
+		'& .MuiInputBase-input.Mui-disabled': {
+			color: WHITE40,
+			fontSize: '1rem'
 		}
   },
 })(TextField);
@@ -129,6 +133,9 @@ const WhiteSelectFormControl = withStyles({
     '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
       borderBottom: `1px solid ${WHITE80}`,
     },
+		'& .MuiInput-underline.Mui-disabled:before': {
+			borderBottom: `1px solid ${WHITE40}`,
+		},
     '& .MuiInput-underline:after': {
       borderBottom: '1px solid white'
     },
@@ -140,6 +147,9 @@ const WhiteSelectFormControl = withStyles({
 		},
 		'& .MuiSelect-select': {
 			color: 'aquamarine'
+		},
+		'& .MuiSelect-select.Mui-disabled': {
+			color: 'rgba(0, 255, 191, 0.4)' // aquamarine40
 		},
 		'& .MuiFormLabel-root.Mui-disabled': {
 			color: WHITE40

@@ -17,6 +17,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
+  AccOrderRecord,
   FLEX_COLUMN_CLASSES,
   getConditionTypeNumber,
   getValidTypeNumber,
@@ -82,6 +83,9 @@ const useStyles = makeStyles(theme => ({
     '&:hover': {
       backgroundColor: WHITE5
     }
+  },
+  checkboxDisabled: {
+    color: WHITE40
   },
   datePicker: {
     padding: '0 0.5rem 0 0.5rem'
@@ -168,9 +172,9 @@ const OrderForm = (props: OrderFormProps) => {
   const token = useSelector((state: UserState) => state.token);
 
   const [newAccNo, setNewAccNo] = useState(accNo);
-  const [Id, setId] = useState('');
-  const [price, setPrice] = useState(0);
-  const [qty, setQty] = useState(0);
+  const [Id, setId] = useState(editContent?.id ?? '');
+  const [price, setPrice] = useState(editContent?.price ?? 0);
+  const [qty, setQty] = useState(editContent?.qty ?? 1);
   const [date, setDate] = useState<Date | null>();
   const [condition, setCondition] = useState<'Normal'|'Enchanced Stop'|'OCO'|'Bull & Bear'|'Time To Send'|'Trade Booking'>('Normal');
   const [validity, setValidity] = useState<'Today'|'FaK'|'FoK'|'GTC'|'Date'>('Today');
@@ -197,6 +201,36 @@ const OrderForm = (props: OrderFormProps) => {
       validType: getValidTypeNumber(validity)
     };
     operations('order', 'add', payload, undefined, undefined).then(data => {
+      if (data !== undefined && data.data !== undefined) {
+        if (data.data.errorMsg === "No Error") {
+          setResult('success');
+          refresh();
+        } else {
+          setResult('failed');
+        }
+      }
+    });
+  };
+
+  const editOrder = (event: React.MouseEvent<EventTarget>, order: OrderRecordRow) => {
+    const payload = {
+      accNo: newAccNo,
+      accOrderNo: +order.accOrderNo,
+      prodCode: Id,
+      buySell: order.buySell,
+      // downLevelInDec
+      // downPriceInDec
+      extOrderNo: +order.orderNo,
+      priceInDec: price,
+      qty: qty,
+      // schedTime
+      sessionToken: token,
+      // stopPriceInDec
+      // upLevelInDec
+      // upPriceInDec
+      // validDate
+    };
+    operations('order', 'change', payload, undefined, undefined).then(data => {
       if (data !== undefined && data.data !== undefined) {
         if (data.data.errorMsg === "No Error") {
           setResult('success');
@@ -252,19 +286,21 @@ const OrderForm = (props: OrderFormProps) => {
               <FormNumericUpDown
                 label="Price"
                 defaultValue={+(editContent?.price ?? 0)}
-                disable={condition === "Enchanced Stop" || stopTriggerType === "Stop Market" || isEdit}
+                disable={condition === "Enchanced Stop" || stopTriggerType === "Stop Market"}
                 onChange={(event: React.ChangeEvent) => setPrice(+(event?.target as HTMLInputElement)?.value)}
               />
               <div className={classes.checkboxDiv}>
                 <CheckBoxField
                   label="AO"
                   className={classes.checkbox}
-                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }}
+                  style={{ color: WHITE60 }}/>}
                   disabled={validity !== "Today" || stopTriggerType !== "" || isEdit}
                 />
                 <CheckBoxField
                   label="Market"
-                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover, disabled: classes.checkboxDisabled }}
+                  style={{ color: WHITE60 }}/>}
                   disabled={validity !== "Today" || stopTriggerType !== "" || isEdit}
                 />
               </div>
@@ -424,7 +460,7 @@ const OrderForm = (props: OrderFormProps) => {
               variant="contained"
               className={classes.button}
               style={{ backgroundColor: 'rgba(0, 176, 255, 0.8)' }}
-              onClick={(event: React.MouseEvent) => sendOrder(event, 'buy')}
+              onClick={(event: React.MouseEvent) => isEdit && editContent !== undefined ? editOrder(event, editContent) : sendOrder(event, 'buy')}
               disabled={isEdit && editContent?.buySell === 'S'}
             >
               BUY
@@ -433,13 +469,13 @@ const OrderForm = (props: OrderFormProps) => {
               variant="contained"
               className={classes.button}
               style={{ backgroundColor: 'rgba(255, 187, 0, 0.8)' }}
-              onClick={(event: React.MouseEvent) => sendOrder(event, 'sell')}
+              onClick={(event: React.MouseEvent) => isEdit && editContent !== undefined ? editOrder(event, editContent) : sendOrder(event, 'sell')}
               disabled={isEdit && editContent?.buySell === 'B'}
             >
               SELL
             </Button>
           </FormControl>
-          {result !== '' ? <FormLabel className={resultClasses.label}>Add order {result}</FormLabel> : null}
+          {result !== '' ? <FormLabel className={resultClasses.label}>{isEdit ? 'Edit' : 'Add'} order {result}</FormLabel> : null}
         </Paper>
       </ClickAwayListener>
     </Popover>

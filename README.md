@@ -9,10 +9,17 @@ In the project directory, you can run:
 ### `npm start`
 
 Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Open [http://localhost:9027](http://localhost:9027) to view it in the browser.
+
+To change the port, go to [package.json](./package.json) and find "start" property within "script" property.
+Add SET PORT=*The-port-number-you-want* && before react-scripts start
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
+
+### `npm install`
+
+Run this first before running the app to ensure missing modules are installed.
 
 ### `npm test`
 
