@@ -6,6 +6,7 @@ interface ActionData {
 const actionConsts: Record<string, string> = {
   LOGIN2FA: 'LOGIN2FA',
   LOGOUT: 'LOGOUT',
+  SET_AE: 'SET_AE',
   SET_TOKEN: 'SET_TOKEN',
   SET_SERVER_KEY: 'SET_SERVER_KEY',
   SET_ACC_NUM: 'SET_ACC_NUM',
@@ -15,6 +16,7 @@ const actionConsts: Record<string, string> = {
   SET_ACC_POS: 'SET_ACC_POS',
   SET_ACC_SUM: 'SET_ACC_SUM',
   SET_DONE_TRADE: 'SET_DONE_TRADE',
+  SET_ACC_ORDER_PUSH: 'SET_ACC_ORDER_PUSH',
   UPDATE_MARKET_PRICE_SHORT: 'UPDATE_MARKET_PRICE_SHORT',
   UPDATE_MARKET_PRICE_LONG: 'UPDATE_MARKET_PRICE_LONG',
 };
@@ -30,6 +32,13 @@ const logoutAction = (): ActionData => {
   return {
     type: actionConsts.LOGOUT
   }
+};
+
+const setAEAction = (ae: boolean): ActionData => {
+  return {
+    type: actionConsts.SET_AE,
+    payload: ae
+  };
 };
 
 const setTokenAction = (token: string): ActionData => {
@@ -74,6 +83,13 @@ const setAccountOrderAction = (order: any): ActionData => {
   };
 };
 
+const setAccountOrderByPushAction = (order: any): ActionData => {
+  return {
+    type: actionConsts.SET_ACC_ORDER_PUSH,
+    payload: order
+  }
+};
+
 const setAccountPositionAction = (position: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_POS,
@@ -113,6 +129,7 @@ export {
   actionConsts,
   loginAction,
   logoutAction,
+  setAEAction,
   setTokenAction,
   setServerKeyAction,
   setAccountNumAction,
@@ -122,6 +139,7 @@ export {
   setAccountSummaryAction,
   setAccountBalanaceAction,
   setDoneTradeReportAction,
+  setAccountOrderByPushAction,
   updateMarketDataShortAction,
   updateMarketDataLongAction,
 };

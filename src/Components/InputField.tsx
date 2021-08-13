@@ -23,6 +23,9 @@ interface FormInputFieldProps {
 	labelProps?: InputLabelProps,
 	defaultValue?: string | number,
 	disable?: boolean,
+	require?: boolean,
+	error?: boolean,
+	helperText?: string,
 	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
 }
 
@@ -30,6 +33,8 @@ interface FormNumericUpDownProps {
 	label: string,
 	defaultValue?: number,
 	disable?: boolean,
+	require?: boolean,
+	min?: number,
 	onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
 }
 
@@ -247,7 +252,18 @@ const WhiteDatePicker = withStyles({
 })(KeyboardDatePicker);
 
 const FormInputField = (props: FormInputFieldProps) => {
-	const { variant, label, type, labelProps, defaultValue, disable, onChange} = props;
+	const { 
+		variant,
+		label,
+		type,
+		labelProps,
+		defaultValue,
+		disable,
+		require,
+		error,
+		helperText,
+		onChange
+	} = props;
 	const classes = useStyleForm();
 	return (
 		<WhiteTextField
@@ -258,13 +274,16 @@ const FormInputField = (props: FormInputFieldProps) => {
 			onChange={onChange}
 			defaultValue={defaultValue}
 			disabled={disable}
+			required={require}
+			error={error}
+			helperText={helperText}
 		/>
 	)
 };
 
 const FormNumericUpDown = (props: FormNumericUpDownProps) => {
 	const classes = useStyleForm();
-	const { label, defaultValue, disable, onChange } = props;
+	const { label, defaultValue, disable, require, min, onChange } = props;
 	return (
 		<WhiteTextField
 			className={classes.root}
@@ -272,7 +291,9 @@ const FormNumericUpDown = (props: FormNumericUpDownProps) => {
 			type="number"
 			defaultValue={defaultValue}
 			disabled={disable}
+			required={require}
 			onChange={onChange}
+			InputProps={{ inputProps: { min: min } }}
 		/>
 	);
 };

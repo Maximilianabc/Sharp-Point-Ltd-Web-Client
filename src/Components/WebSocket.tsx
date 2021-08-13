@@ -10,7 +10,15 @@ import {
   messages,
   wsPriceAddress,
   updateMarketDataShortAction,
-  updateMarketDataLongAction
+  updateMarketDataLongAction,
+  store,
+  DataMask8,
+  DataMask32,
+  DataMask4,
+  DataMask2,
+  DataMask1,
+  setAccountOrderAction,
+  setAccountOrderByPushAction
 } from '../Util';
 
 interface WebSocketProps {
@@ -24,6 +32,7 @@ interface PriceWebSocketProps {
 const ClientWS = (props: WebSocketProps) => {
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
+  const ae = useSelector((state: UserState) => state.isAE);
   const address = `${wsAddress}${token}`;
   const dispatch = useDispatch();
   const history = useHistory();
@@ -36,7 +45,7 @@ const ClientWS = (props: WebSocketProps) => {
       ws.current!.send(JSON.stringify({
         "dataMask" : 47,
         "event" : "subscribe",
-        "accNo" : "*"
+        "accNo" : ae ? "*" : accNo
       }));
     }
     ws.current.onclose = () => {};
@@ -53,6 +62,7 @@ const ClientWS = (props: WebSocketProps) => {
 
   const handlePushMessage = (message: any) => {
     if (message.dataMask === undefined) return;
+    /*
     const payload = {
       sessionToken: token,
       targetAccNo: accNo
@@ -64,7 +74,29 @@ const ClientWS = (props: WebSocketProps) => {
       if (data !== undefined) {
         dispatch(data.actionData);
       }
-    });
+    });*/
+    switch (+message.dataMask) {
+      case 1:
+        const data1 = message as DataMask1;
+        break;
+      case 2:
+        const data2 = message as DataMask2;
+        break;
+      case 4:
+        const data4 = message as DataMask4;
+        break;
+      case 8:
+        const data8 = message as DataMask8;
+        dispatch(setAccountOrderByPushAction({
+          
+        }));
+        break;
+      case 32:
+        const data32 = message as DataMask32;
+        break;
+      default:
+        console.log('Unknown data mask');
+    }
   };
 
   const closeSocket = (normal: boolean) => {

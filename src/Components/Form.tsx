@@ -49,6 +49,7 @@ interface OrderFormProps {
   refresh: () => void,
   reset?: () => void,
   editContent?: OrderRecordRow
+  resetToggle?: () => void,
   open: boolean
 }
 
@@ -156,13 +157,17 @@ const StyledPopoverForm = (props: StyledPopoverFormProps) => {
         name="ADD"
         onClick={handleToggle}
       />
-      <OrderForm refresh={refresh} open={backdropOpen}/>
+      <OrderForm
+        refresh={refresh}
+        open={backdropOpen} 
+        resetToggle={() => setBackdropOpen(false)}
+      />
     </div>
   )
 };
 
 const OrderForm = (props: OrderFormProps) => {
-  const { refresh, reset, editContent, open } = props;
+  const { refresh, reset, resetToggle, editContent, open } = props;
   const isEdit = editContent !== undefined;
 
   const classes = useStyles();
@@ -170,10 +175,11 @@ const OrderForm = (props: OrderFormProps) => {
 
   const accNo = useSelector((state: UserState) => state.accName);
   const token = useSelector((state: UserState) => state.token);
+  const mktDataLong = useSelector((state: UserState) => state.marketDataLong);
 
   const [newAccNo, setNewAccNo] = useState(accNo);
   const [Id, setId] = useState(editContent?.id ?? '');
-  const [price, setPrice] = useState(editContent?.price ?? 0);
+  const [price, setPrice] = useState(editContent?.price ?? (Id === '' ? 0 : mktDataLong?.[Id]?.bidPrice1 ?? 0));
   const [qty, setQty] = useState(editContent?.qty ?? 1);
   const [date, setDate] = useState<Date | null>();
   const [condition, setCondition] = useState<'Normal'|'Enchanced Stop'|'OCO'|'Bull & Bear'|'Time To Send'|'Trade Booking'>('Normal');
@@ -182,13 +188,26 @@ const OrderForm = (props: OrderFormProps) => {
   const [enhancedBuySell, setEnhancedBuySell] = useState<'Buy'|'Sell'|''>('');
   const [tPlusOne, setTPlusOne] = useState(false);
   const [result, setResult] = useState<'success'|'failed'|''>('');
+  const [fieldMissing, setFieldMissing] = useState<('acc'|'id')[]>([]);
   const [backdropOpen, setBackdropOpen] = useState(true);
-  
+
   useEffect(() => {
     setBackdropOpen(open);
   }, [open]);
 
   const sendOrder = (event: React.MouseEvent<EventTarget>, buySell: 'buy' | 'sell') => {
+    let missingFields: ('acc'|'id')[] = [];
+    if (newAccNo === '') {
+      missingFields.push('acc');
+    }
+    if (Id === '') {
+      missingFields.push('id');
+    }
+    if (missingFields.length !== 0) {
+      setFieldMissing(missingFields);
+      console.log(missingFields);
+      return;
+    }
     const payload = {
       accNo: newAccNo,
       prodCode: Id,
@@ -220,7 +239,7 @@ const OrderForm = (props: OrderFormProps) => {
       buySell: order.buySell,
       // downLevelInDec
       // downPriceInDec
-      extOrderNo: +order.orderNo,
+      extOrderNo: order.orderNo,
       priceInDec: price,
       qty: qty,
       // schedTime
@@ -248,6 +267,9 @@ const OrderForm = (props: OrderFormProps) => {
     if (reset) {
       reset();
     }
+    if (resetToggle) {
+      resetToggle();
+    }
   };
 
   return (
@@ -273,8 +295,11 @@ const OrderForm = (props: OrderFormProps) => {
                 label="Account Name"
                 variant="standard"
                 onChange={(event: React.ChangeEvent) => setNewAccNo((event?.target as HTMLInputElement)?.value)}
-                defaultValue={isEdit ? editContent?.initiator : ""}
+                defaultValue={accNo}
                 disable={isEdit}
+                require
+                error={fieldMissing.findIndex(f => f === 'acc') >= 0}
+                helperText={fieldMissing.findIndex(f => f === 'acc') >= 0 ? 'Account name required' : undefined}
               />
               <FormInputField
                 label="Id"
@@ -282,11 +307,16 @@ const OrderForm = (props: OrderFormProps) => {
                 onChange={(event: React.ChangeEvent) => setId((event?.target as HTMLInputElement)?.value)}
                 defaultValue={isEdit ? editContent?.id : ""}
                 disable={isEdit}
+                require
+                error={fieldMissing.findIndex(f => f === 'id') >= 0}
+                helperText={fieldMissing.findIndex(f => f === 'id') >= 0 ? 'Product ID required' : undefined}
               />
               <FormNumericUpDown
                 label="Price"
-                defaultValue={+(editContent?.price ?? 0)}
+                defaultValue={+(editContent?.price ?? (Id === '' ? 0 : mktDataLong?.[Id]?.bidPrice1 ?? 0))}
+                min={0}
                 disable={condition === "Enchanced Stop" || stopTriggerType === "Stop Market"}
+                require
                 onChange={(event: React.ChangeEvent) => setPrice(+(event?.target as HTMLInputElement)?.value)}
               />
               <div className={classes.checkboxDiv}>
@@ -306,7 +336,9 @@ const OrderForm = (props: OrderFormProps) => {
               </div>
               <FormNumericUpDown
                 label="Quantity"
+                require
                 defaultValue={+(editContent?.qty ?? 1)}
+                min={1}
                 onChange={(event: React.ChangeEvent) => setQty(+(event?.target as HTMLInputElement)?.value)}
               />
             </div>

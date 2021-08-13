@@ -20,7 +20,8 @@ import {
 	UserState,
 	locales,
 	messages,
-	setServerKeyAction
+	setServerKeyAction,
+	setAEAction
 } from '../Util';
 import {
 	useDispatch,
@@ -110,11 +111,13 @@ const LoginForm = (props: LoginPageProps) => {
 						dispatch(setServerKeyAction(info.spServerKey));
 						if (info.isAdmin) {
 							isAE = true;
+							dispatch(setAEAction(true));
 							setShow(false);
 						} else {
 							dispatch(setAccountNumAction(data.userId.toUpperCase()));
 							display2FAForm = false;
 							isAE = false;
+							dispatch(setAEAction(false));
 							history.push('/dashboard');
 						}											
 					} else if (info.twofaMethod !== undefined && info.twofaMethod === 3) {
@@ -215,11 +218,13 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 			dispatch(setServerKeyAction(info.spServerKey));
 			if (info.isAdmin) {
 				isAE = true;
+				dispatch(setAEAction(true));
 				setShow(false);
 			} else {
 				setShow(false);
 				display2FAForm = false;
 				isAE = false;
+				dispatch(setAEAction(false));
 				dispatch(setAccountNumAction(userId?.toUpperCase() as string));
 				history.push('/dashboard');
 			}

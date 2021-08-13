@@ -3,6 +3,7 @@ import { SortOrder } from './Util';
 
 interface UserState {
   authed?: boolean,
+  isAE?: boolean,
   userId?: string,
   token?: string,
   serverKey?: string,
@@ -24,7 +25,7 @@ type StateContentTypes = Empty | UserTypes | Account<Details> | unknown;
 
 interface Empty { }
 
-type UserTypes = UserId | SessionToken | ServerKey | Name;
+type UserTypes = UserId | SessionToken | ServerKey | Name | AE;
 interface UserId {
   userId: string
   password: string
@@ -38,15 +39,18 @@ interface ServerKey {
 interface Name {
   accName: string
 }
+interface AE {
+  isAE: boolean
+}
 
 type Details = Info | Summary | Balance | Position | ClearTrade | CashMovement | Order | DoneTrade;
 type Account<U extends Details> = U & {
-  limit: number,
-  page: number,
-  sort: SortOrder,
-  sortBy: string,
-  total: number,
-  totalPage: number
+  limit?: number,
+  page?: number,
+  sort?: SortOrder,
+  sortBy?: string,
+  total?: number,
+  totalPage?: number
 };
 
 interface AccSummaryRecord {
@@ -260,7 +264,7 @@ interface AccOrderRecord {
   gatewayCode?: string,
   openClose?: string,
   orderId?: string,
-  orderNo?: number,
+  orderNo?: BigInt,
   orderNoStr?: string,
   orderPrice?: number,
   orderType?: number,
@@ -289,7 +293,7 @@ interface AccOrderRecord {
   validType?: number
 }
 interface Order {
-  data: AccOrderRecord[]
+  data: { [clOrderId: string]: AccOrderRecord }
 }
 interface DoneTradeRecord {
   accNo?: string,
@@ -492,6 +496,11 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
       };
     case actionConsts.LOGOUT:
       return {};
+    case actionConsts.SET_AE:
+      return {
+        ...state,
+        isAE: action.payload
+      };
     case actionConsts.SET_TOKEN:
       return {
         ...state,
@@ -501,7 +510,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
       return {
         ...state,
         serverKey: action.payload
-      }
+      };
     case actionConsts.SET_ACC_NUM:
       return {
         ...state,
@@ -585,6 +594,19 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
           totalPage: action.payload?.totalPage
         } as Account<DoneTrade>
       };
+    case actionConsts.SET_ACC_ORDER_PUSH:
+      return {
+        ...state,
+        order: {
+          ...state.order,
+          data: {
+            ...state.order?.data,
+            [action.payload?.clOrderId]: {
+              
+            }
+          }
+        }
+      };
     case actionConsts.UPDATE_MARKET_PRICE_SHORT:
       return {
         ...state,
@@ -597,7 +619,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
             time: action.payload?.time
           }
         }
-      }
+      };
     case actionConsts.UPDATE_MARKET_PRICE_LONG:
       return {
         ...state,
@@ -659,7 +681,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
             tradeStateNo: action.payload?.tradeStateNo
           }
         }
-      }
+      };
     default:
       return state;
   }

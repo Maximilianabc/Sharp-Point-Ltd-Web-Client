@@ -19,7 +19,8 @@ import {
   LabelTable,
   LabelColumn,
   FilterDropDownMenu,
-  OrderForm
+  OrderForm,
+  IconProps
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -202,7 +203,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       prodCode: orders[row].id,
       qty: orders[row].qty,
       buySell: orders[row].buySell,
-      extOrderNo: !isNaN(+(orders[row].orderNo)) ? +(orders[row].orderNo) : -1,
+      extOrderNo: orders[row].orderNo,
       sessionToken: token
     };
     operations('order', op, payload, undefined, undefined).then(data => {
@@ -440,6 +441,58 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     );
   }
 
+  const getIconProps = (rows: OrderRecordRow[] | WorkingOrderRecordRow[] | OrderHistoryRecordRow[]): IconProps[][] => {
+    let ips: IconProps[][] = [];
+    Array.prototype.forEach.call(rows, (r: OrderRecordRow | WorkingOrderRecordRow | OrderHistoryRecordRow) => {
+      let ip: IconProps[] = [];
+      ip.push({ 
+        title: "More Details", 
+        name: "MORE_HORIZ",
+        buttonStyle: { padding: 0 },
+        isRowBasedCallback: true,
+        onClick: setCurrentOpen 
+      } as TooltipIconProps);
+      if (selectedOrderType !== 'history') {
+        ip.push({
+          title: "Edit",
+          name: "EDIT",
+          buttonStyle: { padding: 0 },
+          isRowBasedCallback: true,
+          onClick: setCurrentEdit
+        } as TooltipIconProps);
+        ip.push(r.status === 'Inactive' 
+          ? { title: "Activate",
+              name: "ACTIVATE",
+              buttonStyle: { padding: 0 },
+              isRowBasedCallback: true,
+              onClick: deleteOrder
+            } as TooltipIconProps
+          : { title: "Deactivate",
+              name: "DEACTIVATE",
+              buttonStyle: { padding: 0 },
+              isRowBasedCallback: true,
+              onClick: deleteOrder
+            } as TooltipIconProps
+        );
+        ip.push({
+          title: "Delete",
+          name: "DELETE",
+          buttonStyle: { padding: 0 },
+          isRowBasedCallback: true,
+          onClick: deleteOrder
+        } as TooltipIconProps);
+      }
+      ip.push({
+        title: "Quote",
+        name: "DETAILS",
+        buttonStyle: { padding: 0 },
+        onClick: workingInProgess
+      } as TooltipIconProps);
+      ips.push(ip);
+    });
+    return ips;
+  };
+
   const filterOrders = (rows: OrderRecordRow[] | WorkingOrderRecordRow[] | OrderHistoryRecordRow[], predicate: (property: string) => boolean) => {
 
   };
@@ -561,12 +614,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           removeToolBar
           rowCollapsible
           openArray={currentOpen}
-          icons={[{ title: "More Details", name: "MORE_HORIZ", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentOpen } as TooltipIconProps,
-            selectedOrderType !== 'history' ? { title: "Edit", name: "EDIT", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: setCurrentEdit } as TooltipIconProps : undefined,
-            selectedOrderType !== 'history' ? { title: "Deactivate", name: "DEACTIVATE", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: deleteOrder } as TooltipIconProps : undefined,
-            selectedOrderType !== 'history' ? { title: "Delete", name: "DELETE", buttonStyle: { padding: 0 }, isRowBasedCallback: true, onClick: deleteOrder } as TooltipIconProps : undefined,
-            { title: "Quote", name: "DETAILS", buttonStyle: { padding: 0 }, onClick: workingInProgess } as TooltipIconProps
-          ]}
+          icons={getIconProps(selectedOrderType === 'todays' ? orders : selectedOrderType === 'working' ? workingOrders : orderHistory)}
           containerClasses={classes.container}
           collapsibleContents={
             selectedOrderType === 'history'

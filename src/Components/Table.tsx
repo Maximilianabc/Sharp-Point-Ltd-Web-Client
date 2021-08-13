@@ -66,7 +66,7 @@ interface DataTableProps {
   addPageControl?: boolean,
   removeToolBar?: boolean,
   openArray?: boolean[],
-  icons?: (IconProps | undefined)[],
+  icons?: (IconProps | undefined)[][],
   containerClasses?: any,
   setOpenArray?: any,
   collapsibleContents?: React.ReactElement<CardProps|BoxProps>[]
@@ -375,7 +375,7 @@ const DataTable = (props: DataTableProps) => {
                     <DataRow
                       row={row}
                       index={index}
-                      icons={icons}
+                      icons={icons?.[index] ?? []}
                       classes={classes}
                       collapsible={rowCollapsible}
                       open={openArray && openArray[index]}

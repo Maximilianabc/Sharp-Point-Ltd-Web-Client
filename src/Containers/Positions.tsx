@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
   DataTable,
+  IconProps,
   NamedIconButton
 } from '../Components';
 import { 
@@ -239,6 +240,14 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     }
   };
 
+  const getIconProps = (rows: PositionRecordRow[]): IconProps[][] => {
+    let ips: IconProps[][] = [];
+    Array.prototype.forEach.call(rows, (r: PositionRecordRow) => {
+      ips.push([{ name: "DETAILS", size: 30, onClick: workingInProgess }]);
+    })
+    return ips;
+  };
+
   return (
     <Card elevation={0} className={classes.card}>
       <CardContent>
@@ -246,7 +255,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           headLabels={Object.values(headCellsMinified)}
           data={RowsToLabels(positions)}
           title={messages[intl.locale].positions}
-          icons={[{ name: "DETAILS", size: 30, onClick: workingInProgess }]}
+          icons={getIconProps(positions)}
           containerClasses={classes.container}
         />
       </CardContent>

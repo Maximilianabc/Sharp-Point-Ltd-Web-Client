@@ -201,6 +201,115 @@ interface CashMovementRecordRow {
   cashBaseCcy: string
 }
 
+interface DataMask1 {
+	accNo?: string,
+	action?: number,
+	aeCode?: string,
+	creditLimit?: number,
+	ctrlLevel?: number,
+	dataMask?: number,
+	event?: string,
+	maxLoanLimit?: number,
+	tradeLimit?: number,
+	tradingLimit?: number
+}
+
+interface DataMask2 {
+	accNo?: string,
+	action?: number,
+	aeCode?: string,
+	cashBf?: number,
+	ccyCode?: string,
+	dataMask?: number,
+	event?: string,
+	notYetValue?: number,
+	todayCash?: number,
+	todayOut?: number,
+	unpresented?: number,
+}
+
+interface DataMask4 {
+	accNo?: string,
+	action?: number,
+	aeCode?: string,
+	covered?: number,
+	dataMask?: number,
+	decInPrc?: number,
+	depositQty?: number,
+	depositTotalAmount?: number,
+	event?: string,
+	longQty?: number,
+	longShort?: string,
+	longTotalAmount?: number,
+	prodCode?: string,
+	psQty?: number,
+	psTotalAmount?: number,
+	qty?: number,
+	recNo?: number,
+	shortQty?: number,
+	shortTotalAmount?: number,
+	totalAmount?: number
+}
+
+interface DataMask8 {
+	accNo?: string,
+	accOrderNo?: number,
+	action?: number,
+	active?: number,
+	aeCode?: string,
+	buySell?: string,
+	clOrderId?: string,
+	condType?: number,
+	dataMask?: number,
+	decInPrc?: number,
+	downLevel?: number,
+	downPrice?: number,
+	event?: string,
+	gatewayCode?: string,
+	lastAction?: number,
+	openClose?: string,
+	options?: number,
+	orderNo?: BigInt,
+	orderType?: number,
+	price?: number,
+	qty?: number,
+	recNo?: number,
+	ref2?: string,
+	ref?: string,
+	schedTime?: number,
+	sender?: string,
+	status?: number
+	stopPrice?: number,
+	stopType?: string,
+	timeStamp?: number,
+	totalQty?: number,
+	tradedQty?: number,
+	upLevel?: number,
+	upPrice?: number,
+	validDate?: number,
+	validType?: number,
+}
+
+interface DataMask32 {
+	accNo?: string,
+	accOrderNo?: number,
+	aeCode?: string,
+	buySell?: string,
+	counterBroker?: string,
+	dataMask?: number,
+	event?: string,
+	orderId?: string,
+	orderNo?: BigInt,
+	prodCode?: string,
+	recNo?: number,
+	tradeDateInYMD?: number,
+	tradeId?: string,
+	tradeNo?: number,
+	tradePriceInDec?: number,
+	tradeQty?: number,
+	tradeTime?: number,
+}
+
 type SortOrder = 'asc' | 'desc';
 type ComparatorIndicator = -1 | 0 | 1;
 type Comparator = (tuple: any) => ComparatorIndicator;
@@ -573,6 +682,11 @@ export type {
 	WorkingOrderRecordRow,
 	OrderHistoryRecordRow,
 	CashMovementRecordRow,
-	OrderStatus
+	OrderStatus,
+	DataMask1,
+	DataMask2,
+	DataMask4,
+	DataMask8,
+	DataMask32
 };
 
