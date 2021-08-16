@@ -16,7 +16,12 @@ const actionConsts: Record<string, string> = {
   SET_ACC_POS: 'SET_ACC_POS',
   SET_ACC_SUM: 'SET_ACC_SUM',
   SET_DONE_TRADE: 'SET_DONE_TRADE',
+  SET_ACC_BAL_PUSH: 'SET_ACC_BAL_PUSH',
+  SET_ACC_INFO_PUSH: 'SET_ACC_INFO_PUSH',
   SET_ACC_ORDER_PUSH: 'SET_ACC_ORDER_PUSH',
+  SET_ACC_POS_PUSH: 'SET_ACC_POS_PUSH',
+  SET_ACC_SUM_PUSH: 'SET_ACC_SUM_PUSH',
+  SET_DONE_TRADE_PUSH: 'SET_DONE_TRADE_PUSH',
   UPDATE_MARKET_PRICE_SHORT: 'UPDATE_MARKET_PRICE_SHORT',
   UPDATE_MARKET_PRICE_LONG: 'UPDATE_MARKET_PRICE_LONG',
 };
@@ -69,6 +74,13 @@ const setAccountBalanaceAction = (balance: any): ActionData => {
   }
 };
 
+const setAccountBalanceByPushAction = (balance: any): ActionData => {
+  return {
+    type: actionConsts.SET_ACC_BAL_PUSH,
+    payload: balance
+  }
+};
+
 const setAccountInfoAction = (info: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_INFO,
@@ -97,6 +109,13 @@ const setAccountPositionAction = (position: any): ActionData => {
   };
 };
 
+const setAccountPositionByPushAction = (position: any): ActionData => {
+  return {
+    type: actionConsts.SET_ACC_POS_PUSH,
+    payload: position
+  }
+};
+
 const setAccountSummaryAction = (summary: any): ActionData => {
   return {
     type: actionConsts.SET_ACC_SUM,
@@ -104,9 +123,23 @@ const setAccountSummaryAction = (summary: any): ActionData => {
   };
 };
 
+const setAccountSummaryByPushAction = (summary: any): ActionData => {
+  return {
+    type: actionConsts.SET_ACC_SUM_PUSH,
+    payload: summary
+  }
+};
+
 const setDoneTradeReportAction = (doneTrade: any): ActionData => {
   return {
     type: actionConsts.SET_DONE_TRADE,
+    payload: doneTrade
+  }
+};
+
+const setDoneTradeReportByPushAction = (doneTrade: any): ActionData => {
+  return {
+    type: actionConsts.SET_DONE_TRADE_PUSH,
     payload: doneTrade
   }
 };
@@ -140,6 +173,10 @@ export {
   setAccountBalanaceAction,
   setDoneTradeReportAction,
   setAccountOrderByPushAction,
+  setAccountPositionByPushAction,
+  setAccountSummaryByPushAction,
+  setAccountBalanceByPushAction,
+  setDoneTradeReportByPushAction,
   updateMarketDataShortAction,
   updateMarketDataLongAction,
 };

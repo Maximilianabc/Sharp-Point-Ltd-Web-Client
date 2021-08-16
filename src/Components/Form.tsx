@@ -41,7 +41,7 @@ import { Event, KeyboardArrowDown, Refresh } from "@material-ui/icons";
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
-interface StyledPopoverFormProps {
+interface OrderFormWithButtonProps {
   refresh: () => void;
 }
 
@@ -51,6 +51,10 @@ interface OrderFormProps {
   editContent?: OrderRecordRow
   resetToggle?: () => void,
   open: boolean
+}
+
+interface FilterFormProps {
+
 }
 
 const useStyles = makeStyles(theme => ({
@@ -141,7 +145,7 @@ const useStylesResult = makeStyles((theme) => ({
   },
 }));
 
-const StyledPopoverForm = (props: StyledPopoverFormProps) => {
+const OrderFormWithButton = (props: OrderFormWithButtonProps) => {
   const classes = useStyles();
   const { refresh } = props;
   const [backdropOpen, setBackdropOpen] = useState(false);
@@ -193,6 +197,10 @@ const OrderForm = (props: OrderFormProps) => {
 
   useEffect(() => {
     setBackdropOpen(open);
+    if (!open) {
+      setPrice(0);
+      setId('');
+    }
   }, [open]);
 
   const sendOrder = (event: React.MouseEvent<EventTarget>, buySell: 'buy' | 'sell') => {
@@ -512,9 +520,46 @@ const OrderForm = (props: OrderFormProps) => {
       </ClickAwayListener>
     </Popover>
   );
-}
+};
+
+const FilterForm = (props: FilterFormProps) => {
+  const classes = useStyles();
+
+  const [backdropOpen, setBackdropOpen] = useState(true);
+  const [filterCount, setFilterCount] = useState(1);
+
+  const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
+    setBackdropOpen(false);
+  };
+
+  return (
+    <Popover
+      className={classes.popover}
+      open={backdropOpen} 
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
+      anchorOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+      transformOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+    >
+      <ClickAwayListener onClickAway={handleClickAway}>
+        <Paper elevation={0} className={classes.paper}>
+          {
+
+          }
+        </Paper>
+      </ClickAwayListener>
+    </Popover>
+  )
+};
 
 export {
-  StyledPopoverForm,
-  OrderForm
+  OrderFormWithButton,
+  OrderForm,
+  FilterForm
 }

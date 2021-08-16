@@ -18,7 +18,11 @@ import {
   DataMask2,
   DataMask1,
   setAccountOrderAction,
-  setAccountOrderByPushAction
+  setAccountOrderByPushAction,
+  setAccountPositionByPushAction,
+  setAccountBalanaceAction,
+  setAccountSummaryByPushAction,
+  setDoneTradeReportByPushAction
 } from '../Util';
 
 interface WebSocketProps {
@@ -78,21 +82,23 @@ const ClientWS = (props: WebSocketProps) => {
     switch (+message.dataMask) {
       case 1:
         const data1 = message as DataMask1;
+        dispatch(setAccountSummaryByPushAction(data1));
         break;
       case 2:
         const data2 = message as DataMask2;
+        dispatch(setAccountBalanaceAction(data2));
         break;
       case 4:
         const data4 = message as DataMask4;
+        dispatch(setAccountPositionByPushAction(data4));
         break;
       case 8:
         const data8 = message as DataMask8;
-        dispatch(setAccountOrderByPushAction({
-          
-        }));
+        dispatch(setAccountOrderByPushAction(data8));
         break;
       case 32:
         const data32 = message as DataMask32;
+        dispatch(setDoneTradeReportByPushAction(data32));
         break;
       default:
         console.log('Unknown data mask');

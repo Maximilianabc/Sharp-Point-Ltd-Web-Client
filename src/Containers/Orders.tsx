@@ -6,7 +6,7 @@ import React, {
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  StyledPopoverForm,
+  OrderFormWithButton,
   LabelBaseProps,
   DataTable,
   StackedLabelProps,
@@ -547,7 +547,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                       ? messages[intl.locale].todays_orders 
                       : messages[intl.locale].order_history}
           >
-            <StyledPopoverForm refresh={() => setRefresh(true)}/>
+            <OrderFormWithButton refresh={() => setRefresh(true)}/>
             {currentEdit !== -1 
               ? 
                 <OrderForm 

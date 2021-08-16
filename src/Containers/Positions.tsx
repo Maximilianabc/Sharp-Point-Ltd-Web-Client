@@ -129,18 +129,15 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
               pathname: '/logout',
               state: messages[intl.locale].session_expired
             });
-            clearInterval(work);
           }
         } catch (error) {
           console.error(error);
-          clearInterval(work);
         }
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 1000); 
     return () => {
-      clearInterval(work);
+      
     };
   }, []);
 
@@ -151,6 +148,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       } else {
         mktDataShort = store.getState().marketDataShort;
       }
+      setPositions(positionsToRows(Object.values(store.getState().position?.data ?? {})));
     };
     const get = setInterval(getStoreData, 1000);
     return () => clearInterval(get);
@@ -161,20 +159,24 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     let products: string[] = prods;
     if (positions) {
       Array.prototype.forEach.call(positions, (pos: AccPositionRecord) => {
+        const prod = mktDataLong?.[pos?.prodCode ?? ''] 
+        const prodShort = mktDataShort?.[pos?.prodCode ?? ''];
+        const price = longMode ? (prod?.bidPrice1?.toString() ?? '?') : (prodShort?.mktPrice?.toString() ?? '?');
+        const size = longMode ? prod?.contractSize : undefined;
+        const pl = isNaN(+price) || pos.netAvg === undefined || pos.netQty === undefined || size === undefined ? '?' : ((+price - pos.netAvg) * pos.netQty * size).toString();
+
         p.push({
           id: pos.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.[pos?.prodCode ?? '']?.productName ?? '?') : '?',
-          prev: `${pos.psQty}@${pos.previousAvg}`,
+          name: longMode ? (prod?.productName ?? '?') : '?',
+          prev: `${pos.qty}@${pos.previousAvg}`,
           dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
           dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
-          mkt: longMode 
-            ? (mktDataLong?.[pos?.prodCode ?? '']?.bidPrice1?.toString() ?? '?') 
-            : (mktDataShort?.[pos?.prodCode ?? '']?.mktPrice?.toString() ?? '?'),
-          pl: pos.profitLoss?.toString() ?? '?',
+          mkt: price,
+          pl:  pl,
           prevClose: longMode 
-            ? (mktDataLong?.[pos?.prodCode ?? '']?.previousClose?.toString() ?? '?') 
-            : (mktDataShort?.[pos?.prodCode ?? '']?.previousClose?.toString() ?? '?'),
+            ? (prod?.previousClose?.toString() ?? '?') 
+            : (prodShort?.previousClose?.toString() ?? '?'),
           optVal: '?',
           fx: 0,
           contract: ''}

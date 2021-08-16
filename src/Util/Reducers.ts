@@ -155,7 +155,6 @@ interface AccPositionRecord {
   longAvg?: number,
   longQty?: number,
   longShort?: string,
-  longTotalAmount?: number,
   longTotalAmt?: number,
   mktPrice?: number,
   netAvg?: number,
@@ -168,17 +167,15 @@ interface AccPositionRecord {
   prodProfitLoss?: number,
   profitLoss?: number,
   psQty?: number,
-  psTotalAmount?: number,
   psTotalAmt?: number,
   qty?: number,
   shortAvg?: number,
   shortQty?: number,
-  shortTotalAmount?: number,
   shortTotalAmt?: number,
-  totalAmount?: number,
+  totalAmt?: number,
 }
 interface Position {
-  data: AccPositionRecord[]
+  data: { [prodCode: string]: AccPositionRecord }
 }
 interface ClearTradeRecord {
   accNo?: string
@@ -543,12 +540,13 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
         } as Account<Info>
       };
     case actionConsts.SET_ACC_ORDER:
+      const dataDict = Object.assign({}, ...action.payload?.recordData.map((d: any) => ({ [d.clOrderId]: d })));
       return {
         ...state,
         order: {
           limit: action.payload?.limit,
           page: action.payload?.page,
-          data: action.payload?.recordData,
+          data: dataDict,
           sort: action.payload?.sort,
           sortBy: action.payload?.sortBy,
           total: action.payload?.total,
@@ -556,12 +554,13 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
         } as Account<Order>
       };
     case actionConsts.SET_ACC_POS:
+      const posDataDict = Object.assign({}, ...action.payload?.recordData.map((d: any) => ({ [d.prodCode]: d })));
       return {
         ...state,
         position: {
           limit: action.payload?.limit,
           page: action.payload?.page,
-          data: action.payload?.recordData,
+          data: posDataDict,
           sort: action.payload?.sort,
           sortBy: action.payload?.sortBy,
           total: action.payload?.total,
@@ -594,6 +593,14 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
           totalPage: action.payload?.totalPage
         } as Account<DoneTrade>
       };
+    case actionConsts.SET_ACC_BAL_PUSH:
+      return {
+
+      };
+    case actionConsts.SET_ACC_INFO_PUSH:
+      return {
+
+      };
     case actionConsts.SET_ACC_ORDER_PUSH:
       return {
         ...state,
@@ -602,7 +609,60 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
           data: {
             ...state.order?.data,
             [action.payload?.clOrderId]: {
-              
+              ...state.order?.data?.[action.payload?.clOrderId],
+              accNo: action.payload?.accNo,
+              accOrderNo: action.payload?.accOrderNo,
+              active: action.payload?.active,
+              aeCode: action.payload?.aeCode,
+              buySell: action.payload?.buySell,
+              clOrderId: action.payload?.clOrderId,
+              condType: action.payload?.condType,
+              decInPrc: action.payload?.decInPrc,
+              downLevel: action.payload?.downLevel,
+              downPrice: action.payload?.downPrice,
+              gatewayCode: action.payload?.gatewayCode,
+              openClose: action.payload?.openClose,
+              orderNo: action.payload?.orderNo,
+              orderType: action.payload?.orderType,
+              qty: action.payload?.qty,
+              ref2: action.payload?.ref2,
+              ref: action.payload?.ref,
+              schedTime: action.payload?.schedTime,
+              sender: action.payload?.sender,
+              status: action.payload?.status,
+              stopPrice: action.payload?.stopPrice,
+              stopType: action.payload?.stopType,
+              timeStamp: action.payload?.timeStamp,
+              totalQty: action.payload?.totalQty,
+              tradedQty: action.payload?.tradedQty,
+              upLevel: action.payload?.upLevel,
+              upPrice: action.payload?.upPrice,
+            }
+          }
+        }
+      };
+    case actionConsts.SET_ACC_POS_PUSH:
+      const net = action.payload?.qty + action.payload?.longQty - action.payload?.shortQty;
+      return {
+        ...state,
+        position: {
+          data: {
+            ...state.position?.data,
+            [action.payload?.prodCode]: {
+              ...state.position?.data?.[action.payload.prodCode],
+              accNo: action.payload?.accNo,
+              covered: action.payload?.covered,
+              decInPrc: action.payload?.decInPrc,
+              longQty: action.payload?.longQty,
+              longShort: action.payload?.longShort,
+              longTotalAmt: action.payload?.longTotalAmount,
+              netQty: net,
+              prodCode: action.payload?.prodCode,
+              psQty: action.payload?.psQty,
+              psTotalAmt: action.payload?.psTotalAmount,
+              qty: action.payload?.qty,
+              shortQty: action.payload?.shortQty,
+              shortTotalAmt: action.payload?.shortTotalAmount
             }
           }
         }

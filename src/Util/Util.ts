@@ -278,7 +278,7 @@ interface DataMask8 {
 	ref?: string,
 	schedTime?: number,
 	sender?: string,
-	status?: number
+	status?: number,
 	stopPrice?: number,
 	stopType?: string,
 	timeStamp?: number,
