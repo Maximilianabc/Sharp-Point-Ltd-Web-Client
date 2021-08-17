@@ -685,7 +685,7 @@ const FilterForm = (props: FilterFormProps) => {
                     <TooltipIconButton 
                       name="ADD"
                       title="Add Filter"
-                      onClick={setFilters({...filters, })}
+                      onClick={(event: React.MouseEvent) => setFilters({...filters, })}
                     />
                   </div>
                 );
