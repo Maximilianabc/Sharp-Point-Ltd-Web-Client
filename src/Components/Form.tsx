@@ -13,18 +13,25 @@ import {
   Radio,
   RadioGroup,
   Select,
+  Typography,
  } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
+import { useIntl } from 'react-intl';
 import { useSelector } from "react-redux";
 import {
   AccOrderRecord,
+  CARD_BUTTON_CLASSES,
+  CARD_TITLE_CLASSES,
   FLEX_COLUMN_CLASSES,
   getConditionTypeNumber,
   getValidTypeNumber,
   LABEL_CLASSES,
+  messages,
+  NumberFilterOperation,
   operations,
   OrderRecordRow,
   ROBOTO_SEMIBOLD,
+  StringFilterOperation,
   UserState,
   WHITE40,
   WHITE5,
@@ -60,6 +67,11 @@ interface FilterFormProps {
 const useStyles = makeStyles(theme => ({
   root: {
       flex: '1 1 10%'
+  },
+  title: {
+    ...CARD_TITLE_CLASSES,
+    marginBottom: 0,
+    fontSize: '1.25rem'
   },
   paper: {
     backgroundColor: '#282c34',
@@ -155,7 +167,7 @@ const OrderFormWithButton = (props: OrderFormWithButtonProps) => {
   };
 
   return (
-    <div className={classes.root}>
+    <div /*className={classes.root}*/>
       <TooltipIconButton
         title="Add Order"
         name="ADD"
@@ -296,7 +308,8 @@ const OrderForm = (props: OrderFormProps) => {
       }}
     >
       <ClickAwayListener onClickAway={handleClickAway}>
-        <Paper elevation={0} className={classes.paper}>
+        <Paper elevation={0} className={classes.paper} style={{ overflow: 'auto' }}>
+          <Typography className={classes.title}>Orders</Typography>
           <FormControl id="order-form" className={classes.formControl}>
             <div className={classes.firstColumn}>
               <FormInputField
@@ -522,39 +535,167 @@ const OrderForm = (props: OrderFormProps) => {
   );
 };
 
+interface Filter {
+  item: string,
+  operator: string,
+  value: string | number
+}
+
+const useStyleFilterForm = makeStyles((theme) => ({
+  control: {
+    margin: '0.25rem'
+  },
+  button: {
+    ...CARD_BUTTON_CLASSES,
+    color: 'cornflowerblue',
+    fontSize: '1.25rem',
+    fontWeight: ROBOTO_SEMIBOLD
+  },
+  title: {
+    ...CARD_TITLE_CLASSES,
+    marginBottom: 0,
+    fontSize: '1.25rem'
+  }
+}))
+
 const FilterForm = (props: FilterFormProps) => {
   const classes = useStyles();
+  const formClasses = useStyleFilterForm();
+  const intl = useIntl();
 
-  const [backdropOpen, setBackdropOpen] = useState(true);
-  const [filterCount, setFilterCount] = useState(1);
+  const [backdropOpen, setBackdropOpen] = useState(false);
+  const [filters, setFilters] = useState<{[index: number]: Filter}>({0: { item: '', operator: '', value: '' }});
 
   const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
     setBackdropOpen(false);
   };
 
   return (
-    <Popover
-      className={classes.popover}
-      open={backdropOpen} 
-      anchorReference="anchorPosition"
-      anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
-      anchorOrigin={{
-        vertical: 'center',
-        horizontal: 'center',
-      }}
-      transformOrigin={{
-        vertical: 'center',
-        horizontal: 'center',
-      }}
-    >
-      <ClickAwayListener onClickAway={handleClickAway}>
-        <Paper elevation={0} className={classes.paper}>
-          {
-
-          }
-        </Paper>
-      </ClickAwayListener>
-    </Popover>
+    <div>
+      <TooltipIconButton
+        title={messages[intl.locale].filter_list}
+        name={"FILTER"}
+        buttonStyle={{ padding: '0 0.5rem 0 0' }}
+        onClick={() => setBackdropOpen(true)}
+      />
+      <Popover
+        className={classes.popover}
+        open={backdropOpen} 
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
+        anchorOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'center',
+          horizontal: 'center',
+        }}
+      >
+        <ClickAwayListener onClickAway={handleClickAway}>
+          <Paper elevation={0} className={classes.paper}>
+            <Typography className={formClasses.title}>Filter</Typography>
+            {
+              [Object.keys(filters).map(index => {
+                const filter = filters[+index];
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <WhiteSelectFormControl className={formClasses.control} style={{ minWidth: '4rem' }}>
+                      <InputLabel>Item</InputLabel>
+                      <Select
+                        value={filter.item === undefined ? '' : filter.item.toLowerCase()}
+                        IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                        MenuProps={{ 
+                          disablePortal: true,
+                          anchorOrigin: {
+                            vertical: "bottom",
+                            horizontal: "left"
+                          },
+                          getContentAnchorEl: null
+                        }}
+                      >
+                        <MenuItem value="id" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'id' }})}>ID</MenuItem>
+                        <MenuItem value="price" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'price'}})}>Price</MenuItem>
+                        <MenuItem value="date" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'date'}})}>Date</MenuItem>
+                      </Select>
+                    </WhiteSelectFormControl>
+                    <WhiteSelectFormControl className={formClasses.control} style={{ minWidth: '15rem' }}>
+                      <InputLabel>Operator</InputLabel>
+                      <Select
+                        value={filter.operator === undefined ? '' : filter.operator}
+                        IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                        MenuProps={{ 
+                          disablePortal: true,
+                          anchorOrigin: {
+                            vertical: "bottom",
+                            horizontal: "left"
+                          },
+                          getContentAnchorEl: null
+                        }}
+                      >
+                        {filter.item === "id"
+                          ?
+                            ["equals", "not equals", "starts with", "ends with", "contains", "not contain"].map(o => {
+                              return (
+                                <MenuItem
+                                  value={o}
+                                  style={{ minWidth: '30rem' }}
+                                  onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
+                                >
+                                  {o}
+                                </MenuItem>
+                              );
+                            })
+                          : filter.item === "price"
+                            ? 
+                              ["equals", "not equals", "less than", "less than or equal to", "greater than", "greater than or equal to", "between"].map(o => {
+                                return (
+                                  <MenuItem
+                                    value={o}
+                                    style={{ minWidth: '30rem' }}
+                                    onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
+                                  >
+                                    {o}
+                                  </MenuItem>
+                                );
+                              })
+                            : filter.item === "date"
+                              ?
+                                ["before", "after", "between"].map(o => {
+                                  return (
+                                    <MenuItem
+                                      value={o}
+                                      style={{ minWidth: '30rem' }}
+                                      onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
+                                    >
+                                      {o}
+                                    </MenuItem>
+                                  );
+                                })
+                              : null
+                        }
+                      </Select>
+                    </WhiteSelectFormControl>
+                    <FormInputField
+                      label="Value"
+                      variant="standard"
+                      onChange={(event: React.ChangeEvent) => setFilters({...filters, [+index]: { ...filters[+index], value: (event.target as HTMLInputElement).value}})}
+                      require
+                    />
+                    <TooltipIconButton 
+                      name="ADD"
+                      title="Add Filter"
+                      onClick={setFilters({...filters, })}
+                    />
+                  </div>
+                );
+              })]
+            }
+            <Button className={formClasses.button}>Apply</Button>
+          </Paper>
+        </ClickAwayListener>
+      </Popover>
+    </div>
   )
 };
 

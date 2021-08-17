@@ -31,7 +31,8 @@ import {
   LABEL_CLASSES,
   HEADER_LABEL_CLASSES,
   messages,
-  operations
+  operations,
+  SCROLL_BAR_CLASSES
 } from '../Util';
 import { useHistory } from 'react-router';
 import {
@@ -84,7 +85,8 @@ const useStyleMinified = makeStyles((theme) => ({
     minWidth: '55vw',
     minHeight: '25vh',
     right: '1%',
-    top: '10%'
+    top: '10%',
+    '&::-webkit-scrollbar': SCROLL_BAR_CLASSES
   },
   content: CARD_CONTENT_CLASSES,
   title: CARD_TITLE_CLASSES,
@@ -256,7 +258,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
   };
 
   return (
-    <Card elevation={0} className={classes.card}>
+    <Card elevation={0} className={classes.card} style={{ overflow: 'auto' }}>
       <CardContent className={classes.content}>
         <StyledTableToolbar
           title={messages[intl.locale].summary}

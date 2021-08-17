@@ -20,7 +20,8 @@ import {
   LabelColumn,
   FilterDropDownMenu,
   OrderForm,
-  IconProps
+  IconProps,
+  FilterForm
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -558,16 +559,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                 /> 
               : <></>
             }
-            <FilterDropDownMenu
-              controlButton=
-                {{
-                  title: messages[intl.locale].filter_list,
-                  name: "FILTER",
-                  buttonStyle: { padding: '0 0.5rem 0 0' }
-                } as TooltipIconProps}
-              filterLabels={['name', 'price', 'time']}
-              filterTypes={['string', 'number', 'date']}
-            />
+            <FilterForm />
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton
