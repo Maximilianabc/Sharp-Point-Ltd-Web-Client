@@ -204,14 +204,24 @@ const OrderForm = (props: OrderFormProps) => {
   const [enhancedBuySell, setEnhancedBuySell] = useState<'Buy'|'Sell'|''>('');
   const [tPlusOne, setTPlusOne] = useState(false);
   const [result, setResult] = useState<'success'|'failed'|''>('');
+  const [failedReason, setFailedReason] = useState(undefined);
   const [fieldMissing, setFieldMissing] = useState<('acc'|'id')[]>([]);
   const [backdropOpen, setBackdropOpen] = useState(true);
 
   useEffect(() => {
     setBackdropOpen(open);
     if (!open) {
-      setPrice(0);
       setId('');
+      setPrice(0);
+      setQty(1);
+      setDate(null);
+      setCondition('Normal');
+      setValidity('Today');
+      setEnhancedBuySell('');
+      setTPlusOne(false);
+      setResult('');
+      setFailedReason(undefined);
+      setFieldMissing([]);
     }
   }, [open]);
 
@@ -225,7 +235,6 @@ const OrderForm = (props: OrderFormProps) => {
     }
     if (missingFields.length !== 0) {
       setFieldMissing(missingFields);
-      console.log(missingFields);
       return;
     }
     const payload = {
@@ -246,6 +255,7 @@ const OrderForm = (props: OrderFormProps) => {
           refresh();
         } else {
           setResult('failed');
+          setFailedReason(data.data.errorMsg);
         }
       }
     });
@@ -276,6 +286,7 @@ const OrderForm = (props: OrderFormProps) => {
           refresh();
         } else {
           setResult('failed');
+          setFailedReason(data.data.errorMsg);
         }
       }
     });
@@ -528,7 +539,7 @@ const OrderForm = (props: OrderFormProps) => {
               SELL
             </Button>
           </FormControl>
-          {result !== '' ? <FormLabel className={resultClasses.label}>{isEdit ? 'Edit' : 'Add'} order {result}</FormLabel> : null}
+          {result !== '' ? <FormLabel className={resultClasses.label}>{isEdit ? 'Edit' : 'Add'} order {result}{failedReason !== undefined ? `, reason: ${failedReason}` : ''}</FormLabel> : null}
         </Paper>
       </ClickAwayListener>
     </Popover>
@@ -563,8 +574,10 @@ const FilterForm = (props: FilterFormProps) => {
   const formClasses = useStyleFilterForm();
   const intl = useIntl();
 
+  const newFilter: Filter = { item: '', operator: '', value: '' };
+
   const [backdropOpen, setBackdropOpen] = useState(false);
-  const [filters, setFilters] = useState<{[index: number]: Filter}>({0: { item: '', operator: '', value: '' }});
+  const [filters, setFilters] = useState<{[index: number]: Filter}>({0: newFilter});
 
   const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
     setBackdropOpen(false);
@@ -685,7 +698,19 @@ const FilterForm = (props: FilterFormProps) => {
                     <TooltipIconButton 
                       name="ADD"
                       title="Add Filter"
-                      onClick={(event: React.MouseEvent) => setFilters({...filters, })}
+                      onClick={(event: React.MouseEvent) => setFilters({...filters, [+index + 1 ]: newFilter})}
+                    />
+                    <TooltipIconButton
+                      name="DELETE"
+                      title="Delete Filter"
+                      onClick={(event: React.MouseEvent) => {
+                        if (Object.keys(filters).length === 1) {
+                          return;
+                        }
+                        delete filters[+index];
+                        console.log(filters);
+                        setFilters(filters);
+                      }}
                     />
                   </div>
                 );

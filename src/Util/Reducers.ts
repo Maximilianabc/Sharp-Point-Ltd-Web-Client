@@ -155,23 +155,23 @@ interface AccPositionRecord {
   longAvg?: number,
   longQty?: number,
   longShort?: string,
-  longTotalAmt?: number,
+  longTotalAmount?: number,
   mktPrice?: number,
   netAvg?: number,
   netLongQty?: number,
   netQty?: number,
   netShortQty?: number,
-  netTotalAmt?: number,
+  netTotalAmount?: number,
   previousAvg?: number,
   prodCode?: string,
   prodProfitLoss?: number,
   profitLoss?: number,
   psQty?: number,
-  psTotalAmt?: number,
+  psTotalAmount?: number,
   qty?: number,
   shortAvg?: number,
   shortQty?: number,
-  shortTotalAmt?: number,
+  shortTotalAmount?: number,
   totalAmt?: number,
 }
 interface Position {
@@ -655,14 +655,14 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
               decInPrc: action.payload?.decInPrc,
               longQty: action.payload?.longQty,
               longShort: action.payload?.longShort,
-              longTotalAmt: action.payload?.longTotalAmount,
+              longTotalAmount: action.payload?.longTotalAmount,
               netQty: net,
               prodCode: action.payload?.prodCode,
               psQty: action.payload?.psQty,
-              psTotalAmt: action.payload?.psTotalAmount,
+              psTotalAmount: action.payload?.psTotalAmount,
               qty: action.payload?.qty,
               shortQty: action.payload?.shortQty,
-              shortTotalAmt: action.payload?.shortTotalAmount
+              shortTotalAmount: action.payload?.shortTotalAmount
             }
           }
         }

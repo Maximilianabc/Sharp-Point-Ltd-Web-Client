@@ -30,7 +30,7 @@ interface WebSocketProps {
 }
 
 interface PriceWebSocketProps {
-  message?: string
+  messages?: string[]
 }
 
 const ClientWS = (props: WebSocketProps) => {
@@ -123,7 +123,7 @@ const ClientWS = (props: WebSocketProps) => {
 };
 
 const ClientPriceWS = (props: PriceWebSocketProps) => {
-  const { message } = props;
+  const { messages } = props;
   const accNo = useSelector((state: UserState) => state.accName);
   const serverKey = useSelector((state: UserState) => state.serverKey);
   const ws = useRef<WebSocket | null>(null);
@@ -213,9 +213,8 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
     ws.current = new WebSocket(wsPriceAddress);
     ws.current.onopen = () => {
       ws.current!.send(`4104,0,${accNo},${serverKey},3,8.7,1.0,1.0,SPMARIADB_F,${Date.now()},0\r\n`);
-      console.log('price opened');
     }
-    ws.current.onclose = () => console.log('price closed');
+    ws.current.onclose = () => {};
     return () => ws.current?.close();
   }, []);
 
@@ -229,21 +228,28 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
 
   useEffect(() => {
     const sendMessage = () => {
-      if (message !== undefined && message !== '' && ws.current?.readyState === WebSocket.OPEN) {
-        ws.current?.send(message);
-        clearTimeout(check);
-        return;
-      } else {
-        if (ws.current?.readyState === WebSocket.CLOSING || ws.current?.readyState === WebSocket.CLOSED) {
-          console.log('socket closed return');
+      console.log(messages);
+      if (messages !== undefined && messages.length !== 0) {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+          messages.forEach((m, i)=> {
+            if (m !== '') {
+              setTimeout(() => ws.current?.send(m), i * 100);
+            }
+          });
           clearTimeout(check);
+          return;
         } else {
-          console.log('connecting to price server...');
+          if (ws.current?.readyState === WebSocket.CLOSING || ws.current?.readyState === WebSocket.CLOSED) {
+            console.log('socket closed return');
+            clearTimeout(check);
+          } else {
+            console.log('connecting to price server...');
+          }
         }
       }
     }
     const check = setTimeout(sendMessage, 1000);
-  }, [message]);
+  }, [messages]);
 
   return null;
 };

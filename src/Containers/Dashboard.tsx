@@ -74,7 +74,7 @@ const Dashboard = (props: DashboardProps) => {
   const { onChangeLang } = props;
   const classes = useStylesDashboard();
   const [sidemenuopened, setSideMenuOpened] = useState(false);
-  const [messageToPriceServer, setMessageToPriceServer] = useState('');
+  const [messageToPriceServer, setMessageToPriceServer] = useState(['']);
   const userId = useSelector((state: any) => state.userId);
   const token = useSelector((state: UserState) => state.token);
 
@@ -86,14 +86,14 @@ const Dashboard = (props: DashboardProps) => {
     setSideMenuOpened(false);
   };
 
-  const setMessage = (message: string) => {
-    setMessageToPriceServer(message);
+  const setMessages = (messages: string[]) => {
+    setMessageToPriceServer(messages);
   };
 
   return (
     <div className={classes.root}>
       <ClientWS />
-      <ClientPriceWS message={messageToPriceServer}/>
+      <ClientPriceWS messages={messageToPriceServer}/>
       <DefaultAppbar
         title="Dashboard"
         sidemenuopened={sidemenuopened}
@@ -119,8 +119,8 @@ const Dashboard = (props: DashboardProps) => {
             </Typography>
           </div>
           <ProfileMinified />
-          <PositionsMinified setMessage={setMessage}/>
-          <OrdersMinified setMessage={setMessage}/>
+          <PositionsMinified setMessages={setMessages}/>
+          <OrdersMinified setMessages={setMessages}/>
       </main>
     </div>
   );

@@ -70,7 +70,7 @@ interface OrdersProps {
 }
 
 interface OrdersMinifiedProps {
-  setMessage?: (message: string) => void
+  setMessages?: (message: string[]) => void
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -155,7 +155,7 @@ const useStyleCollapsibleContent = makeStyles((theme) => ({
 }));
 
 const OrdersMinified = (props: OrdersMinifiedProps) => {
-  const { setMessage } = props;
+  const { setMessages } = props;
   type OrderType = "working"|"todays"|"history";
   const classes = useStyleOrdersMinified();
   const collapsibleContentClasses = useStyleCollapsibleContent();
@@ -208,6 +208,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       sessionToken: token
     };
     operations('order', op, payload, undefined, undefined).then(data => {
+      if (data?.data.errorMsg !== "No Error") {
+        alert(`Failed to ${op} order, error: ${data?.data.errorMsg}`);
+      }
       setRefresh(true);
     });
   };
@@ -293,24 +296,26 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     let h: OrderHistoryRecordRow[] = [];
     if (history) {
       Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
-        h.push({
-          accOrderNo: hist.accOrderNo ?? '?',
-          id: hist.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.[hist?.prodCode ?? '']?.productName ?? '?') : '?',
-          buySell: hist.buySell ?? '',
-          qty: hist.qty ?? '?',
-          tradedQty: hist.tradedQty ?? '?',
-          price: hist.orderPrice ?? '?',
-          valid: getValidTypeString(hist.validType ?? -1),
-          condition: hist.condTypeStr ?? '?',
-          status: getOrderStatusString(hist.status ?? -1),
-          traded: '?',
-          initiator: hist.sender ?? '?', // !! not present in API
-          ref: hist.ref ?? '?',
-          time: hist.timeStampStr ?? '?',
-          orderNo: hist.orderNoStr ?? '?',
-          extOrder: hist.extOrderNo ?? '?'
-        } as OrderHistoryRecordRow);
+        if (hist.timeStampStr && new Date(Date.parse(hist.timeStampStr)).getDate() === new Date(Date.now()).getDate()) {
+          h.push({
+            accOrderNo: hist.accOrderNo ?? '?',
+            id: hist.prodCode ?? '?',
+            name: longMode ? (mktDataLong?.[hist?.prodCode ?? '']?.productName ?? '?') : '?',
+            buySell: hist.buySell ?? '',
+            qty: hist.qty ?? '?',
+            tradedQty: hist.tradedQty ?? '?',
+            price: hist.orderPrice ?? '?',
+            valid: getValidTypeString(hist.validType ?? -1),
+            condition: hist.condTypeStr ?? '?',
+            status: getOrderStatusString(hist.status ?? -1),
+            traded: '?',
+            initiator: hist.sender ?? '?', // !! not present in API
+            ref: hist.ref ?? '?',
+            time: hist.timeStampStr ?? '?',
+            orderNo: hist.orderNoStr ?? '?',
+            extOrder: hist.extOrderNo ?? '?'
+          } as OrderHistoryRecordRow);
+        }
       });
     }
     return h;
@@ -508,8 +513,8 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
 
   useEffect(() => {
     Array.prototype.forEach.call(prods, (prod: string) => {
-      if (setMessage) {
-        setMessage(`4107,3,0,${prod},1,0`);
+      if (setMessages) {
+        setMessages([`4107,3,0,${prod},1,0`]);
       };
     });
   }, [prods]);
@@ -536,7 +541,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       setCurrentEdit(-1);
       setReset(false);
     }
-  }, [reset])
+  }, [reset]);
 
   return (
     <Card elevation={0} className={classes.card}>
@@ -559,7 +564,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                 /> 
               : <></>
             }
-            <FilterForm />
+            {selectedOrderType === 'history' ? <FilterForm /> : <></>}
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton
@@ -567,8 +572,8 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   name="WORKING"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
-                  workFunction('reporting', 'working');
-                  setSelectedOrderType('working');
+                    setSelectedOrderType('working');
+                    setRefresh(true);
                   }}
                 />
               : <></>
@@ -580,8 +585,8 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   name="DONE_ALL"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
-                    workFunction('account', 'todays');
                     setSelectedOrderType("todays");
+                    setRefresh(true);
                   }}
                 />
               : <></>
@@ -593,8 +598,8 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   name="HISTORY"
                   buttonStyle={{ padding: '0 0.5rem 0 0' }} 
                   onClick={(event: React.MouseEvent<EventTarget>) => {
-                    workFunction('reporting', 'history');
                     setSelectedOrderType('history');
+                    setRefresh(true);
                   }}
                 />
               : <></>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, DependencyList, MutableRefObject } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
@@ -41,7 +41,7 @@ interface PositionProps {
 }
 
 interface PositionMinifiedProps {
-  setMessage?: (message: string) => void
+  setMessages?: (message: string[]) => void
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -96,7 +96,7 @@ const useStyleMinified = makeStyles((theme) => ({
 }));
 
 const PositionsMinified = (props : PositionMinifiedProps) => {
-  const { setMessage } = props;
+  const { setMessages } = props;
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
 
@@ -150,13 +150,118 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       }
       setPositions(positionsToRows(Object.values(store.getState().position?.data ?? {})));
     };
-    const get = setInterval(getStoreData, 1000);
+    const get = setInterval(getStoreData, 100);
     return () => clearInterval(get);
   }, []);
+
+  interface IPosition {
+    x: number;
+    y: number;
+  }
+  
+  interface IScrollProps {
+    prevPos: IPosition;
+    currPos: IPosition;
+  }
+  
+  type ElementRef = MutableRefObject<HTMLElement | undefined>;
+  
+  const isBrowser = typeof window !== `undefined`;
+  const zeroPosition = { x: 0, y: 0 };
+  
+  const getClientRect = (element?: HTMLElement) => element?.getBoundingClientRect();
+  
+  const getScrollPosition = ({
+    element,
+    useWindow,
+    boundingElement,
+  }: {
+    element?: ElementRef;
+    boundingElement?: ElementRef;
+    useWindow?: boolean;
+  }) => {
+    if (!isBrowser) {
+      return zeroPosition;
+    }
+  
+    if (useWindow) {
+      return { x: window.scrollX, y: window.scrollY };
+    }
+  
+    const targetPosition = getClientRect(element?.current || document.body);
+    const containerPosition = getClientRect(boundingElement?.current);
+  
+    if (!targetPosition) {
+      return zeroPosition;
+    }
+  
+    return containerPosition
+      ? {
+          x: (containerPosition.x || 0) - (targetPosition.x || 0),
+          y: (containerPosition.y || 0) - (targetPosition.y || 0),
+        }
+      : { x: targetPosition.left, y: targetPosition.top };
+  };
+  
+  const useScrollPosition = (
+    effect: (props: IScrollProps) => void,
+    deps?: DependencyList,
+    element?: ElementRef,
+    useWindow?: boolean,
+    wait?: number,
+    boundingElement?: ElementRef,
+  ): void => {
+    const position = useRef(getScrollPosition({ useWindow, boundingElement }));
+  
+    let throttleTimeout: number | null = null;
+  
+    const callBack = () => {
+      const currPos = getScrollPosition({ element, useWindow, boundingElement });
+      effect({ prevPos: position.current, currPos });
+      position.current = currPos;
+      throttleTimeout = null;
+    };
+  
+    useLayoutEffect(() => {
+      if (!isBrowser) {
+        return undefined;
+      }
+  
+      const handleScroll = () => {
+        if (wait) {
+          if (throttleTimeout === null) {
+            throttleTimeout = window.setTimeout(callBack, wait);
+          }
+        } else {
+          callBack();
+        }
+      };
+  
+      if (boundingElement) {
+        boundingElement.current?.addEventListener('scroll', handleScroll, { passive: true });
+      } else {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+  
+      return () => {
+        if (boundingElement) {
+          boundingElement.current?.removeEventListener('scroll', handleScroll);
+        } else {
+          window.removeEventListener('scroll', handleScroll);
+        }
+  
+        if (throttleTimeout) {
+          clearTimeout(throttleTimeout);
+        }
+      };
+    }, deps);
+  };
 
   const positionsToRows = (positions: any): PositionRecordRow[] => {
     let p: PositionRecordRow[] = [];
     let products: string[] = prods;
+    let messages: string[] = [];
+
     if (positions) {
       Array.prototype.forEach.call(positions, (pos: AccPositionRecord) => {
         const prod = mktDataLong?.[pos?.prodCode ?? ''] 
@@ -164,13 +269,16 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
         const price = longMode ? (prod?.bidPrice1?.toString() ?? '?') : (prodShort?.mktPrice?.toString() ?? '?');
         const size = longMode ? prod?.contractSize : undefined;
         const pl = isNaN(+price) || pos.netAvg === undefined || pos.netQty === undefined || size === undefined ? '?' : ((+price - pos.netAvg) * pos.netQty * size).toString();
+        const longAvg = pos.longTotalAmount && pos.longQty ? (pos.longTotalAmount / pos.longQty).toFixed(pos.decInPrc) : undefined;
+        const shortAvg = pos.shortTotalAmount && pos.shortQty ? (pos.shortTotalAmount / pos.shortQty).toFixed(pos.decInPrc) : undefined;
+        // const netAvg = pos.netTotalAmount && pos.netQty ? pos.netTotalAmount / pos.netQty : undefined;
 
         p.push({
           id: pos.prodCode ?? '?',
           name: longMode ? (prod?.productName ?? '?') : '?',
-          prev: `${pos.qty}@${pos.previousAvg}`,
-          dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' : `${pos.longQty}@${pos.longAvg}`,
-          dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
+          prev: pos.qty === 0 || pos.previousAvg === 0 ? '' : `${pos.qty}@${pos.previousAvg}`,
+          dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' :  `${pos.longQty}@${longAvg}`,
+          dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
           mkt: price,
           pl:  pl,
@@ -182,14 +290,17 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
           contract: ''}
         );
         if (pos.prodCode && products.findIndex(s => s === pos.prodCode) === -1) {
-          if (setMessage) {
+          if (setMessages) {
             products.push(pos.prodCode);
-            setMessage(`4107,0,${pos.prodCode},${longMode ? '0' : '1'},0\r\n`);
+            messages.push(`4107,0,${pos.prodCode},${longMode ? '0' : '1'},0\r\n`);
           };
         }
       });
     }
     setProds(products);
+    if (setMessages && messages.length !== 0) {
+      setMessages(messages);
+    }
     return p;
   };
   
