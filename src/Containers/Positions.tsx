@@ -269,16 +269,14 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
         const price = longMode ? (prod?.bidPrice1?.toString() ?? '?') : (prodShort?.mktPrice?.toString() ?? '?');
         const size = longMode ? prod?.contractSize : undefined;
         const pl = isNaN(+price) || pos.netAvg === undefined || pos.netQty === undefined || size === undefined ? '?' : ((+price - pos.netAvg) * pos.netQty * size).toString();
-        const longAvg = pos.longTotalAmount && pos.longQty ? (pos.longTotalAmount / pos.longQty).toFixed(pos.decInPrc) : undefined;
-        const shortAvg = pos.shortTotalAmount && pos.shortQty ? (pos.shortTotalAmount / pos.shortQty).toFixed(pos.decInPrc) : undefined;
-        // const netAvg = pos.netTotalAmount && pos.netQty ? pos.netTotalAmount / pos.netQty : undefined;
 
+        // const netAvg = pos.netTotalAmount && pos.netQty ? pos.netTotalAmount / pos.netQty : undefined;
         p.push({
           id: pos.prodCode ?? '?',
           name: longMode ? (prod?.productName ?? '?') : '?',
           prev: pos.qty === 0 || pos.previousAvg === 0 ? '' : `${pos.qty}@${pos.previousAvg}`,
-          dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' :  `${pos.longQty}@${longAvg}`,
-          dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${shortAvg}`,
+          dayLong: pos.longQty === 0 || pos.longAvg === 0 ? '' :  `${pos.longQty}@${pos.longAvg}`,
+          dayShort: pos.shortQty === 0 || pos.shortAvg === 0 ? '' :`${pos.shortQty}@${pos.shortAvg}`,
           net: `${pos.netQty}@${pos.netAvg}`,
           mkt: price,
           pl:  pl,

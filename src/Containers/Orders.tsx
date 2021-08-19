@@ -168,12 +168,12 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const [currentEdit, setCurrentEdit] = useState(-1);
+  const [prods, setProds] = useState<string[]>([]);
 
   const [longMode, setLongMode] = useState(true);
   const [reset, setReset] = useState(false);
   const [refresh, setRefresh] = useState(false);
 
-  let prods: string[] = [];
   let mktDataShort: { [id: string]: MarketDataShort } | undefined;
   let mktDataLong: { [id: string]: MarketDataLong } | undefined;
 
@@ -236,12 +236,15 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   
   const ordersToRows = (orders: any) => {
     let o: OrderRecordRow[] = [];
+    let products: string[] = prods;
+    let messages: string[] = [];
+
     if (orders) {
       Array.prototype.forEach.call(orders, (order: AccOrderRecord) => {
         o.push({
           accOrderNo: order.accOrderNo ?? '?',
           id: order.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.[order?.prodCode ?? ''].productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[order?.prodCode ?? '']?.productName ?? '?') : '?',
           buySell: order.buySell ?? '',
           qty: order.qty ?? '?',
           tradedQty: order.tradedQty ?? '?',
@@ -256,7 +259,16 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           extOrder: order.extOrderNo ?? '?'
         });
         if (order.prodCode && prods.findIndex(s => s === order.prodCode) === -1) {
-          prods.push(order.prodCode);
+          products.push(order.prodCode);
+          if (setMessages) {
+            products.push(order.prodCode);
+            messages.push(`4107,0,${order.prodCode},${longMode ? '0' : '1'},0\r\n`);
+          };
+        }
+        setProds(products);
+        if (setMessages && messages.length !== 0) {
+          setMessages(messages);
+          setRefresh(true);
         }
       });
     }
@@ -288,6 +300,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         } as WorkingOrderRecordRow);
       });
     }
+    console.log(w);
     return w;
   };
 
@@ -348,7 +361,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       Array.prototype.forEach.call(rows, (r: OrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()]?.toProperCase() ?? '?' ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));

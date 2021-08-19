@@ -643,6 +643,8 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
       };
     case actionConsts.SET_ACC_POS_PUSH:
       const net = action.payload?.qty + action.payload?.longQty - action.payload?.shortQty;
+      const longAvg = action.payload?.longTotalAmount && action.payload?.longQty ? (action.payload?.longTotalAmount / action.payload?.longQty)/*.toFixed(action.payload?.decInPrc)*/ : undefined;
+      const shortAvg = action.payload?.shortTotalAmount && action.payload?.shortQty ? (action.payload?.shortTotalAmount / action.payload?.shortQty)/*.toFixed(action.payload?.decInPrc)*/ : undefined;
       return {
         ...state,
         position: {
@@ -653,6 +655,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
               accNo: action.payload?.accNo,
               covered: action.payload?.covered,
               decInPrc: action.payload?.decInPrc,
+              longAvg: longAvg,
               longQty: action.payload?.longQty,
               longShort: action.payload?.longShort,
               longTotalAmount: action.payload?.longTotalAmount,
@@ -661,6 +664,7 @@ const currentUser = (state: UserState = {}, action: ActionData): UserState => {
               psQty: action.payload?.psQty,
               psTotalAmount: action.payload?.psTotalAmount,
               qty: action.payload?.qty,
+              shortAvg: shortAvg,
               shortQty: action.payload?.shortQty,
               shortTotalAmount: action.payload?.shortTotalAmount
             }

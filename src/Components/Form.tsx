@@ -252,6 +252,7 @@ const OrderForm = (props: OrderFormProps) => {
       if (data !== undefined && data.data !== undefined) {
         if (data.data.errorMsg === "No Error") {
           setResult('success');
+          setFailedReason(undefined);
           refresh();
         } else {
           setResult('failed');

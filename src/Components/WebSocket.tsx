@@ -228,7 +228,6 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
 
   useEffect(() => {
     const sendMessage = () => {
-      console.log(messages);
       if (messages !== undefined && messages.length !== 0) {
         if (ws.current?.readyState === WebSocket.OPEN) {
           messages.forEach((m, i)=> {
