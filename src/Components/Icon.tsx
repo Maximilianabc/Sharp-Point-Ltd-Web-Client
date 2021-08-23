@@ -40,6 +40,7 @@ interface IconProps {
   name: IconTypes,
   size?: number,
   buttonStyle?: object,
+  buttonColor?: string,
   otherProps?: object,
   isRowBasedCallback?: boolean,
   onClick?: any,
@@ -52,8 +53,8 @@ interface TooltipIconProps extends IconProps {
 }
 
 const NamedIconButton = forwardRef((props: IconProps, ref) => {
-  const { name, size, buttonStyle, otherProps, onClick, buttonRef } = props;
-  const style = { color: 'white', fontSize: size, ...otherProps };
+  const { name, size, buttonStyle, buttonColor, otherProps, onClick, buttonRef } = props;
+  const style = { color: buttonColor ?? 'white', fontSize: size, ...otherProps };
   return (
     <IconButton style={buttonStyle} onClick={onClick} ref={buttonRef}>
       {{
@@ -93,6 +94,7 @@ const TooltipIconButton = (props: TooltipIconProps) => {
     name,
     size,
     buttonStyle,
+    buttonColor,
     buttonRef,
     otherProps,
     onClick
@@ -109,16 +111,15 @@ const TooltipIconButton = (props: TooltipIconProps) => {
       className={clsx(tooltipRoot.root, classes?.root)}
       TransitionComponent={Fade}
     >
-      <div style={{ flex: '0 0 10%' }}>
-        <NamedIconButton
-          name={name}
-          size={size}
-          buttonStyle={buttonStyle}
-          buttonRef={buttonRef}
-          otherProps={otherProps}
-          onClick={onClick}
-        />
-      </div>
+      <NamedIconButton
+        name={name}
+        size={size}
+        buttonStyle={buttonStyle}
+        buttonColor={buttonColor}
+        buttonRef={buttonRef}
+        otherProps={otherProps}
+        onClick={onClick}
+      />
     </Tooltip>
   );
 };

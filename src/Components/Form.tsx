@@ -14,6 +14,7 @@ import {
   RadioGroup,
   Select,
   Typography,
+  FormHelperText,
  } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { useIntl } from 'react-intl';
@@ -22,21 +23,28 @@ import {
   AccOrderRecord,
   CARD_BUTTON_CLASSES,
   CARD_TITLE_CLASSES,
+  dateFilters,
+  Filter,
   FLEX_COLUMN_CLASSES,
   getConditionTypeNumber,
+  getOperatorDisplayText,
   getValidTypeNumber,
   LABEL_CLASSES,
   messages,
-  NumberFilterOperation,
+  NumberFilterOperator,
+  numFilters,
   operations,
+  OrderHistoryRecordRow,
   OrderRecordRow,
   ROBOTO_SEMIBOLD,
-  StringFilterOperation,
+  StringFilterOperator,
+  stringFilters,
   UserState,
   WHITE40,
   WHITE5,
   WHITE60,
-  WHITE80
+  WHITE80,
+  WorkingOrderRecordRow
 } from "../Util";
 import {
   FormInputField,
@@ -61,7 +69,9 @@ interface OrderFormProps {
 }
 
 interface FilterFormProps {
-
+  applyFilters: (filters?: Filter[]) => void,
+  handleClickAway: (event: React.MouseEvent<EventTarget>) => void,
+  backdropOpen: boolean
 }
 
 const useStyles = makeStyles(theme => ({
@@ -156,31 +166,6 @@ const useStylesResult = makeStyles((theme) => ({
     flexDirection: 'column'
   },
 }));
-
-const OrderFormWithButton = (props: OrderFormWithButtonProps) => {
-  const classes = useStyles();
-  const { refresh } = props;
-  const [backdropOpen, setBackdropOpen] = useState(false);
-
-  const handleToggle = (event: React.MouseEvent<EventTarget>) => {
-    setBackdropOpen(!backdropOpen);
-  };
-
-  return (
-    <div /*className={classes.root}*/>
-      <TooltipIconButton
-        title="Add Order"
-        name="ADD"
-        onClick={handleToggle}
-      />
-      <OrderForm
-        refresh={refresh}
-        open={backdropOpen} 
-        resetToggle={() => setBackdropOpen(false)}
-      />
-    </div>
-  )
-};
 
 const OrderForm = (props: OrderFormProps) => {
   const { refresh, reset, resetToggle, editContent, open } = props;
@@ -547,12 +532,6 @@ const OrderForm = (props: OrderFormProps) => {
   );
 };
 
-interface Filter {
-  item: string,
-  operator: string,
-  value: string | number
-}
-
 const useStyleFilterForm = makeStyles((theme) => ({
   control: {
     margin: '0.25rem'
@@ -571,162 +550,244 @@ const useStyleFilterForm = makeStyles((theme) => ({
 }))
 
 const FilterForm = (props: FilterFormProps) => {
+  const { applyFilters, handleClickAway, backdropOpen } = props;
   const classes = useStyles();
   const formClasses = useStyleFilterForm();
   const intl = useIntl();
 
-  const newFilter: Filter = { item: '', operator: '', value: '' };
-
-  const [backdropOpen, setBackdropOpen] = useState(false);
+  const newFilter: Filter = { property: '', operator: '', value: { lower: '', upper: '' } };
   const [filters, setFilters] = useState<{[index: number]: Filter}>({0: newFilter});
+  const [errorText, setErrorText] = useState<{[index: number]: error}>({});
 
-  const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
-    setBackdropOpen(false);
+  interface error {
+    property?: string,
+    operator?: string,
+    lower?: string,
+    upper?: string
+  }
+
+  const validateFilters = (): boolean => {
+    setErrorText({});
+    let err: {[index: number]: error} = errorText;
+    Object.values(filters).map((f: Filter, index: number) => {
+      if (f.property === '') {
+        err = {...err, [index]: { ...err[index], property: 'missing' }};
+      }
+      if (f.operator === '') {
+        err = {...err, [index]: { ...err[index], operator: 'missing' }};
+      }
+      if (f.value.lower === '') {
+        err = {...err, [index]: { ...err[index], lower: 'missing' }};
+      }
+      console.log(err);
+      if (f.value.upper === '') {
+        err = {...err, [index]: { ...err[index], upper: 'missing' }};
+      }
+    });
+    setErrorText(err);
+    return Object.keys(err).length === 0;
   };
 
   return (
-    <div>
-      <TooltipIconButton
-        title={messages[intl.locale].filter_list}
-        name={"FILTER"}
-        buttonStyle={{ padding: '0 0.5rem 0 0' }}
-        onClick={() => setBackdropOpen(true)}
-      />
-      <Popover
-        className={classes.popover}
-        open={backdropOpen} 
-        anchorReference="anchorPosition"
-        anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
-        anchorOrigin={{
-          vertical: 'center',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'center',
-          horizontal: 'center',
-        }}
-      >
-        <ClickAwayListener onClickAway={handleClickAway}>
-          <Paper elevation={0} className={classes.paper}>
-            <Typography className={formClasses.title}>Filter</Typography>
-            {
-              [Object.keys(filters).map(index => {
-                const filter = filters[+index];
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <WhiteSelectFormControl className={formClasses.control} style={{ minWidth: '4rem' }}>
-                      <InputLabel>Item</InputLabel>
-                      <Select
-                        value={filter.item === undefined ? '' : filter.item.toLowerCase()}
-                        IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
-                        MenuProps={{ 
-                          disablePortal: true,
-                          anchorOrigin: {
-                            vertical: "bottom",
-                            horizontal: "left"
-                          },
-                          getContentAnchorEl: null
-                        }}
-                      >
-                        <MenuItem value="id" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'id' }})}>ID</MenuItem>
-                        <MenuItem value="price" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'price'}})}>Price</MenuItem>
-                        <MenuItem value="date" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], item: 'date'}})}>Date</MenuItem>
-                      </Select>
-                    </WhiteSelectFormControl>
-                    <WhiteSelectFormControl className={formClasses.control} style={{ minWidth: '15rem' }}>
-                      <InputLabel>Operator</InputLabel>
-                      <Select
-                        value={filter.operator === undefined ? '' : filter.operator}
-                        IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
-                        MenuProps={{ 
-                          disablePortal: true,
-                          anchorOrigin: {
-                            vertical: "bottom",
-                            horizontal: "left"
-                          },
-                          getContentAnchorEl: null
-                        }}
-                      >
-                        {filter.item === "id"
-                          ?
-                            ["equals", "not equals", "starts with", "ends with", "contains", "not contain"].map(o => {
+    <Popover
+      className={classes.popover}
+      open={backdropOpen} 
+      anchorReference="anchorPosition"
+      anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
+      anchorOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+      transformOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+    >
+      <ClickAwayListener onClickAway={handleClickAway}>
+        <Paper elevation={0} className={classes.paper}>
+          <Typography className={formClasses.title}>Filter</Typography>
+          {
+            [Object.keys(filters).map(index => {
+              const filter = filters[+index];
+              const isError = (err: error, item: keyof error) => err !== undefined && err[item] !== '';
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <WhiteSelectFormControl
+                    required
+                    className={formClasses.control}
+                    style={{ minWidth: '4rem' }}
+                    error={isError(errorText[+index], 'property')}
+                  >
+                    <InputLabel>Item</InputLabel>
+                    <Select
+                      required
+                      value={filter.property === undefined ? '' : filter.property.toLowerCase()}
+                      IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                      MenuProps={{ 
+                        disablePortal: true,
+                        anchorOrigin: {
+                          vertical: "bottom",
+                          horizontal: "left"
+                        },
+                        getContentAnchorEl: null
+                      }}
+                    >
+                      <MenuItem value="id" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'id' }})}>ID</MenuItem>
+                      <MenuItem value="price" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'price'}})}>Price</MenuItem>
+                      <MenuItem value="time" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'time'}})}>Time</MenuItem>
+                    </Select>
+                    {isError(errorText[+index], 'property') ? <FormHelperText>{`Item ${errorText[+index].property}`}</FormHelperText> : null}
+                  </WhiteSelectFormControl>
+                  <WhiteSelectFormControl
+                    required
+                    className={formClasses.control}
+                    style={{ minWidth: '15rem' }}
+                    error={isError(errorText[+index], 'operator')}
+                  >
+                    <InputLabel>Operator</InputLabel>
+                    <Select
+                      required
+                      value={filter.operator === undefined ? '' : filter.operator}
+                      IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
+                      MenuProps={{ 
+                        disablePortal: true,
+                        anchorOrigin: {
+                          vertical: "bottom",
+                          horizontal: "left"
+                        },
+                        getContentAnchorEl: null
+                      }}
+                    >
+                      {filter.property === "id"
+                        ?
+                          stringFilters.map(o => {
+                            return (
+                              <MenuItem
+                                value={o}
+                                style={{ minWidth: '30rem' }}
+                                onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
+                              >
+                                {getOperatorDisplayText(o)}
+                              </MenuItem>
+                            );
+                          })
+                        : filter.property === "price"
+                          ? 
+                            numFilters.map(o => {
                               return (
                                 <MenuItem
                                   value={o}
                                   style={{ minWidth: '30rem' }}
                                   onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
                                 >
-                                  {o}
+                                  {getOperatorDisplayText(o)}
                                 </MenuItem>
                               );
                             })
-                          : filter.item === "price"
-                            ? 
-                              ["equals", "not equals", "less than", "less than or equal to", "greater than", "greater than or equal to", "between"].map(o => {
+                          : filter.property === "time"
+                            ?
+                              dateFilters.map(o => {
                                 return (
                                   <MenuItem
                                     value={o}
                                     style={{ minWidth: '30rem' }}
                                     onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
                                   >
-                                    {o}
+                                    {getOperatorDisplayText(o)}
                                   </MenuItem>
                                 );
                               })
-                            : filter.item === "date"
-                              ?
-                                ["before", "after", "between"].map(o => {
-                                  return (
-                                    <MenuItem
-                                      value={o}
-                                      style={{ minWidth: '30rem' }}
-                                      onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
-                                    >
-                                      {o}
-                                    </MenuItem>
-                                  );
-                                })
-                              : null
-                        }
-                      </Select>
-                    </WhiteSelectFormControl>
+                            : null
+                      }
+                    </Select>
+                    {isError(errorText[+index], 'operator') ? <FormHelperText>{`Operator ${errorText[+index].operator}`}</FormHelperText> : null}
+                  </WhiteSelectFormControl>
+                  <div style={{ display: 'flex', flexDirection: 'row', minWidth: '28rem' }}>
                     <FormInputField
+                      require
+                      error={isError(errorText[+index], 'lower')}
                       label="Value"
                       variant="standard"
-                      onChange={(event: React.ChangeEvent) => setFilters({...filters, [+index]: { ...filters[+index], value: (event.target as HTMLInputElement).value}})}
-                      require
-                    />
-                    <TooltipIconButton 
-                      name="ADD"
-                      title="Add Filter"
-                      onClick={(event: React.MouseEvent) => setFilters({...filters, [+index + 1 ]: newFilter})}
-                    />
-                    <TooltipIconButton
-                      name="DELETE"
-                      title="Delete Filter"
-                      onClick={(event: React.MouseEvent) => {
-                        if (Object.keys(filters).length === 1) {
-                          return;
+                      defaultValue={filter.value.lower}
+                      onChange={(event: React.ChangeEvent) => setFilters({
+                        ...filters,
+                        [+index]: {
+                          ...filters[+index],
+                          value: {
+                            ...filters[+index].value,
+                            lower: (event.target as HTMLInputElement).value
+                          }
                         }
-                        delete filters[+index];
-                        console.log(filters);
-                        setFilters(filters);
-                      }}
+                      })}
+                      helperText={isError(errorText[+index], 'lower') ? `Value ${errorText[+index].lower}` : undefined}
+                    />
+                    <FormInputField
+                      require
+                      error={isError(errorText[+index], 'upper')}
+                      style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex' }}
+                      label="Value"
+                      variant="standard"
+                      defaultValue={filter.value.upper}
+                      onChange={(event: React.ChangeEvent) => setFilters({
+                        ...filters,
+                        [+index]: {
+                          ...filters[+index],
+                          value: {
+                            ...filters[+index].value,
+                            upper: (event.target as HTMLInputElement).value
+                          }
+                        }
+                      })}
+                      helperText={isError(errorText[+index], 'upper') ? `Value ${errorText[+index].upper}` : undefined}
                     />
                   </div>
-                );
-              })]
-            }
-            <Button className={formClasses.button}>Apply</Button>
-          </Paper>
-        </ClickAwayListener>
-      </Popover>
-    </div>
+                  <TooltipIconButton
+                    name="ADD"
+                    title="Add Filter"
+                    onClick={(event: React.MouseEvent) => setFilters({...filters, [+index + 1 ]: newFilter})}
+                  />
+                  <TooltipIconButton
+                    name="DELETE"
+                    title="Delete Filter"
+                    onClick={(event: React.MouseEvent) => {
+                      if (Object.keys(filters).length === 1) {
+                        return;
+                      }
+                      delete filters[+index];
+                      console.log(filters);
+                      setFilters(filters);
+                    }}
+                  />
+                </div>
+              );
+            })]
+          }
+          <Button
+            className={formClasses.button}
+            onClick={() => {
+              if (!validateFilters()) {
+                return;
+              }
+              applyFilters(Object.values(filters));
+            }}>
+              Apply
+          </Button>
+          <Button 
+            className={formClasses.button}
+            onClick={() => {
+              setFilters({0: newFilter});
+              applyFilters();
+            }}>
+              Clear
+          </Button>
+        </Paper>
+      </ClickAwayListener>
+    </Popover>
   )
 };
 
 export {
-  OrderFormWithButton,
   OrderForm,
   FilterForm
 }

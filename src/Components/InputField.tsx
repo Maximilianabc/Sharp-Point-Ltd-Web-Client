@@ -19,10 +19,12 @@ interface DefaultInputFieldProps extends BaseTextFieldProps {
 interface FormInputFieldProps {
 	variant: 'standard' | 'outlined' | 'filled',
 	label: string,
+	style?: any,
 	type?: string,
 	labelProps?: InputLabelProps,
 	defaultValue?: string | number,
 	disable?: boolean,
+	hidden?: boolean,
 	require?: boolean,
 	error?: boolean,
 	helperText?: string,
@@ -255,10 +257,12 @@ const FormInputField = (props: FormInputFieldProps) => {
 	const { 
 		variant,
 		label,
+		style,
 		type,
 		labelProps,
 		defaultValue,
 		disable,
+		hidden,
 		require,
 		error,
 		helperText,
@@ -269,11 +273,13 @@ const FormInputField = (props: FormInputFieldProps) => {
 		<WhiteTextField
 			className={classes.root}
 			variant="standard"
+			style={style}
 			label={label}
 			type={type}
 			onChange={onChange}
 			defaultValue={defaultValue}
 			disabled={disable}
+			hidden={hidden}
 			required={require}
 			error={error}
 			helperText={helperText}

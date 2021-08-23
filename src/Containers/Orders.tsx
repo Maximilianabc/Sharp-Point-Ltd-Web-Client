@@ -6,7 +6,6 @@ import React, {
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  OrderFormWithButton,
   LabelBaseProps,
   DataTable,
   StackedLabelProps,
@@ -18,7 +17,6 @@ import {
   TooltipIconProps,
   LabelTable,
   LabelColumn,
-  FilterDropDownMenu,
   OrderForm,
   IconProps,
   FilterForm
@@ -58,7 +56,10 @@ import {
   localeTypes,
   MarketDataShort,
   MarketDataLong,
-  store
+  store,
+  Filter,
+  FilterType,
+  getPredicate
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
@@ -165,10 +166,15 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const [orders, setOrders] = useState<OrderRecordRow[]>([]);
   const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
+  const [displayedOrderHistory, setDisplayedOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const [currentEdit, setCurrentEdit] = useState(-1);
   const [prods, setProds] = useState<string[]>([]);
+
+  const [backdropOpen, setBackdropOpen] = useState(false);
+  const [filterBackdropOpen, setFilterBackdropOpen] = useState(false);
+  const [filterCount, setFilterCount] = useState(0);
 
   const [longMode, setLongMode] = useState(true);
   const [reset, setReset] = useState(false);
@@ -249,7 +255,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           qty: order.qty ?? '?',
           tradedQty: order.tradedQty ?? '?',
           price: order.orderPrice ?? '?',
-          valid: getValidTypeString(order.validType ?? -1),
+          valid: `${getValidTypeString(order.validType ?? -1)}${order.tradeSession !== "T" ? `, ${order.tradeSession}` : ''}`,
           condition: order.condTypeStr ?? '?',
           status: getOrderStatusString(order.status ?? -1),
           initiator: order.sender ?? '?', // !! not present in API
@@ -288,7 +294,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           qty: work.qty ?? '?',
           tradedQty: work.tradedQty ?? '?',
           price: work.orderPrice ?? '?',
-          valid: getValidTypeString(work.validType ?? -1),
+          valid: `${getValidTypeString(work.validType ?? -1)}${work.tradeSession !== "T" ? `, ${work.tradeSession}` : ''}`,
           condition: work.condTypeStr ?? '?',
           status: getOrderStatusString(work.status ?? -1),
           traded: '?',
@@ -309,7 +315,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     let h: OrderHistoryRecordRow[] = [];
     if (history) {
       Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
-        if (hist.timeStampStr && new Date(Date.parse(hist.timeStampStr)).getDate() === new Date(Date.now()).getDate()) {
+        //if (hist.timeStampStr && new Date(Date.parse(hist.timeStampStr)).getDate() === new Date(Date.now()).getDate()) {
           h.push({
             accOrderNo: hist.accOrderNo ?? '?',
             id: hist.prodCode ?? '?',
@@ -318,7 +324,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             qty: hist.qty ?? '?',
             tradedQty: hist.tradedQty ?? '?',
             price: hist.orderPrice ?? '?',
-            valid: getValidTypeString(hist.validType ?? -1),
+            valid: `${getValidTypeString(hist.validType ?? -1)}${hist.tradeSession !== "T" ? `, ${hist.tradeSession}` : ''}`,
             condition: hist.condTypeStr ?? '?',
             status: getOrderStatusString(hist.status ?? -1),
             traded: '?',
@@ -328,7 +334,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             orderNo: hist.orderNoStr ?? '?',
             extOrder: hist.extOrderNo ?? '?'
           } as OrderHistoryRecordRow);
-        }
+        //}
       });
     }
     return h;
@@ -416,7 +422,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             ? RowsToLabels(orders, locale as localeTypes) 
             : selectedOrderType === 'working' 
               ? workingOrderRowsToLabels(workingOrders, locale as localeTypes) 
-              : orderHistoryRowsToLabels(orderHistory, locale as localeTypes);
+              : orderHistoryRowsToLabels(displayedOrderHistory, locale as localeTypes);
   }
 
   const getCollapsibleContent = (
@@ -512,12 +518,35 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     return ips;
   };
 
-  const filterOrders = (rows: OrderRecordRow[] | WorkingOrderRecordRow[] | OrderHistoryRecordRow[], predicate: (property: string) => boolean) => {
+  const applyFilters = (filters?: Filter[]) => {
+    setFilterCount(0);
+    if (filters === undefined) { 
+      setDisplayedOrderHistory(orderHistory);
+      return;
+    }
+    let o: OrderHistoryRecordRow[] = [];
+    Array.prototype.forEach.call(orderHistory, (r: OrderHistoryRecordRow) => {
+      setFilterCount(filterCount + 1);
+      Array.prototype.forEach.call(filters, (f: Filter) => {
+        if (getPredicate(r, f)) {
+          o.push(r);
+        }
+      })
+    });
+    setDisplayedOrderHistory(o);
+  };
 
+  const handleToggle = (event: React.MouseEvent<EventTarget>) => {
+    setBackdropOpen(!backdropOpen);
+  };
+
+  const handleFilterClickAway = (event: React.MouseEvent<EventTarget>) => {
+    setFilterBackdropOpen(false);
   };
 
   useEffect(() => {
     setRefresh(true);
+    setDisplayedOrderHistory(orderHistory);
     /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
     return () => {
       //clearInterval(work);
@@ -535,6 +564,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   useEffect(() => {
     if (refresh) {
       workFunction(getOperationType(selectedOrderType), selectedOrderType);
+      if (filterCount === 0) {
+        setDisplayedOrderHistory(orderHistory);
+      }
       const userState = store.getState();
       const getStoreData = () => {
         if (longMode) {
@@ -560,13 +592,18 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     <Card elevation={0} className={classes.card}>
       <CardContent>
         <StyledTableToolbar
-            title={selectedOrderType === "working" 
-                    ? messages[intl.locale].working_orders 
-                    : selectedOrderType === "todays" 
-                      ? messages[intl.locale].todays_orders 
-                      : messages[intl.locale].order_history}
+          title={selectedOrderType === "working" 
+                  ? messages[intl.locale].working_orders 
+                  : selectedOrderType === "todays" 
+                    ? messages[intl.locale].todays_orders 
+                    : messages[intl.locale].order_history}
           >
-            <OrderFormWithButton refresh={() => setRefresh(true)}/>
+            <TooltipIconButton
+              title="Add Order"
+              name="ADD"
+              onClick={handleToggle}
+              buttonStyle={{ padding: '0 1.5rem 0 0' }}
+            />
             {currentEdit !== -1 
               ? 
                 <OrderForm 
@@ -575,15 +612,30 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   open={currentEdit !== -1}
                   editContent={orders[currentEdit]}
                 /> 
+              : <OrderForm refresh={() => setRefresh(true)} open={backdropOpen}/>
+            }
+            {selectedOrderType === 'history'
+              ? 
+                <TooltipIconButton
+                  title={messages[intl.locale].filter_list}
+                  name={"FILTER"}
+                  buttonStyle={{ padding: '0 1.5rem 0 0' }}
+                  buttonColor={filterCount === 0 ? 'white' : 'cyan'}
+                  onClick={() => setFilterBackdropOpen(true)}
+                />
               : <></>
             }
-            {selectedOrderType === 'history' ? <FilterForm /> : <></>}
+            {selectedOrderType === 'history'
+              ?
+                <FilterForm applyFilters={applyFilters} handleClickAway={handleFilterClickAway} backdropOpen={filterBackdropOpen}/>
+              : <></>
+            }
             {selectedOrderType !== 'working'
               ?
                 <TooltipIconButton
                   title={messages[intl.locale].working_orders}
                   name="WORKING"
-                  buttonStyle={{ padding: '0 0.5rem 0 0' }}
+                  buttonStyle={{ padding: '0 1.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
                     setSelectedOrderType('working');
                     setRefresh(true);
@@ -596,7 +648,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                 <TooltipIconButton
                   title={messages[intl.locale].todays_orders}
                   name="DONE_ALL"
-                  buttonStyle={{ padding: '0 0.5rem 0 0' }}
+                  buttonStyle={{ padding: '0 1.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
                     setSelectedOrderType("todays");
                     setRefresh(true);
@@ -624,11 +676,11 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           removeToolBar
           rowCollapsible
           openArray={currentOpen}
-          icons={getIconProps(selectedOrderType === 'todays' ? orders : selectedOrderType === 'working' ? workingOrders : orderHistory)}
+          icons={getIconProps(selectedOrderType === 'todays' ? orders : selectedOrderType === 'working' ? workingOrders : displayedOrderHistory)}
           containerClasses={classes.container}
           collapsibleContents={
             selectedOrderType === 'history'
-              ? orderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))
+              ? displayedOrderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))
               : selectedOrderType == 'todays'
                 ? orders.map(o => getCollapsibleContent(o, collapsibleContentClasses))
                 : workingOrders.map(w => getCollapsibleContent(w, collapsibleContentClasses))

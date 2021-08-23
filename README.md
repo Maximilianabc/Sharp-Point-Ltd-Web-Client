@@ -75,3 +75,9 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+### Project Structure
+
+Folder [Components](./Components) contains reusable components such as forms, input fields etc.\
+Folder [Containers](./Containers) contains major containers of the web client, such as summary, positions, orders etc.\
+Folder [Util](./Util) contains script files that are NOT related to any of the above, such as helper functions, css layout classes, locale translations etc.

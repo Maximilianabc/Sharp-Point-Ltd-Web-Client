@@ -7,6 +7,7 @@ import {
 	setDoneTradeReportAction
 } from "./Actions";
 import {
+	OrderHistoryRecord,
 	UserState
 } from './Reducers';
 
@@ -202,112 +203,112 @@ interface CashMovementRecordRow {
 }
 
 interface DataMask1 {
-	accNo?: string,
-	action?: number,
-	aeCode?: string,
-	creditLimit?: number,
-	ctrlLevel?: number,
-	dataMask?: number,
-	event?: string,
-	maxLoanLimit?: number,
-	tradeLimit?: number,
-	tradingLimit?: number
+	accNo: string,
+	action: number,
+	aeCode: string,
+	creditLimit: number,
+	ctrlLevel: number,
+	dataMask: number,
+	event: string,
+	maxLoanLimit: number,
+	tradeLimit: number,
+	tradingLimit: number
 }
 
 interface DataMask2 {
-	accNo?: string,
-	action?: number,
-	aeCode?: string,
-	cashBf?: number,
-	ccyCode?: string,
-	dataMask?: number,
-	event?: string,
-	notYetValue?: number,
-	todayCash?: number,
-	todayOut?: number,
-	unpresented?: number,
+	accNo: string,
+	action: number,
+	aeCode: string,
+	cashBf: number,
+	ccyCode: string,
+	dataMask: number,
+	event: string,
+	notYetValue: number,
+	todayCash: number,
+	todayOut: number,
+	unpresented: number,
 }
 
 interface DataMask4 {
-	accNo?: string,
-	action?: number,
-	aeCode?: string,
-	covered?: number,
-	dataMask?: number,
-	decInPrc?: number,
-	depositQty?: number,
-	depositTotalAmount?: number,
-	event?: string,
-	longQty?: number,
-	longShort?: string,
-	longTotalAmount?: number,
-	prodCode?: string,
-	psQty?: number,
-	psTotalAmount?: number,
-	qty?: number,
-	recNo?: number,
-	shortQty?: number,
-	shortTotalAmount?: number,
-	totalAmount?: number
+	accNo: string,
+	action: number,
+	aeCode: string,
+	covered: number,
+	dataMask: number,
+	decInPrc: number,
+	depositQty: number,
+	depositTotalAmount: number,
+	event: string,
+	longQty: number,
+	longShort: string,
+	longTotalAmount: number,
+	prodCode: string,
+	psQty: number,
+	psTotalAmount: number,
+	qty: number,
+	recNo: number,
+	shortQty: number,
+	shortTotalAmount: number,
+	totalAmount: number
 }
 
 interface DataMask8 {
-	accNo?: string,
-	accOrderNo?: number,
-	action?: number,
-	active?: number,
-	aeCode?: string,
-	buySell?: string,
-	clOrderId?: string,
-	condType?: number,
-	dataMask?: number,
-	decInPrc?: number,
-	downLevel?: number,
-	downPrice?: number,
-	event?: string,
-	gatewayCode?: string,
-	lastAction?: number,
-	openClose?: string,
-	options?: number,
-	orderNo?: BigInt,
-	orderType?: number,
-	price?: number,
-	qty?: number,
-	recNo?: number,
-	ref2?: string,
-	ref?: string,
-	schedTime?: number,
-	sender?: string,
-	status?: number,
-	stopPrice?: number,
-	stopType?: string,
-	timeStamp?: number,
-	totalQty?: number,
-	tradedQty?: number,
-	upLevel?: number,
-	upPrice?: number,
-	validDate?: number,
-	validType?: number,
+	accNo: string,
+	accOrderNo: number,
+	action: number,
+	active: number,
+	aeCode: string,
+	buySell: string,
+	clOrderId: string,
+	condType: number,
+	dataMask: number,
+	decInPrc: number,
+	downLevel: number,
+	downPrice: number,
+	event: string,
+	gatewayCode: string,
+	lastAction: number,
+	openClose: string,
+	options: number,
+	orderNo: BigInt,
+	orderType: number,
+	price: number,
+	qty: number,
+	recNo: number,
+	ref2: string,
+	ref: string,
+	schedTime: number,
+	sender: string,
+	status: number,
+	stopPrice: number,
+	stopType: string,
+	timeStamp: number,
+	totalQty: number,
+	tradedQty: number,
+	upLevel: number,
+	upPrice: number,
+	validDate: number,
+	validType: number,
 }
 
 interface DataMask32 {
-	accNo?: string,
-	accOrderNo?: number,
-	aeCode?: string,
-	buySell?: string,
-	counterBroker?: string,
-	dataMask?: number,
-	event?: string,
-	orderId?: string,
-	orderNo?: BigInt,
-	prodCode?: string,
-	recNo?: number,
-	tradeDateInYMD?: number,
-	tradeId?: string,
-	tradeNo?: number,
-	tradePriceInDec?: number,
-	tradeQty?: number,
-	tradeTime?: number,
+	accNo: string,
+	accOrderNo: number,
+	aeCode: string,
+	buySell: string,
+	counterBroker: string,
+	dataMask: number,
+	event: string,
+	orderId: string,
+	orderNo: BigInt,
+	prodCode: string,
+	recNo: number,
+	tradeDateInYMD: number,
+	tradeId: string,
+	tradeNo: number,
+	tradePriceInDec: number,
+	tradeQty: number,
+	tradeTime: number,
 }
 
 type SortOrder = 'asc' | 'desc';
@@ -316,8 +317,19 @@ type Comparator = (tuple: any) => ComparatorIndicator;
 type WebSocketCallback = (normal: boolean) => void;
 type OPType = 'account' | 'reporting' | 'order' | '';
 type FilterType = 'string' | 'number' | 'date';
-type NumberFilterOperation = 'lt' | 'leq' | 'neq' | 'eq' | 'gt' | 'geq';
-type StringFilterOperation = 'neq' | 'eq' | 'include' | 'exclude';
+
+const numFilters = ['lt', 'leq', 'neq', 'eq', 'gt', 'geq', 'between'] as const;
+const stringFilters = ['neq', 'eq', 'contains', 'not contain', 'starts with', 'ends with'] as const;
+const dateFilters = ['before', 'on or before', 'on', 'not on', 'on or after', 'after', 'between'] as const;
+type NumberFilterOperator = typeof numFilters[number];
+type StringFilterOperator = typeof stringFilters[number];
+type DateFilterOperator = typeof dateFilters[number];
+
+interface Filter {
+  property: keyof OrderHistoryRecordRow | '',
+  operator: NumberFilterOperator | StringFilterOperator | DateFilterOperator | '',
+  value: { lower: string | number, upper: string | number }
+}
 
 const postRequest = async (relativePath: string, payload: any): Promise<any> => {
 	const reqOpt = {
@@ -454,6 +466,128 @@ const stableSort = (array: any[], comparator: Comparator): any[] => {
   return stabilizedThis.map((el) => el[0]);
 };
 
+const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
+	if (filter.property === '' || filter.operator === '') {
+		return false;
+	}
+	switch (filter.operator) {
+		case 'after':
+		case 'before':
+		case 'on':
+		case 'not on':
+		case 'on or before':
+		case 'on or after':
+			if (!isValidDateFilter(filter)) {
+				throw new Error(`not date filter but used ${filter.operator}`);
+			} else {
+				return getDatePredicate(new Date(row[filter.property]), filter.value, filter.operator);
+			}
+		case 'leq':
+		case 'lt':
+		case 'geq':
+		case 'gt':
+			if (!isValidNumberFilter(row, filter)) {
+				throw new Error(`not number filter but used ${filter.operator}`);
+			} else {
+				if (!isNaN(+row[filter.property]) && typeof filter.value.lower === 'number' && isFinite(filter.value.lower)) {
+					return getNumPredicate(+row[filter.property], { lower: +filter.value.lower, upper: 0 }, filter.operator);
+				} else {
+					throw new Error('value or item is not a number');
+				}
+			}
+		case 'between':
+			if (Object.values(filter.value).length !== 2) {
+				throw new Error('must provide exactly 2 values for between operator');
+			} else {
+				if (isValidDateFilter(filter)) {
+					return getDatePredicate(new Date(row[filter.property]), filter.value, filter.operator);
+				} else if (isValidNumberFilter(row, filter) && typeof filter.value.upper === 'number') {
+					return getNumPredicate(+row[filter.property], { lower: +filter.value.lower, upper: +filter.value.upper }, filter.operator);
+				} else {
+					throw new Error('not date or number filter but used between operator');
+				}
+			}
+		case 'contains':
+		case 'not contain':
+		case 'starts with':
+		case 'ends with':
+				return getStringPredicate(row[filter.property].toString(), filter.value.lower.toString(), filter.operator);
+		case 'eq':
+		case 'neq':
+			if (typeof row[filter.property] === 'number') {
+				return getNumPredicate(+row[filter.property], { lower: +filter.value.lower, upper: 0 }, filter.operator);
+			} else if (typeof row[filter.property] === 'string') {
+				return getStringPredicate(row[filter.property].toString(), filter.value.lower.toString(), filter.operator);
+			} else {
+				throw new Error('eq and neq operator cannot be used with non number or string filter');
+			}
+	}
+}
+
+const getNumPredicate = (value: number, compares: { lower: number, upper: number }, operator: NumberFilterOperator): boolean => {
+	switch (operator) {
+		case 'eq':
+			return compares.lower === value;
+		case 'geq':
+			return compares.lower >= value;
+		case 'gt':
+			return compares.lower > value;
+		case 'leq':
+			return compares.lower <= value;
+		case 'lt':
+			return compares.lower < value;
+		case 'neq':
+			return compares.lower !== value;
+		case 'between':
+			return compares.lower <= value && value <= compares.upper;
+	}
+};
+
+const getStringPredicate = (value: string, compare: string, operator: StringFilterOperator): boolean => {
+	switch (operator) {
+		case 'eq':
+			return value === compare;
+		case 'neq':
+			return value !== compare;
+		case 'contains':
+			return value.includes(compare);
+		case 'not contain':
+			return !value.includes(compare);
+		case 'starts with':
+			return value.startsWith(compare);
+		case 'ends with':
+			return value.endsWith(compare);
+	}
+};
+
+const getDatePredicate = (value: Date, compare: { lower: string | number, upper: string | number }, operator: DateFilterOperator): boolean => {
+	const low = new Date(compare.lower);
+	const up = new Date(compare.upper);
+
+	switch (operator) {
+		case 'on':
+			return value.getDate() === low.getDate();
+		case 'not on':
+			return value.getDate() !== low.getDate();
+		case 'before':
+			return value < low && value.getDate() !== low.getDate();
+		case 'after':
+			return value > low && value.getDate() !== low.getDate();
+		case 'on or before':
+			return value < low || value.getDate() === low.getDate();
+		case 'on or after':
+			return value > low || value.getDate() === low.getDate();
+		case 'between':
+			return (low <= value || value.getDate() === low.getDate()) && (value <= up || value.getDate() === up.getDate());
+	}
+};
+
+const combinePredicate = (first: boolean, second: boolean) => first && second;
+
+const isValidDateFilter = (filter: Filter): boolean => filter.property === 'time' && !isNaN(new Date(filter.value.lower).getDate());
+
+const isValidNumberFilter = (row: OrderHistoryRecordRow, filter: Filter): boolean => filter.property !== '' && typeof row[filter.property] === 'number' && typeof filter.value.lower === 'number';
+
 const getCurrencyString = (val: number | undefined, includeCurrency: boolean = true): string => {
 	return val !== undefined
 		? `${val.toLocaleString(undefined, { 
@@ -570,17 +704,7 @@ const getValidTypeString = (valid: number): string => {
 	}
 };
 
-const getOperators = (type: FilterType): (NumberFilterOperation | StringFilterOperation)[] => {
-	switch (type) {
-		case 'date':
-		case 'number':
-			return ['eq', 'neq', 'lt', 'gt', 'leq', 'geq'];
-		case 'string':
-			return ['eq', 'neq', 'include', 'exclude'];
-	}
-};
-
-const getOperatorDisplayText = (op: NumberFilterOperation | StringFilterOperation): string => {
+const getOperatorDisplayText = (op: NumberFilterOperator | StringFilterOperator | DateFilterOperator): string => {
 	switch (op) {
 		case 'eq':
 			return '=';
@@ -658,20 +782,24 @@ export {
 	getDoneTradeStatusString,
 	getOrderStatusString,
 	getValidTypeString,
-	getOperators,
 	getOperatorDisplayText,
 	getConditionTypeNumber,
 	getValidTypeNumber,
-	workingInProgess
+	workingInProgess,
+	getPredicate,
+	numFilters,
+	stringFilters,
+	dateFilters
 };
 export type {
 	OPType,
 	FilterType,
-	NumberFilterOperation,
-	StringFilterOperation,
+	NumberFilterOperator,
+	StringFilterOperator,
 	SortOrder,
 	Response,
 	Result,
+	Filter,
 	StoreCallbacks,
 	SummaryRecordRow,
 	BalanceRecordRow,

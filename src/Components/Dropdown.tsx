@@ -15,10 +15,9 @@ import {
   FilterType,
   genRandomHex,
   getOperatorDisplayText,
-  getOperators,
-  NumberFilterOperation,
+  NumberFilterOperator,
   ROW_CONTAINER_CLASSES, 
-  StringFilterOperation,
+  StringFilterOperator,
   WHITE60,
   WHITE80
 } from "../Util";
@@ -52,7 +51,7 @@ interface FilterDropDownMenuProps {
 }
 
 interface FilterOperatorDropDownMenuProps {
-  operators: (NumberFilterOperation | StringFilterOperation)[]
+  operators: (NumberFilterOperator | StringFilterOperator)[]
 }
 
 interface GenericDropDownMenuProps {
@@ -134,7 +133,7 @@ const StyledDropDownMenu = (props: StyledDropDownMenuProps) => {
     </div>
   );
 };
-
+/*
 const useStyleFilterDropDown = makeStyles((theme) => ({
   popper: {
     ...CARD_CLASSES,
@@ -233,7 +232,7 @@ const FilterDropDownMenu = (props: FilterDropDownMenuProps) => {
 
 const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
   const { operators } = props;
-  const [op, setOP] = useState<NumberFilterOperation | StringFilterOperation | null>(null);
+  const [op, setOP] = useState<NumberFilterOperator | StringFilterOperator | null>(null);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const prevOpen = useRef(open);
@@ -279,7 +278,7 @@ const FilterOperatorDropDownMenu = (props: FilterOperatorDropDownMenuProps) => {
     </StyledDropDownMenu>
   );
 };
-
+*/
 const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
   const { title, children, disabled } = props;
   const [open, setOpen] = useState(false);
@@ -320,7 +319,7 @@ const GenericDropDownMenu = (props: GenericDropDownMenuProps) => {
 
 export {
   StyledDropDownMenu,
-  FilterDropDownMenu,
-  FilterOperatorDropDownMenu,
+  //FilterDropDownMenu,
+  //FilterOperatorDropDownMenu,
   GenericDropDownMenu
 }
