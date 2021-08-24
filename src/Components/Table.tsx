@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { createRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { lighten } from '@material-ui/core/styles';
 import {
@@ -80,7 +80,8 @@ interface DataRowProps {
   collapsible?: boolean,
   icons?: (IconProps | undefined)[],
   classes?: any,
-  collapsibleContent?: React.ReactElement<CardProps|BoxProps>
+  collapsibleContent?: React.ReactElement<CardProps | BoxProps>,
+  buttonClicked?: () => void
 }
 
 const useStylesToolbar = makeStyles((theme) => ({
@@ -316,10 +317,23 @@ const DataTable = (props: DataTableProps) => {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('id');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(100);
-  const [scroll, setScroll] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [clicked, setClicked] = useState(false);
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
   const intl = useIntl();
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<number | undefined>(0);
+
+  useEffect(() => {
+    containerRef?.current?.scrollTo({left: 0, top: scrollRef.current === undefined ? 0 : scrollRef.current});
+    setClicked(false);
+    return () => {}
+  }, [clicked]);
+
+  const handleScroll = (ref: React.MutableRefObject<HTMLDivElement | null>) => {
+    scrollRef.current = containerRef?.current?.scrollTop;
+    console.log(scrollRef.current);
+  };
 
   const handleRequestSort = (event: React.MouseEvent, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -333,31 +347,28 @@ const DataTable = (props: DataTableProps) => {
     setRowsPerPage(parseInt((event?.target as HTMLInputElement)?.value, 10));
     setPage(0);
   };
-  /*
-  useEffect(() => {
-    window.onscroll = () => {
-      setScroll(window.pageYOffset);
-    }
-  }, [])*/
 
   return (
     <Paper className={classes.paper} elevation={0} key={genRandomHex(8)}>
         { removeToolBar ? null :
           <StyledTableToolbar title={title} key={genRandomHex(8)}>
-            <TooltipIconButton
+            {/*<TooltipIconButton
               title={messages[intl.locale].filter_list}
               name="FILTER"
               key={genRandomHex(8)}
-            />
+            />*/}
           </StyledTableToolbar>
         }
-        <TableContainer className={clsx(classes.container, containerClasses)} key={genRandomHex(8)}>
+        <TableContainer
+          ref={containerRef}
+          onScroll={() => handleScroll(containerRef)}
+          className={clsx(classes.container, containerClasses)}
+          key={genRandomHex(8)}
+        >
           <Table
             size="medium"
             stickyHeader
-            classes={{
-              stickyHeader: classes.table
-            }}
+            classes={{ stickyHeader: classes.table }}
             key={genRandomHex(8)}
           >
             <DataTableHeader
@@ -382,11 +393,12 @@ const DataTable = (props: DataTableProps) => {
                       openArray={openArray}
                       key={genRandomHex(8)}
                       collapsibleContent={collapsibleContents && collapsibleContents[index]}
+                      buttonClicked={() => setClicked(true)}
                     />
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }} key={genRandomHex(8)}/>
+                <TableRow style={{ height: data.length < emptyRows ? data.length < 8 ? (8 - data.length) * 53 : 0 : 53 * emptyRows }} key={genRandomHex(8)}/>
               )}   
             </TableBody>
           </Table>
@@ -429,14 +441,15 @@ const DataRow = (props: DataRowProps) => {
     open,
     openArray,
     index,
-    collapsibleContent
+    collapsibleContent,
+    buttonClicked
   } = props;
   const rowClasses = useStlyeDataRow();
 
   const getRowCallback = (icon: IconProps, index: number) => {
     switch (icon.name) {
       case 'MORE_HORIZ':
-        return () => icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val));
+        return () => {icon.onClick && openArray && icon.onClick(openArray.map((val, i) => i === index ? !val : val)); buttonClicked && buttonClicked()};
       case 'EDIT':
         return () => icon.onClick && icon.onClick(index);
       case 'DELETE':

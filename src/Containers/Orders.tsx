@@ -124,7 +124,7 @@ const useStyleOrdersMinified = makeStyles((theme) => ({
   container: {
     ...ROW_CONTAINER_CLASSES,
     maxWidth: '40vw',
-    maxHeight: '50vh',
+    maxHeight: '48vh',
     '&::-webkit-scrollbar': SCROLL_BAR_CLASSES
   },
   detailsButton: CARD_BUTTON_CLASSES,
@@ -271,19 +271,21 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             messages.push(`4107,0,${order.prodCode},${longMode ? '0' : '1'},0\r\n`);
           };
         }
-        setProds(products);
-        if (setMessages && messages.length !== 0) {
-          setMessages(messages);
-          setRefresh(true);
-        }
       });
+      setProds(products);
+      if (setMessages && messages.length !== 0) {
+        setMessages(messages);
+        setRefresh(true);
+      }
     }
     return o;
   };
 
-  // TODO modify
   const workingOrdersToRows = (working: any) => {
     let w: WorkingOrderRecordRow[] = [];
+    let products: string[] = prods;
+    let messages: string[] = [];
+
     if (working) {
       Array.prototype.forEach.call(working, (work: WorkingOrderRecord)=> {
         w.push({
@@ -304,15 +306,28 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           orderNo: work.orderNoStr ?? '?',
           extOrder: work.extOrderNo ?? '?'
         } as WorkingOrderRecordRow);
+        if (work.prodCode && prods.findIndex(s => s === work.prodCode) === -1) {
+          products.push(work.prodCode);
+          if (setMessages) {
+            products.push(work.prodCode);
+            messages.push(`4107,0,${work.prodCode},${longMode ? '0' : '1'},0\r\n`);
+          };
+        }
       });
+      setProds(products);
+      if (setMessages && messages.length !== 0) {
+        setMessages(messages);
+        setRefresh(true);
+      }
     }
-    console.log(w);
     return w;
   };
 
-  // TODO modify
   const orderHistoryToRow = (history: any) => {
     let h: OrderHistoryRecordRow[] = [];
+    let products: string[] = prods;
+    let messages: string[] = [];
+
     if (history) {
       Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
         //if (hist.timeStampStr && new Date(Date.parse(hist.timeStampStr)).getDate() === new Date(Date.now()).getDate()) {
@@ -334,8 +349,20 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             orderNo: hist.orderNoStr ?? '?',
             extOrder: hist.extOrderNo ?? '?'
           } as OrderHistoryRecordRow);
+          if (hist.prodCode && prods.findIndex(s => s === hist.prodCode) === -1) {
+            products.push(hist.prodCode);
+            if (setMessages) {
+              products.push(hist.prodCode);
+              messages.push(`4107,0,${hist.prodCode},${longMode ? '0' : '1'},0\r\n`);
+            };
+          }
         //}
       });
+      setProds(products);
+      if (setMessages && messages.length !== 0) {
+        setMessages(messages);
+        setRefresh(true);
+      }
     }
     return h;
   };
@@ -422,7 +449,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             ? RowsToLabels(orders, locale as localeTypes) 
             : selectedOrderType === 'working' 
               ? workingOrderRowsToLabels(workingOrders, locale as localeTypes) 
-              : orderHistoryRowsToLabels(displayedOrderHistory, locale as localeTypes);
+              : orderHistoryRowsToLabels(filterCount === 0 ? orderHistory : displayedOrderHistory, locale as localeTypes);
   }
 
   const getCollapsibleContent = (
@@ -540,13 +567,19 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     setBackdropOpen(!backdropOpen);
   };
 
+  const handleFilterToggle = () => {
+    setFilterBackdropOpen(!filterBackdropOpen);
+  }
+
   const handleFilterClickAway = (event: React.MouseEvent<EventTarget>) => {
     setFilterBackdropOpen(false);
   };
 
   useEffect(() => {
+    workFunction('account', 'todays');
+    workFunction('reporting', 'working');
+    workFunction('reporting', 'history');
     setRefresh(true);
-    setDisplayedOrderHistory(orderHistory);
     /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
     return () => {
       //clearInterval(work);
@@ -576,6 +609,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         }
       };
       getStoreData();
+      setCurrentOpen(new Array<boolean>(1024).fill(false));
       setRefresh(false);
       return () => {};
     }
@@ -627,7 +661,12 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             }
             {selectedOrderType === 'history'
               ?
-                <FilterForm applyFilters={applyFilters} handleClickAway={handleFilterClickAway} backdropOpen={filterBackdropOpen}/>
+                <FilterForm
+                  applyFilters={applyFilters}
+                  handleClickAway={handleFilterClickAway}
+                  handleToggle={handleFilterToggle}
+                  backdropOpen={filterBackdropOpen}
+                />
               : <></>
             }
             {selectedOrderType !== 'working'
@@ -673,10 +712,16 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         <DataTable
           headLabels={Object.values(headCellsMinified)}
           data={getLabels(intl.locale)}
+          addPageControl
           removeToolBar
           rowCollapsible
           openArray={currentOpen}
-          icons={getIconProps(selectedOrderType === 'todays' ? orders : selectedOrderType === 'working' ? workingOrders : displayedOrderHistory)}
+          icons={getIconProps(
+            selectedOrderType === 'todays' 
+              ? orders 
+              : selectedOrderType === 'working' 
+                ? workingOrders
+                : displayedOrderHistory)}
           containerClasses={classes.container}
           collapsibleContents={
             selectedOrderType === 'history'

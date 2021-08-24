@@ -26,6 +26,7 @@ import {
   dateFilters,
   Filter,
   FLEX_COLUMN_CLASSES,
+  genRandomHex,
   getConditionTypeNumber,
   getOperatorDisplayText,
   getValidTypeNumber,
@@ -55,6 +56,7 @@ import { CheckBoxField, WhiteDatePicker, WhiteSelectFormControl } from "./InputF
 import { Event, KeyboardArrowDown, Refresh } from "@material-ui/icons";
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 
 interface OrderFormWithButtonProps {
   refresh: () => void;
@@ -71,6 +73,7 @@ interface OrderFormProps {
 interface FilterFormProps {
   applyFilters: (filters?: Filter[]) => void,
   handleClickAway: (event: React.MouseEvent<EventTarget>) => void,
+  handleToggle: () => void,
   backdropOpen: boolean
 }
 
@@ -550,7 +553,7 @@ const useStyleFilterForm = makeStyles((theme) => ({
 }))
 
 const FilterForm = (props: FilterFormProps) => {
-  const { applyFilters, handleClickAway, backdropOpen } = props;
+  const { applyFilters, handleClickAway, handleToggle, backdropOpen } = props;
   const classes = useStyles();
   const formClasses = useStyleFilterForm();
   const intl = useIntl();
@@ -572,16 +575,31 @@ const FilterForm = (props: FilterFormProps) => {
     Object.values(filters).map((f: Filter, index: number) => {
       if (f.property === '') {
         err = {...err, [index]: { ...err[index], property: 'missing' }};
+      } else {
+        delete err[index]?.property;
       }
       if (f.operator === '') {
         err = {...err, [index]: { ...err[index], operator: 'missing' }};
+      } else {
+        delete err[index]?.operator;
       }
       if (f.value.lower === '') {
         err = {...err, [index]: { ...err[index], lower: 'missing' }};
+      } else if (f.property === 'price' && isNaN(+f.value.lower)) {
+        err = {...err, [index]: { ...err[index], lower: 'is in invalid format' }};
+      } else {
+        delete err[index]?.lower;
       }
-      console.log(err);
-      if (f.value.upper === '') {
-        err = {...err, [index]: { ...err[index], upper: 'missing' }};
+      if (f.operator === 'between') {
+        if (f.value.upper === '') {
+          err = {...err, [index]: { ...err[index], upper: 'missing' }};
+        } else if (f.property === 'price' && isNaN(+f.value.upper)) {
+          err = {...err, [index]: { ...err[index], upper: 'is in invalid format' }};
+        } else {
+          delete err[index]?.upper;
+        }
+      } else {
+        delete err[index]?.upper;
       }
     });
     setErrorText(err);
@@ -609,19 +627,21 @@ const FilterForm = (props: FilterFormProps) => {
           {
             [Object.keys(filters).map(index => {
               const filter = filters[+index];
-              const isError = (err: error, item: keyof error) => err !== undefined && err[item] !== '';
+              const isError = (err: error, item: keyof error) => err !== undefined && err[item] !== '' && err[item] !== undefined;
 
               return (
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                   <WhiteSelectFormControl
                     required
                     className={formClasses.control}
-                    style={{ minWidth: '4rem' }}
+                    style={{ minWidth: '5rem' }}
                     error={isError(errorText[+index], 'property')}
+                    key={genRandomHex(8)}
                   >
-                    <InputLabel>Item</InputLabel>
+                    <InputLabel key={genRandomHex(8)}>Item</InputLabel>
                     <Select
                       required
+                      key={genRandomHex(8)}
                       value={filter.property === undefined ? '' : filter.property.toLowerCase()}
                       IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
                       MenuProps={{ 
@@ -633,21 +653,41 @@ const FilterForm = (props: FilterFormProps) => {
                         getContentAnchorEl: null
                       }}
                     >
-                      <MenuItem value="id" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'id' }})}>ID</MenuItem>
-                      <MenuItem value="price" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'price'}})}>Price</MenuItem>
-                      <MenuItem value="time" onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'time'}})}>Time</MenuItem>
+                      <MenuItem
+                        value="id"
+                        key={genRandomHex(8)}
+                        onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'id' }})}
+                      >
+                        ID
+                      </MenuItem>
+                      <MenuItem
+                        value="price"
+                        key={genRandomHex(8)}
+                        onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'price'}})}
+                      >
+                        Price
+                      </MenuItem>
+                      <MenuItem
+                        value="time"
+                        key={genRandomHex(8)}
+                        onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], property: 'time'}})}
+                      >
+                        Time
+                      </MenuItem>
                     </Select>
-                    {isError(errorText[+index], 'property') ? <FormHelperText>{`Item ${errorText[+index].property}`}</FormHelperText> : null}
+                    {isError(errorText[+index], 'property') ? <FormHelperText key={genRandomHex(8)}>{`Item ${errorText[+index].property}`}</FormHelperText> : null}
                   </WhiteSelectFormControl>
                   <WhiteSelectFormControl
                     required
+                    key={genRandomHex(8)}
                     className={formClasses.control}
                     style={{ minWidth: '15rem' }}
                     error={isError(errorText[+index], 'operator')}
                   >
-                    <InputLabel>Operator</InputLabel>
+                    <InputLabel key={genRandomHex(8)}>Operator</InputLabel>
                     <Select
                       required
+                      key={genRandomHex(8)}
                       value={filter.operator === undefined ? '' : filter.operator}
                       IconComponent={(props) => <KeyboardArrowDown style={{ fontSize: 24, color: 'white' }} {...props}/>}
                       MenuProps={{ 
@@ -666,6 +706,7 @@ const FilterForm = (props: FilterFormProps) => {
                               <MenuItem
                                 value={o}
                                 style={{ minWidth: '30rem' }}
+                                key={genRandomHex(8)}
                                 onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
                               >
                                 {getOperatorDisplayText(o)}
@@ -679,6 +720,7 @@ const FilterForm = (props: FilterFormProps) => {
                                 <MenuItem
                                   value={o}
                                   style={{ minWidth: '30rem' }}
+                                  key={genRandomHex(8)}
                                   onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
                                 >
                                   {getOperatorDisplayText(o)}
@@ -692,6 +734,7 @@ const FilterForm = (props: FilterFormProps) => {
                                   <MenuItem
                                     value={o}
                                     style={{ minWidth: '30rem' }}
+                                    key={genRandomHex(8)}
                                     onClick={(event: React.MouseEvent) => setFilters({...filters, [+index]: { ...filters[+index], operator: o}})}
                                   >
                                     {getOperatorDisplayText(o)}
@@ -703,30 +746,58 @@ const FilterForm = (props: FilterFormProps) => {
                     </Select>
                     {isError(errorText[+index], 'operator') ? <FormHelperText>{`Operator ${errorText[+index].operator}`}</FormHelperText> : null}
                   </WhiteSelectFormControl>
-                  <div style={{ display: 'flex', flexDirection: 'row', minWidth: '28rem' }}>
-                    <FormInputField
-                      require
-                      error={isError(errorText[+index], 'lower')}
-                      label="Value"
-                      variant="standard"
-                      defaultValue={filter.value.lower}
-                      onChange={(event: React.ChangeEvent) => setFilters({
-                        ...filters,
-                        [+index]: {
-                          ...filters[+index],
-                          value: {
-                            ...filters[+index].value,
-                            lower: (event.target as HTMLInputElement).value
-                          }
-                        }
-                      })}
-                      helperText={isError(errorText[+index], 'lower') ? `Value ${errorText[+index].lower}` : undefined}
-                    />
+                  <div style={{ display: 'flex', flexDirection: 'row', minWidth: '28rem', alignItems: 'flex-end' }}>
+                    {filter.property !== 'time'
+                      ?
+                        <FormInputField
+                          require
+                          error={isError(errorText[+index], 'lower')}
+                          label="Value"
+                          type={filter.property === 'price' ? 'number' : undefined}
+                          variant="standard"
+                          defaultValue={filter.value.lower}
+                          onChange={(event: React.ChangeEvent) => setFilters({
+                            ...filters,
+                            [+index]: {
+                              ...filters[+index],
+                              value: {
+                                ...filters[+index].value,
+                                lower: (event.target as HTMLInputElement).value
+                              }
+                            }
+                          })}
+                          helperText={isError(errorText[+index], 'lower') ? `Value ${errorText[+index].lower}` : undefined}
+                        />
+                      :
+                        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                          <WhiteDatePicker
+                            disableToolbar
+                            disableFuture
+                            variant="inline"
+                            format="dd/MM/yyyy"
+                            value={filter.value.lower === '' ? undefined : filter.value.lower}
+                            onChange={(date: MaterialUiPickersDate) => setFilters({
+                              ...filters,
+                              [+index]: {
+                                ...filters[+index],
+                                value: {
+                                  ...filters[+index].value,
+                                  lower: date?.toString() ?? ''
+                                }
+                              }
+                            })}
+                            keyboardIcon={<Event style={{ fontSize: 24, color: 'white' }}/>}
+                            className={classes.datePicker}
+                            style={{ margin: '0.25rem 0.5rem 0.25rem 0.5rem' }}
+                          />
+                      </MuiPickersUtilsProvider>
+                    }
                     <FormInputField
                       require
                       error={isError(errorText[+index], 'upper')}
                       style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex' }}
                       label="Value"
+                      type={filter.property === 'price' ? 'number' : undefined}
                       variant="standard"
                       defaultValue={filter.value.upper}
                       onChange={(event: React.ChangeEvent) => setFilters({
@@ -745,11 +816,13 @@ const FilterForm = (props: FilterFormProps) => {
                   <TooltipIconButton
                     name="ADD"
                     title="Add Filter"
-                    onClick={(event: React.MouseEvent) => setFilters({...filters, [+index + 1 ]: newFilter})}
+                    key={genRandomHex(8)}
+                    onClick={(event: React.MouseEvent) => setFilters({...filters, [+index + 1]: newFilter})}
                   />
                   <TooltipIconButton
                     name="DELETE"
                     title="Delete Filter"
+                    key={genRandomHex(8)}
                     onClick={(event: React.MouseEvent) => {
                       if (Object.keys(filters).length === 1) {
                         return;
@@ -765,19 +838,25 @@ const FilterForm = (props: FilterFormProps) => {
           }
           <Button
             className={formClasses.button}
+            key={genRandomHex(8)}
             onClick={() => {
               if (!validateFilters()) {
                 return;
               }
               applyFilters(Object.values(filters));
+              setErrorText({});
+              handleToggle();
             }}>
               Apply
           </Button>
           <Button 
             className={formClasses.button}
+            key={genRandomHex(8)}
             onClick={() => {
               setFilters({0: newFilter});
+              setErrorText({});
               applyFilters();
+              console.log(filters);
             }}>
               Clear
           </Button>

@@ -489,7 +489,7 @@ const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
 			if (!isValidNumberFilter(row, filter)) {
 				throw new Error(`not number filter but used ${filter.operator}`);
 			} else {
-				if (!isNaN(+row[filter.property]) && typeof filter.value.lower === 'number' && isFinite(filter.value.lower)) {
+				if (!isNaN(+row[filter.property]) && !isNaN(+filter.value.lower) && isFinite(+filter.value.lower)) {
 					return getNumPredicate(+row[filter.property], { lower: +filter.value.lower, upper: 0 }, filter.operator);
 				} else {
 					throw new Error('value or item is not a number');
@@ -501,7 +501,7 @@ const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
 			} else {
 				if (isValidDateFilter(filter)) {
 					return getDatePredicate(new Date(row[filter.property]), filter.value, filter.operator);
-				} else if (isValidNumberFilter(row, filter) && typeof filter.value.upper === 'number') {
+				} else if (isValidNumberFilter(row, filter) && !isNaN(+filter.value.upper)) {
 					return getNumPredicate(+row[filter.property], { lower: +filter.value.lower, upper: +filter.value.upper }, filter.operator);
 				} else {
 					throw new Error('not date or number filter but used between operator');
@@ -527,17 +527,17 @@ const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
 const getNumPredicate = (value: number, compares: { lower: number, upper: number }, operator: NumberFilterOperator): boolean => {
 	switch (operator) {
 		case 'eq':
-			return compares.lower === value;
+			return value === compares.lower;
 		case 'geq':
-			return compares.lower >= value;
+			return value >= compares.lower;
 		case 'gt':
-			return compares.lower > value;
+			return value > compares.lower;
 		case 'leq':
-			return compares.lower <= value;
+			return value <= compares.lower;
 		case 'lt':
-			return compares.lower < value;
+			return value < compares.lower;
 		case 'neq':
-			return compares.lower !== value;
+			return value !== compares.lower;
 		case 'between':
 			return compares.lower <= value && value <= compares.upper;
 	}
@@ -552,6 +552,7 @@ const getStringPredicate = (value: string, compare: string, operator: StringFilt
 		case 'contains':
 			return value.includes(compare);
 		case 'not contain':
+			console.log(value.includes(compare));
 			return !value.includes(compare);
 		case 'starts with':
 			return value.startsWith(compare);
@@ -586,7 +587,7 @@ const combinePredicate = (first: boolean, second: boolean) => first && second;
 
 const isValidDateFilter = (filter: Filter): boolean => filter.property === 'time' && !isNaN(new Date(filter.value.lower).getDate());
 
-const isValidNumberFilter = (row: OrderHistoryRecordRow, filter: Filter): boolean => filter.property !== '' && typeof row[filter.property] === 'number' && typeof filter.value.lower === 'number';
+const isValidNumberFilter = (row: OrderHistoryRecordRow, filter: Filter): boolean => filter.property !== '' && typeof row[filter.property] === 'number' && !isNaN(+filter.value.lower);
 
 const getCurrencyString = (val: number | undefined, includeCurrency: boolean = true): string => {
 	return val !== undefined
