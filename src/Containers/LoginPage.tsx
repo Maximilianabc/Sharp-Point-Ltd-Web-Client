@@ -97,7 +97,7 @@ const LoginForm = (props: LoginPageProps) => {
 
 	const handleResponse = (resdata: Response) => {
 		if (resdata.result_msg !== undefined) {
-			if (resdata.result_code === '0') {
+			if (resdata.result_code === 0 || resdata.result_code === '0') {
 				if (resdata.data !== undefined) {
 					const actionData: UserInfo & { authed: boolean } = {
 						userId: data.userId.toUpperCase(),
@@ -212,7 +212,7 @@ const TwoFAForm = (props: TwoFAFormProps) => {
 	};
 
 	const handleResponse = (resdata: Response) => {
-		if (resdata.result_code === '0') {
+		if (resdata.result_code === 0 || resdata.result_code === '0') {
 			const info = resdata.data;
 			dispatch(setTokenAction(info.sessionToken));
 			dispatch(setServerKeyAction(info.spServerKey));

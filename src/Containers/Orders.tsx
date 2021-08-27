@@ -59,7 +59,8 @@ import {
   store,
   Filter,
   FilterType,
-  getPredicate
+  getPredicate,
+  combineFilters
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
@@ -413,7 +414,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       Array.prototype.forEach.call(rows, (r: WorkingOrderRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()]?.toProperCase() ?? '?' ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
@@ -432,7 +433,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
       Array.prototype.forEach.call(rows, (r: OrderHistoryRecordRow) => {
         let labelRow: LabelBaseProps[] = [];
         labelRow.push(setStackedLabelValues(headCellsMinified.first,
-          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()].toProperCase() ], 
+          [ r.buySell === 'S' ? messages[locale].sell : messages[locale].buy, messages[locale][r.status.toLocaleLowerCase()]?.toProperCase() ?? '?' ], 
           [ undefined, { name: getIconTypeByStatus(r.status.toProperCase() as OrderStatus), size: 20, buttonStyle: { padding: 0 }} ],
           [ r.buySell === 'S' ? SELL_COLOR : BUY_COLOR, undefined ]));
         labelRow.push(setStackedLabelValues(headCellsMinified.stock, [ r.name, r.id ]));
@@ -554,11 +555,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     let o: OrderHistoryRecordRow[] = [];
     Array.prototype.forEach.call(orderHistory, (r: OrderHistoryRecordRow) => {
       setFilterCount(filterCount + 1);
-      Array.prototype.forEach.call(filters, (f: Filter) => {
-        if (getPredicate(r, f)) {
-          o.push(r);
-        }
-      })
+      if (combineFilters(r, filters)()) {
+        o.push(r);
+      }
     });
     setDisplayedOrderHistory(o);
   };

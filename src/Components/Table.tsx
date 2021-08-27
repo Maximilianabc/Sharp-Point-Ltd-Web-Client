@@ -332,7 +332,6 @@ const DataTable = (props: DataTableProps) => {
 
   const handleScroll = (ref: React.MutableRefObject<HTMLDivElement | null>) => {
     scrollRef.current = containerRef?.current?.scrollTop;
-    console.log(scrollRef.current);
   };
 
   const handleRequestSort = (event: React.MouseEvent, property: string) => {

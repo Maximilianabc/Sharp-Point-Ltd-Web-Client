@@ -283,6 +283,7 @@ const FormInputField = (props: FormInputFieldProps) => {
 			required={require}
 			error={error}
 			helperText={helperText}
+			multiline={false}
 		/>
 	)
 };

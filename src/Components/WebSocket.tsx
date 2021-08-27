@@ -22,7 +22,8 @@ import {
   setAccountPositionByPushAction,
   setAccountBalanaceAction,
   setAccountSummaryByPushAction,
-  setDoneTradeReportByPushAction
+  setDoneTradeReportByPushAction,
+  testProxyAddress
 } from '../Util';
 
 interface WebSocketProps {
@@ -210,7 +211,7 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
   };
 
   useEffect(() => {
-    ws.current = new WebSocket(wsPriceAddress);
+    ws.current = new WebSocket(wsPriceAddress/*testProxyAddress*/);
     ws.current.onopen = () => {
       ws.current!.send(`4104,0,${accNo},${serverKey},3,8.7,1.0,1.0,SPMARIADB_F,${Date.now()},0\r\n`);
     }
@@ -232,7 +233,8 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
         if (ws.current?.readyState === WebSocket.OPEN) {
           messages.forEach((m, i)=> {
             if (m !== '') {
-              setTimeout(() => ws.current?.send(m), i * 100);
+              /*setTimeout(() => ws.current?.send(m), i * 50);*/
+              ws.current?.send(m);
             }
           });
           clearTimeout(check);

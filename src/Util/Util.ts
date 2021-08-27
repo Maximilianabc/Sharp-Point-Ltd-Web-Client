@@ -12,14 +12,15 @@ import {
 } from './Reducers';
 
 // NOTE: Change this to false when deploying to server for external use
-const internal = false;
+const internal = true;
 const host = internal ? "192.168.123.136" : "futures.spsystem.info";
 const port = internal ? "99" : "9026";
 const priceHost = "localhost";
-const pricePort = "8063";
+const pricePort = "8094";
 const wsPort = "12000";
 const wsAddress = `ws://192.168.123.136:${wsPort}/websocketTraderAdmin/accountUpdate?session_token=`;
 const wsPriceAddress = /*`ws://${host}:${pricePort}`*/ `ws://192.168.123.136:${pricePort}`;
+const testProxyAddress = 'ws://localhost:8094';
 const path = `http${internal ? '' : 's'}://${host}:${port}/apiCustomer`;
 
 enum OPConsts {
@@ -39,7 +40,7 @@ type OrderStatus = 'Adding' | 'Sending' | 'Inactive' | 'Pending' | 'Working' | '
 interface Response {
 	data: any,
 	log_message: string,
-	result_code: string,
+	result_code: string | number,
 	result_msg: string,
 	timeStamp: number
 }
@@ -415,27 +416,33 @@ const operations = async (
 			break;
 	}
 
-	await postRequest(url, payload)
-		.then((data?: Response) => {
-			if (data?.result_code === "40011") {
+	await postRequest(url, payload).then((data?: Response) => {
+			if (data?.result_code === "40011" || data?.result_code === 40011) {
 				if (closeWSCallback) {
 					closeWSCallback(false);
 				} else {
 					result = { closeSocket: true } as Result;				
 				}
 				return;
-			}
-			if (actionCallback) {
+			} else if (data?.result_code !== 0 && data?.result_code !== '0') {
 				result = {
-					data: data?.data,
-					actionData: actionCallback(data?.data),
-					closeSocket: false
-				};
+					data: {
+						errorMsg: data?.result_msg
+					}
+				} as Result;
 			} else {
-				result = {
-					data: data?.data,
-					closeSocket: false
-				};
+				if (actionCallback) {
+					result = {
+						data: data?.data,
+						actionData: actionCallback(data?.data),
+						closeSocket: false
+					};
+				} else {
+					result = {
+						data: data?.data,
+						closeSocket: false
+					};
+				}
 			}
 		});
 	return result;
@@ -466,9 +473,9 @@ const stableSort = (array: any[], comparator: Comparator): any[] => {
   return stabilizedThis.map((el) => el[0]);
 };
 
-const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
+const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): () => boolean => {
 	if (filter.property === '' || filter.operator === '') {
-		return false;
+		return () => false;
 	}
 	switch (filter.operator) {
 		case 'after':
@@ -524,66 +531,77 @@ const getPredicate = (row: OrderHistoryRecordRow, filter: Filter): boolean => {
 	}
 }
 
-const getNumPredicate = (value: number, compares: { lower: number, upper: number }, operator: NumberFilterOperator): boolean => {
+const getNumPredicate = (value: number, compares: { lower: number, upper: number }, operator: NumberFilterOperator): () => boolean => {
 	switch (operator) {
 		case 'eq':
-			return value === compares.lower;
+			return () => value === compares.lower;
 		case 'geq':
-			return value >= compares.lower;
+			return () => value >= compares.lower;
 		case 'gt':
-			return value > compares.lower;
+			return () => value > compares.lower;
 		case 'leq':
-			return value <= compares.lower;
+			return () => value <= compares.lower;
 		case 'lt':
-			return value < compares.lower;
+			return () => value < compares.lower;
 		case 'neq':
-			return value !== compares.lower;
+			return () => value !== compares.lower;
 		case 'between':
-			return compares.lower <= value && value <= compares.upper;
+			return () => compares.lower <= value && value <= compares.upper;
 	}
 };
 
-const getStringPredicate = (value: string, compare: string, operator: StringFilterOperator): boolean => {
+const getStringPredicate = (value: string, compare: string, operator: StringFilterOperator): () => boolean => {
 	switch (operator) {
 		case 'eq':
-			return value === compare;
+			return () => value === compare;
 		case 'neq':
-			return value !== compare;
+			return () => value !== compare;
 		case 'contains':
-			return value.includes(compare);
+			return () => value.includes(compare);
 		case 'not contain':
-			console.log(value.includes(compare));
-			return !value.includes(compare);
+			return () => !value.includes(compare);
 		case 'starts with':
-			return value.startsWith(compare);
+			return () => value.startsWith(compare);
 		case 'ends with':
-			return value.endsWith(compare);
+			return () => value.endsWith(compare);
 	}
 };
 
-const getDatePredicate = (value: Date, compare: { lower: string | number, upper: string | number }, operator: DateFilterOperator): boolean => {
+const getDatePredicate = (value: Date, compare: { lower: string | number, upper: string | number }, operator: DateFilterOperator): () => boolean => {
 	const low = new Date(compare.lower);
 	const up = new Date(compare.upper);
 
 	switch (operator) {
 		case 'on':
-			return value.getDate() === low.getDate();
+			return () => value.getDate() === low.getDate();
 		case 'not on':
-			return value.getDate() !== low.getDate();
+			return () => value.getDate() !== low.getDate();
 		case 'before':
-			return value < low && value.getDate() !== low.getDate();
+			return () => value < low && value.getDate() !== low.getDate();
 		case 'after':
-			return value > low && value.getDate() !== low.getDate();
+			return () => value > low && value.getDate() !== low.getDate();
 		case 'on or before':
-			return value < low || value.getDate() === low.getDate();
+			return () => value < low || value.getDate() === low.getDate();
 		case 'on or after':
-			return value > low || value.getDate() === low.getDate();
+			return () => value > low || value.getDate() === low.getDate();
 		case 'between':
-			return (low <= value || value.getDate() === low.getDate()) && (value <= up || value.getDate() === up.getDate());
+			return () => (low <= value || value.getDate() === low.getDate()) && (value <= up || value.getDate() === up.getDate());
 	}
 };
 
-const combinePredicate = (first: boolean, second: boolean) => first && second;
+const combineFilters = (row: OrderHistoryRecordRow, filters: Filter[]): () => boolean => {
+	if (filters.length === 0) {
+		 return () => false;
+	}
+	let result: () => boolean = () => true;
+	Array.prototype.forEach.call(filters, (f: Filter) => {
+		if (!getPredicate(row, f)()) {
+			result = () => false;
+			return;
+		}
+	});
+	return result;
+};
 
 const isValidDateFilter = (filter: Filter): boolean => filter.property === 'time' && !isNaN(new Date(filter.value.lower).getDate());
 
@@ -767,6 +785,7 @@ const workingInProgess = () => {
 export {
 	wsAddress,
 	wsPriceAddress,
+	testProxyAddress,
 	OPConsts,
 	postRequest,
 	getDispatchSelectCB,
@@ -788,6 +807,7 @@ export {
 	getValidTypeNumber,
 	workingInProgess,
 	getPredicate,
+	combineFilters,
 	numFilters,
 	stringFilters,
 	dateFilters

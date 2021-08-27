@@ -150,7 +150,7 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       }
       setPositions(positionsToRows(Object.values(store.getState().position?.data ?? {})));
     };
-    const get = setInterval(getStoreData, 100000);
+    const get = setInterval(getStoreData, 100);
     return () => clearInterval(get);
   }, []);
 

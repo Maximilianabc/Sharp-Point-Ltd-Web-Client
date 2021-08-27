@@ -139,6 +139,8 @@ const getIconTypeByStatus = (status: OrderStatus): IconTypes => {
       return 'DELETED';
     case 'Traded':
       return 'DONE';
+    default:
+      return '';
   }
 };
 

@@ -606,6 +606,8 @@ const FilterForm = (props: FilterFormProps) => {
     return Object.keys(err).length === 0;
   };
 
+  const removeFilter = (index: number, {[index]: _, ...filters}) => filters;
+
   return (
     <Popover
       className={classes.popover}
@@ -622,8 +624,9 @@ const FilterForm = (props: FilterFormProps) => {
       }}
     >
       <ClickAwayListener onClickAway={handleClickAway}>
-        <Paper elevation={0} className={classes.paper}>
+        <Paper elevation={0} className={classes.paper} style={{ display: 'flex', flexDirection: 'column' }}>
           <Typography className={formClasses.title}>Filter</Typography>
+          <div>
           {
             [Object.keys(filters).map(index => {
               const filter = filters[+index];
@@ -827,39 +830,40 @@ const FilterForm = (props: FilterFormProps) => {
                       if (Object.keys(filters).length === 1) {
                         return;
                       }
-                      delete filters[+index];
-                      console.log(filters);
-                      setFilters(filters);
+                      setFilters(removeFilter(+index, filters));
                     }}
                   />
                 </div>
               );
             })]
           }
-          <Button
-            className={formClasses.button}
-            key={genRandomHex(8)}
-            onClick={() => {
-              if (!validateFilters()) {
-                return;
-              }
-              applyFilters(Object.values(filters));
-              setErrorText({});
-              handleToggle();
-            }}>
-              Apply
-          </Button>
-          <Button 
-            className={formClasses.button}
-            key={genRandomHex(8)}
-            onClick={() => {
-              setFilters({0: newFilter});
-              setErrorText({});
-              applyFilters();
-              console.log(filters);
-            }}>
-              Clear
-          </Button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'row', position: 'absolute', bottom: 0, left: '40%' }}>
+            <Button
+              className={formClasses.button}
+              key={genRandomHex(8)}
+              style={{ marginRight: '2rem '}}
+              onClick={() => {
+                if (!validateFilters()) {
+                  return;
+                }
+                applyFilters(Object.values(filters));
+                setErrorText({});
+                handleToggle();
+              }}>
+                Apply
+            </Button>
+            <Button 
+              className={formClasses.button}
+              key={genRandomHex(8)}
+              onClick={() => {
+                setFilters({0: newFilter});
+                setErrorText({});
+                applyFilters();
+              }}>
+                Clear
+            </Button>
+          </div>
         </Paper>
       </ClickAwayListener>
     </Popover>
