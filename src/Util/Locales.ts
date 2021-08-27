@@ -48,6 +48,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
     credit_limit: 'Credit Limit',
     average_net_option_value: 'Avg. Net Optional Value',
     ctrl_level: 'Control Level',
+    unlimited: 'Unlimited',
 
     positions: 'Positions',
     stock_name: 'Name',
@@ -123,6 +124,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
     credit_limit: '信貸限額',
     average_net_option_value: '可用期權淨值',
     ctrl_level: '控制級數',
+    unlimited: '無限制',
 
     positions: '持倉',
     stock_name: '名稱',
@@ -198,6 +200,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
     credit_limit: '信贷限额',
     average_net_option_value: '可用期权净值',
     ctrl_level: '控制级数',
+    unlimited: '无限制',
 
     positions: '持仓',
     stock_name: '名称',

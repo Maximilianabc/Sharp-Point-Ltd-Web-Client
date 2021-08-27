@@ -234,9 +234,9 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
         commodityPL:getCurrencyString(sum.totalPl),
         currentIMargin: getCurrencyString(sum.imargin), // !! api: iMargin, actual response: imargin
         currentMMargin: getCurrencyString(sum.mmargin), // !! api: mMargin, actual response: mmargin
-        mLevel: sum.mlevel === Number.MAX_VALUE ? 'Unlimited' : getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
+        mLevel: sum.mlevel === Number.MAX_VALUE ? messages[intl.locale].unlimited : getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
         prjOvnMargin: '?',
-        maxMargin: '?',
+        maxMargin: sum.tradeLimit === 0 ?  messages[intl.locale].unlimited : sum.tradeLimit,
         marginCall: getCurrencyString(sum.marginCall),
         cashBalance: getCurrencyString(sum.cashBal),
         transactionAmt: '?',

@@ -795,26 +795,52 @@ const FilterForm = (props: FilterFormProps) => {
                           />
                       </MuiPickersUtilsProvider>
                     }
-                    <FormInputField
-                      require
-                      error={isError(errorText[+index], 'upper')}
-                      style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex' }}
-                      label="Value"
-                      type={filter.property === 'price' ? 'number' : undefined}
-                      variant="standard"
-                      defaultValue={filter.value.upper}
-                      onChange={(event: React.ChangeEvent) => setFilters({
-                        ...filters,
-                        [+index]: {
-                          ...filters[+index],
-                          value: {
-                            ...filters[+index].value,
-                            upper: (event.target as HTMLInputElement).value
-                          }
-                        }
-                      })}
-                      helperText={isError(errorText[+index], 'upper') ? `Value ${errorText[+index].upper}` : undefined}
-                    />
+                    {filter.property !== 'time'
+                      ?
+                        <FormInputField
+                          require
+                          error={isError(errorText[+index], 'upper')}
+                          style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex' }}
+                          label="Value"
+                          type={filter.property === 'price' ? 'number' : undefined}
+                          variant="standard"
+                          defaultValue={filter.value.upper}
+                          onChange={(event: React.ChangeEvent) => setFilters({
+                            ...filters,
+                            [+index]: {
+                              ...filters[+index],
+                              value: {
+                                ...filters[+index].value,
+                                upper: (event.target as HTMLInputElement).value
+                              }
+                            }
+                          })}
+                          helperText={isError(errorText[+index], 'upper') ? `Value ${errorText[+index].upper}` : undefined}
+                        />
+                      :
+                        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                          <WhiteDatePicker
+                            disableToolbar
+                            disableFuture
+                            variant="inline"
+                            format="dd/MM/yyyy"
+                            value={filter.value.upper === '' ? undefined : filter.value.upper}
+                            onChange={(date: MaterialUiPickersDate) => setFilters({
+                              ...filters,
+                              [+index]: {
+                                ...filters[+index],
+                                value: {
+                                  ...filters[+index].value,
+                                  lower: date?.toString() ?? ''
+                                }
+                              }
+                            })}
+                            keyboardIcon={<Event style={{ fontSize: 24, color: 'white' }}/>}
+                            className={classes.datePicker}
+                            style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex', margin: '0.25rem 0.5rem 0.25rem 0.5rem' }}
+                          />
+                        </MuiPickersUtilsProvider>
+                    }
                   </div>
                   <TooltipIconButton
                     name="ADD"
