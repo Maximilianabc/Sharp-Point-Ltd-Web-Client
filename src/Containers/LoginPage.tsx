@@ -106,6 +106,7 @@ const LoginForm = (props: LoginPageProps) => {
 
 	const handleKeyPress = (event: React.KeyboardEvent) => {
 		if (event.key === 'Enter') {
+			event.preventDefault();
 			handleClick();
 		}
 	};

@@ -107,9 +107,23 @@ File [Profile.tsx](./Containers/Profile.tsx) contains the component for displayi
 
 ### Utility
 Folder [Util](./Util) contains script files that are NOT related to any of the above, such as helper functions, css layout classes, locale translations etc.
-File [Action.ts](./Util/Actions.ts)
-File [Layout.ts](./Util/Layout.ts)
-File [Locales.ts](./Util/Locales.ts)
-File [Reducers.ts](./Util/Reducers.ts)
-File [Store.ts](./Util/Store.ts)
-File [Util.ts](./Util/Util.ts)
+File [Action.ts](./Util/Actions.ts) contains action functions for redux store.\
+File [Layout.ts](./Util/Layout.ts) contains layout constants such as commonly used CSS classes.\
+File [Locales.ts](./Util/Locales.ts) contains translations of display text in all supported languages (English, Traditional Chinese, Simplified Chinese).\
+File [Reducers.ts](./Util/Reducers.ts) contains the reducer for redux store.\
+File [Store.ts](./Util/Store.ts) contains the reux store.\
+File [Util.ts](./Util/Util.ts) contains utility functions for various purposes such as enum type mapping and sending requests.
+
+## Known Bugs
+* Rounding error for net average in positions
+* Decimal truncation for long and short average in positions
+* Cannot select upper boundary of time for filter when using 'between' operator
+* Display error for prices in some products having decimals
+* Occasional failure for adding orders of some products
+* Occasional failure for displaying product names in orders (possible fix: useRef for market data instead of var)
+
+## Features yet to be implemented
+* Responsive Design
+* Page for quotes
+* Watchlist
+* Pagination for position
