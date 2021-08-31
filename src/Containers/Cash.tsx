@@ -87,13 +87,13 @@ const Cash = (props: CashProps) => {
       Array.prototype.forEach.call(balance, bal => {
         b.push({
           ccy: bal.ccy,
-          cashBf: getCurrencyString(bal.cashBf, false),
-          unsettle: getCurrencyString(bal.notYetValue, false), // ?
-          todayIO: getCurrencyString(bal.todayOut, false), //?
-          withdrawReq: getCurrencyString(zero, false), //?
-          cash: getCurrencyString(bal.cash, false),
-          unpresented: getCurrencyString(bal.unpresented, false),
-          fx: getCurrencyString(zero, false), // ?
+          cashBf: getCurrencyString(bal.cashBf),
+          unsettle: getCurrencyString(bal.notYetValue), // ?
+          todayIO: getCurrencyString(bal.todayOut), //?
+          withdrawReq: getCurrencyString(zero), //?
+          cash: getCurrencyString(bal.cash),
+          unpresented: getCurrencyString(bal.unpresented),
+          fx: getCurrencyString(zero), // ?
           cashBaseCcy: `HKD`
         });
       });

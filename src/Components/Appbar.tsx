@@ -9,7 +9,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import MenuRoundedIcon from '@material-ui/icons/MenuRounded';
 import { useIntl } from 'react-intl';
-import { genRandomHex, locales, messages } from '../Util';
+import { genRandomHex, getLangButtonName, messages } from '../Util';
 import companyLogo from '../logo.svg';
 import { useHistory } from 'react-router';
 
@@ -53,19 +53,6 @@ const DefaultAppbar = (props: AppbarProps) => {
   const classes = useStyles();
   const intl = useIntl();
   const history = useHistory();
-
-  const getLangButtonName = (label: string) => {
-    switch (label) {
-      case '繁':
-        return locales.CHINESE_TRADITIONAL;
-      case '简':
-        return locales.CHINESE_SIMPLIFIED;
-      case 'Eng':
-        return locales.ENGLISH;
-      default:
-        throw new Error('Unknown Language');
-    }
-  }
 
   return (
     <AppBar

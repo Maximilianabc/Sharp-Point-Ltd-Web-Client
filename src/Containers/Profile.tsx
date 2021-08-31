@@ -39,16 +39,11 @@ import {
   Button,
   Card,
   CardContent,
-  Table,
   Tooltip
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
 import { LabelBaseProps } from '../Components/Label';
 import { useIntl } from 'react-intl';
-
-interface ProfileProps {
-
-}
 
 interface ProfileMinifiedProps {
 
@@ -219,7 +214,7 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
       });
     };
     workFunction();
-    let work = setInterval(workFunction, 120000); 
+    let work = setInterval(workFunction, 2000); 
     return () => {
       clearInterval(work);
     };
@@ -229,20 +224,20 @@ const ProfileMinified = (props: ProfileMinifiedProps) => {
     let s: SummaryRecordRow = {};
     if (sum) {
       s = {
-        buyingPower: getCurrencyString(sum.netEquity), // ?
-        nav: getCurrencyString(sum.nav),
-        commodityPL:getCurrencyString(sum.totalPl),
-        currentIMargin: getCurrencyString(sum.imargin), // !! api: iMargin, actual response: imargin
-        currentMMargin: getCurrencyString(sum.mmargin), // !! api: mMargin, actual response: mmargin
+        buyingPower: getCurrencyString(sum.netEquity, 'HKD'), // ?
+        nav: getCurrencyString(sum.nav, 'HKD'),
+        commodityPL:getCurrencyString(sum.totalPl, 'HKD'),
+        currentIMargin: getCurrencyString(sum.imargin, 'HKD'), // !! api: iMargin, actual response: imargin
+        currentMMargin: getCurrencyString(sum.mmargin, 'HKD'), // !! api: mMargin, actual response: mmargin
         mLevel: sum.mlevel === Number.MAX_VALUE ? messages[intl.locale].unlimited : getPercentageString(sum.mlevel), // !! api: mLevel, actual response: mlevel
         prjOvnMargin: '?',
         maxMargin: sum.tradeLimit === 0 ?  messages[intl.locale].unlimited : sum.tradeLimit,
-        marginCall: getCurrencyString(sum.marginCall),
-        cashBalance: getCurrencyString(sum.cashBal),
+        marginCall: getCurrencyString(sum.marginCall, 'HKD'),
+        cashBalance: getCurrencyString(sum.cashBal, 'HKD'),
         transactionAmt: '?',
         lockupAmt: '?',
         period: getPeriodString(sum.marginPeriod),
-        creditLimit: getCurrencyString(sum.creditLimit),
+        creditLimit: getCurrencyString(sum.creditLimit, 'HKD'),
         avgNetOptValue: '?',
         ctrlLevel: getControlLevelString(sum.ctrlLevel),
         marginClass: sum.marginClass //!! not present in api but in response

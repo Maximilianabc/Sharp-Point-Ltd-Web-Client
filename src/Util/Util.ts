@@ -6,8 +6,8 @@ import {
 	setAccountSummaryAction,
 	setDoneTradeReportAction
 } from "./Actions";
+import { locales } from "./Locales";
 import {
-	OrderHistoryRecord,
 	UserState
 } from './Reducers';
 
@@ -577,15 +577,15 @@ const getDatePredicate = (value: Date, compare: { lower: string | number, upper:
 		case 'not on':
 			return () => value.getDate() !== low.getDate();
 		case 'before':
-			return () => value < low && value.getDate() !== low.getDate();
+			return () => value < low;
 		case 'after':
-			return () => value > low && value.getDate() !== low.getDate();
+			return () => value > low;
 		case 'on or before':
-			return () => value < low || value.getDate() === low.getDate();
+			return () => value < low;
 		case 'on or after':
-			return () => value > low || value.getDate() === low.getDate();
+			return () => value > low;
 		case 'between':
-			return () => (low <= value || value.getDate() === low.getDate()) && (value <= up || value.getDate() === up.getDate());
+			return () => low <= value && value <= up;
 	}
 };
 
@@ -607,13 +607,13 @@ const isValidDateFilter = (filter: Filter): boolean => filter.property === 'time
 
 const isValidNumberFilter = (row: OrderHistoryRecordRow, filter: Filter): boolean => filter.property !== '' && typeof row[filter.property] === 'number' && !isNaN(+filter.value.lower);
 
-const getCurrencyString = (val: number | undefined, includeCurrency: boolean = true): string => {
+const getCurrencyString = (val?: number, currency?: string): string => {
 	return val !== undefined
 		? `${val.toLocaleString(undefined, { 
 					minimumFractionDigits: 2,
 					maximumFractionDigits: 2
-				})}${includeCurrency ? ' HKD' : ''}`
-		: '';
+				})} ${currency ?? ''}`
+		: '?';
 };
 
 const getPercentageString = (val: number | undefined, fixed: number = 2): string => {
@@ -778,6 +778,40 @@ const getConditionTypeNumber = (type: string): number => {
 	}
 };
 
+const getConditionTypeString = (type: string | number): string | number => {
+	switch (type) {
+		case 0:
+			return '';
+		case 1:
+			return 'stop loss';
+		case 3:
+			return 'schedule';
+		case 4:
+			return 'oco stop';
+		case 6:
+			return 'trailing stop';
+		case 8:
+			return 'combo open';
+		case 9:
+			return 'combo close';
+		default:
+			return type;
+	}
+}
+
+const getLangButtonName = (label: string) => {
+	switch (label) {
+		case '繁':
+			return locales.CHINESE_TRADITIONAL;
+		case '简':
+			return locales.CHINESE_SIMPLIFIED;
+		case 'Eng':
+			return locales.ENGLISH;
+		default:
+			throw new Error('Unknown Language');
+	}
+}
+
 const workingInProgess = () => {
 	alert('Working in Progress...');
 };
@@ -804,10 +838,12 @@ export {
 	getValidTypeString,
 	getOperatorDisplayText,
 	getConditionTypeNumber,
+	getConditionTypeString,
 	getValidTypeNumber,
 	workingInProgess,
 	getPredicate,
 	combineFilters,
+	getLangButtonName,
 	numFilters,
 	stringFilters,
 	dateFilters

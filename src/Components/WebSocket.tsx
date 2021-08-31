@@ -4,30 +4,29 @@ import { useDispatch,useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { 
   wsAddress,
-  getDispatchSelectCB,
-  operations,
   UserState,
   messages,
   wsPriceAddress,
   updateMarketDataShortAction,
   updateMarketDataLongAction,
-  store,
   DataMask8,
   DataMask32,
   DataMask4,
   DataMask2,
   DataMask1,
-  setAccountOrderAction,
   setAccountOrderByPushAction,
   setAccountPositionByPushAction,
   setAccountBalanaceAction,
   setAccountSummaryByPushAction,
   setDoneTradeReportByPushAction,
-  testProxyAddress
+  testProxyAddress,
+  getDispatchSelectCB,
+  operations,
+  OPType
 } from '../Util';
 
 interface WebSocketProps {
-
+  orderRefreshRef: any
 }
 
 interface PriceWebSocketProps {
@@ -35,6 +34,8 @@ interface PriceWebSocketProps {
 }
 
 const ClientWS = (props: WebSocketProps) => {
+  const { orderRefreshRef } = props;
+
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
   const ae = useSelector((state: UserState) => state.isAE);
@@ -67,6 +68,40 @@ const ClientWS = (props: WebSocketProps) => {
 
   const handlePushMessage = (message: any) => {
     if (message.dataMask === undefined) return;
+    let op: OPType = '';
+    switch (+message.dataMask) {
+      case 1:
+        const data1 = message as DataMask1;
+        op = 'account';
+        dispatch(setAccountSummaryByPushAction(data1));
+        break;
+      case 2:
+        const data2 = message as DataMask2;
+        op = 'account';
+        dispatch(setAccountBalanaceAction(data2));
+        break;
+      case 4:
+        const data4 = message as DataMask4;
+        op = 'account';
+        dispatch(setAccountPositionByPushAction(data4));
+        break;
+      case 8:
+        const data8 = message as DataMask8;
+        op = 'account';
+        dispatch(setAccountOrderByPushAction(data8));
+        break;
+      case 32:
+        const data32 = message as DataMask32;
+        op = 'reporting';
+        dispatch(setDoneTradeReportByPushAction(data32));
+        if (orderRefreshRef) {
+          orderRefreshRef.current();
+        }
+        break;
+      default:
+        console.log('Unknown data mask');
+        return;
+    }
     /*
     const payload = {
       sessionToken: token,
@@ -75,35 +110,11 @@ const ClientWS = (props: WebSocketProps) => {
     const closeWSCallback = () => closeSocket(false);
     const hooks = getDispatchSelectCB(message.dataMask);
     //TODO change op type later
-    operations('account', hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
+    operations(op, hooks?.id, payload, closeWSCallback, hooks?.action).then(data => {
       if (data !== undefined) {
         dispatch(data.actionData);
       }
     });*/
-    switch (+message.dataMask) {
-      case 1:
-        const data1 = message as DataMask1;
-        dispatch(setAccountSummaryByPushAction(data1));
-        break;
-      case 2:
-        const data2 = message as DataMask2;
-        dispatch(setAccountBalanaceAction(data2));
-        break;
-      case 4:
-        const data4 = message as DataMask4;
-        dispatch(setAccountPositionByPushAction(data4));
-        break;
-      case 8:
-        const data8 = message as DataMask8;
-        dispatch(setAccountOrderByPushAction(data8));
-        break;
-      case 32:
-        const data32 = message as DataMask32;
-        dispatch(setDoneTradeReportByPushAction(data32));
-        break;
-      default:
-        console.log('Unknown data mask');
-    }
   };
 
   const closeSocket = (normal: boolean) => {
@@ -129,7 +140,6 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
   const serverKey = useSelector((state: UserState) => state.serverKey);
   const ws = useRef<WebSocket | null>(null);
   const dispatch = useDispatch();
-  const intl = useIntl();
 
   const handlePushMessage = (message: any) => {
     let data: string[] = (message as string).split(',');
@@ -193,8 +203,10 @@ const ClientPriceWS = (props: PriceWebSocketProps) => {
         break;
       case 4104:
         // TODO add handle for login result
+        break;
       case 4107:
         // TODO add handle for subscribe result
+        break;
       case 4108:
         return;
       case 4202:

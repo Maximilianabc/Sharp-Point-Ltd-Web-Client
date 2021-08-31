@@ -1,34 +1,19 @@
 import {
   makeStyles,
   Popper, 
-  MenuItem,
   ClickAwayListener,
   MenuList,
   Paper,
   MenuItemProps
 } from "@material-ui/core";
-import React, { RefObject, useEffect, useState } from "react";
-import { useRef } from "react";
+import React, { RefObject, useEffect, useState, useRef } from "react";
 import { 
   CARD_BUTTON_HEADER_LABEL_CLASSES,
-  CARD_CLASSES,
-  FilterType,
-  genRandomHex,
-  getOperatorDisplayText,
-  NumberFilterOperator,
-  ROW_CONTAINER_CLASSES, 
-  StringFilterOperator,
-  WHITE60,
   WHITE80
 } from "../Util";
 import {
-  IconProps,
-  isTooltipIconButton,
   NamedIconButton,
-  TooltipIconButton,
-  TooltipIconProps
 } from "./Icon";
-import { FormInputField } from "./InputField";
 import { LabelBase } from "./Label";
 
 interface StyledDropDownMenuProps {
@@ -40,18 +25,6 @@ interface StyledDropDownMenuProps {
   disabled?: boolean,
   handleClose?: (event: React.MouseEvent<Document, MouseEvent>) => void,
   handleToggle?: (event: React.MouseEvent) => void
-}
-
-interface FilterDropDownMenuProps {
-  controlButton: IconProps | TooltipIconProps,
-  title?: string,
-  // label & type
-  filterLabels: string[],
-  filterTypes: FilterType[]
-}
-
-interface FilterOperatorDropDownMenuProps {
-  operators: (NumberFilterOperator | StringFilterOperator)[]
 }
 
 interface GenericDropDownMenuProps {

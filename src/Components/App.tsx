@@ -38,7 +38,7 @@ function App() {
     }
   }
 
-  const { getRemainingTime, getLastActiveTime } = useIdleTimer({
+  const App /*{ getRemainingTime, getLastActiveTime }*/ = useIdleTimer({
     timeout: 1000 * 60 * 15,
     onIdle: handleOnIdle,
     onActive: handleOnActive,
@@ -52,7 +52,7 @@ function App() {
           <Route exact path="/">
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <img src={companyLogo} alt="company logo" style={{ height: '256px', width: '256px' }}/>
-              <LoginForm />
+              <LoginForm onChangeLang={setCurrentLocale}/>
             </div>
           </Route>
           <Route exact path="/dashboard">

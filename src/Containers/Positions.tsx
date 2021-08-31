@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useLayoutEffect, DependencyList, MutableRefObject } from 'react';
+import { useState, useEffect, useRef, MutableRefObject, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch,useSelector } from 'react-redux';
 import {
   DataTable,
-  IconProps,
-  NamedIconButton
+  IconProps
 } from '../Components';
 import { 
   getDispatchSelectCB,
@@ -20,7 +19,8 @@ import {
   AccPositionRecord,
   MarketDataShort,
   store,
-  MarketDataLong
+  MarketDataLong,
+  getCurrencyString
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Card, CardContent } from '@material-ui/core';
@@ -36,12 +36,9 @@ import {
 } from '../Components/Label';
 import { useIntl } from 'react-intl';
 
-interface PositionProps {
-
-}
-
 interface PositionMinifiedProps {
-  setMessages?: (message: string[]) => void
+  setMessages?: (message: string[]) => void,
+  refreshRef: any
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -58,12 +55,6 @@ const headCells: { [name: string]: LabelBaseProps } = {
   fx: { id: 'ref-exchange-rate', align: 'right', label: 'fx', colorMode: 'ignored' },
   contract: { id: 'contract', align: 'right', label: 'contract', colorMode: 'ignored' }
 };
-
-const useStyles = makeStyles({
-  root: {
-    width: 'calc(100% - 2px)',
-  }
-});
 
 const headCellsMinified: { [name: string]: LabelBaseProps } = {
   stock: {
@@ -96,7 +87,7 @@ const useStyleMinified = makeStyles((theme) => ({
 }));
 
 const PositionsMinified = (props : PositionMinifiedProps) => {
-  const { setMessages } = props;
+  const { setMessages, refreshRef } = props;
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
 
@@ -114,31 +105,9 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
   let mktDataLong: { [id: string]: MarketDataLong } | undefined;
 
   useEffect(() => {
-    const payload = {
-      sessionToken: token,
-      targetAccNo: accNo
-    };
-    const workFunction = () => {
-      operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
-        try {
-          if (data && !data.closeSocket) {
-            dispatch(data.actionData);
-            onReceivePush(data.data);
-          } else {
-            history.push({
-              pathname: '/logout',
-              state: messages[intl.locale].session_expired
-            });
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      });
-    };
+    refreshRef.current = refreshFunction;
     workFunction();
-    return () => {
-      
-    };
+    return () => { };
   }, []);
 
   useEffect(() => {
@@ -150,9 +119,32 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
       }
       setPositions(positionsToRows(Object.values(store.getState().position?.data ?? {})));
     };
-    const get = setInterval(getStoreData, 100);
+    const get = setInterval(getStoreData, 500);
     return () => clearInterval(get);
   }, []);
+
+  const workFunction = () => {
+    const payload = {
+      sessionToken: token,
+      targetAccNo: accNo
+    };
+    operations('account', hooks.id, payload, undefined, hooks.action).then(data => {
+      try {
+        if (data && !data.closeSocket) {
+          dispatch(data.actionData);
+          onReceivePush(data.data);
+        } else {
+          history.push({
+            pathname: '/logout',
+            state: messages[intl.locale].session_expired
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  };
+  const refreshFunction = useCallback(workFunction, []);
 
   const positionsToRows = (positions: any): PositionRecordRow[] => {
     let p: PositionRecordRow[] = [];
@@ -165,7 +157,11 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
         const prodShort = mktDataShort?.[pos?.prodCode ?? ''];
         const price = longMode ? (prod?.bidPrice1?.toString() ?? '?') : (prodShort?.mktPrice?.toString() ?? '?');
         const size = longMode ? prod?.contractSize : undefined;
-        const pl = isNaN(+price) || pos.netAvg === undefined || pos.netQty === undefined || size === undefined ? '?' : ((+price - pos.netAvg) * pos.netQty * size).toString();
+        const pl = getCurrencyString(isNaN(+price) || pos.netAvg === undefined || pos.netQty === undefined || size === undefined 
+                    ? undefined
+                    : +price === 0 || pos.netQty === 0
+                      ? pos.profitLoss
+                      : ((+price - pos.netAvg) * pos.netQty * size), prod?.currency);
 
         // const netAvg = pos.netTotalAmount && pos.netQty ? pos.netTotalAmount / pos.netQty : undefined;
         p.push({
@@ -182,8 +178,8 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
             : (prodShort?.previousClose?.toString() ?? '?'),
           optVal: '?',
           fx: 0,
-          contract: ''}
-        );
+          contract: size?.toString() ?? '?'
+        });
         if (pos.prodCode && products.findIndex(s => s === pos.prodCode) === -1) {
           if (setMessages) {
             products.push(pos.prodCode);
@@ -260,7 +256,6 @@ const PositionsMinified = (props : PositionMinifiedProps) => {
     <Card elevation={0} className={classes.card}>
       <CardContent>
         <DataTable
-          addPageControl
           headLabels={Object.values(headCellsMinified)}
           data={RowsToLabels(positions)}
           title={messages[intl.locale].positions}

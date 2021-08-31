@@ -121,11 +121,7 @@ const LableBasesToStackedLabel = (lbls: LabelBaseProps[]): StackedLabelProps => 
 };
 
 const tryParseToNumber = (value: string | undefined): number => {
-  return value ? +(value.toString().replace(/,/gi,'').replace(' HKD', '')) : NaN;
-};
-
-const tryParseLabelToNumber = (lbl: LabelBaseProps): number => {
-  return (lbl === undefined || lbl.label === undefined) ? NaN : tryParseToNumber(lbl.label);
+  return value ? +(value.toString().replace(/,/gi,'').replace(' HKD', '').replace(' USD', '')) : NaN;
 };
 
 const tryParseLabelContentToNumber = (lbl: LabelBaseProps, content: string | undefined): number => {
@@ -186,14 +182,12 @@ const useStyleStackedLabel = makeStyles((theme) => ({
 
 const StackedLabel = (props: StackedLabelProps) => {
   const { classes, otherLabels } = props;
-  const labelRoot = useStyleLabel();
   const stackedLabelRoot = useStyleStackedLabel();
   const customStyle = makeStyles<"root">(() => (classes))().root;
 
   return (
     <div className={clsx(stackedLabelRoot.root, customStyle)}>
-      {otherLabels?.map((lbl, index) => {
-        const n = tryParseLabelToNumber(lbl);
+      {otherLabels?.map(lbl => {
         return (
           <LabelBase
             id={lbl.id}
@@ -232,7 +226,8 @@ const useStyleCompositeLabel = makeStyles((theme) => ({
 
 const CompositeLabel = (props: CompositeLabelProps) => {
   const {
-    id, label, align, colorMode, classes, 
+    label,
+    classes, 
     subLabels: subs
   } = props;
   const labelRoot = useStyleCompositeLabel();

@@ -4,7 +4,6 @@ import { useHistory, useLocation } from "react-router";
 import {
   logoutAction,
   postRequest,
-  store,
   UserState
 } from "../Util";
 

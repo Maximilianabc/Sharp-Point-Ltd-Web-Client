@@ -25,6 +25,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
 
     dashboard: 'Dashboard',
     filter_list: 'Filter List',
+    rows_per_page: 'Rows per page : ',
 
     summary: 'Summary',
     details: 'Details',
@@ -101,6 +102,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
 
     dashboard: '',
     filter_list: '篩選',
+    rows_per_page: '每頁行數 : ',
 
     summary: '帳戶資料',
     details: '詳細',
@@ -177,6 +179,7 @@ const messages: { [key: string]: { [key: string]: string } }= {
 
     dashboard: '',
     filter_list: '筛选',
+    rows_per_page: '每页行数 : ',
 
     summary: '帐户资料',
     details: '详细',

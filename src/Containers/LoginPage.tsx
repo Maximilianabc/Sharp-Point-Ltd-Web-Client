@@ -5,6 +5,7 @@ import {
 	Button,
 	FormControl,
 	FormHelperText,
+	makeStyles,
 	Slide,
 	withStyles,
 	Zoom
@@ -16,12 +17,12 @@ import {
 	setAccountNumAction,
 	Response,
 	UserInfo,
-	store,
 	UserState,
-	locales,
 	messages,
 	setServerKeyAction,
-	setAEAction
+	setAEAction,
+	genRandomHex,
+	getLangButtonName
 } from '../Util';
 import {
 	useDispatch,
@@ -32,15 +33,13 @@ import { FormControlProps } from '@material-ui/core';
 import { FormattedMessage, useIntl } from 'react-intl';
 
 interface LoginPageProps extends FormControlProps {
-
+  onChangeLang: (locale: string) => void
 }
 
 interface TwoFAFormProps extends FormControlProps {
-
 }
 
 interface AccNameFormProps extends FormControlProps {
-	
 }
 
 const NoBulletsList = styled.ul`
@@ -62,7 +61,17 @@ const StyledFormHelperText = withStyles({
 let display2FAForm = false;
 let isAE = false;
 
+const useStyleLoginForm = makeStyles((theme) => ({
+	logoutButton: {
+    marginRight: 0,
+    marginLeft: 'auto'
+  },
+}));
+
 const LoginForm = (props: LoginPageProps) => {
+	const { onChangeLang } = props;
+
+	const classes = useStyleLoginForm();
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const location = useLocation<string>();
@@ -82,8 +91,8 @@ const LoginForm = (props: LoginPageProps) => {
 		}
 	}, []);
 
-	const handleClick = (event: React.MouseEvent) => {
-		event.preventDefault();
+	const handleClick = (event?: React.MouseEvent) => {
+		event && event.preventDefault();
 		setInputErrorText('');
 
 		const userId = data.userId.toUpperCase();
@@ -92,6 +101,12 @@ const LoginForm = (props: LoginPageProps) => {
 				.then(result => handleResponse(result));
 		} else {
 			setInputErrorText(messages[intl.locale].invalid_username);
+		}
+	};
+
+	const handleKeyPress = (event: React.KeyboardEvent) => {
+		if (event.key === 'Enter') {
+			handleClick();
 		}
 	};
 
@@ -133,54 +148,72 @@ const LoginForm = (props: LoginPageProps) => {
 	};
 
 	return (
-		!display2FAForm
-			? 
-				!isAE
-					?
-						<Slide in={show} direction="left" unmountOnExit>
-							<FormControl id="login-form">
-								<NoBulletsList>
-									<DefaultLI>
-										<DefaultInputField
-											error={inputErrorText !== ''}
-											id="user-name"
-											label={messages[intl.locale].user_name}
-											variant="filled"
-											onChange={(event: React.ChangeEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
-											helperText={inputErrorText}
-										/>
-									</DefaultLI>
-									<DefaultLI>
-										<DefaultInputField
-											id="password"
-											label={messages[intl.locale].password}
-											type="password"
-											variant="filled"
-											onChange={(event: React.ChangeEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
-										/>
-									</DefaultLI>  
-									<DefaultLI>
-										<Button
-											id="login-button"
-											variant="contained"
-											onClick={handleClick}
-										>
-											<FormattedMessage id="login"/>
-										</Button>
-									</DefaultLI>
-									<DefaultLI>
-										<StyledFormHelperText
-											error={loginErrorText !== ''}
-											id="error-text"
-										>{loginErrorText}
-										</StyledFormHelperText>
-									</DefaultLI>					
-								</NoBulletsList> 
-							</FormControl>
-						</Slide>
-					: <AccNumForm/>
-			: <TwoFAForm/>
-	);
+		<div onKeyPress={handleKeyPress}>
+			<div className={classes.logoutButton}>
+				{['繁', '简', 'Eng'].map(text => {
+					return (
+						<Button
+							color="inherit"
+							classes={{ disableElevation: 'true' }}
+							style={{ fontSize: '1rem' }}
+							onClick={() => onChangeLang(getLangButtonName(text))}
+							key={genRandomHex(8)}
+						>
+							{text}
+						</Button>
+					);
+				})}
+			</div>
+			{
+				!display2FAForm
+					? 
+						!isAE
+							?
+								<Slide in={show} direction="left" unmountOnExit>
+									<FormControl id="login-form">
+										<NoBulletsList>
+											<DefaultLI>
+												<DefaultInputField
+													error={inputErrorText !== ''}
+													id="user-name"
+													label={messages[intl.locale].user_name}
+													variant="filled"
+													onChange={(event: React.ChangeEvent) => setData({ password: data.password, userId: (event?.target as HTMLInputElement)?.value })}
+													helperText={inputErrorText}
+												/>
+											</DefaultLI>
+											<DefaultLI>
+												<DefaultInputField
+													id="password"
+													label={messages[intl.locale].password}
+													type="password"
+													variant="filled"
+													onChange={(event: React.ChangeEvent) => setData({ password: (event?.target as HTMLInputElement)?.value, userId: data.userId })}
+												/>
+											</DefaultLI>  
+											<DefaultLI>
+												<Button
+													id="login-button"
+													variant="contained"
+													onClick={handleClick}
+												>
+													<FormattedMessage id="login"/>
+												</Button>
+											</DefaultLI>
+											<DefaultLI>
+												<StyledFormHelperText
+													error={loginErrorText !== ''}
+													id="error-text"
+												>{loginErrorText}
+												</StyledFormHelperText>
+											</DefaultLI>					
+										</NoBulletsList> 
+									</FormControl>
+								</Slide>
+							: <AccNumForm/>
+					: <TwoFAForm/>
+			}
+		</div>);
 }
 
 const TwoFAForm = (props: TwoFAFormProps) => {

@@ -1,4 +1,4 @@
-import React, { createRef, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { lighten } from '@material-ui/core/styles';
 import {
@@ -17,6 +17,7 @@ import {
   Collapse,
   BoxProps,
   CardProps,
+  withStyles,
 } from '@material-ui/core';
 import {
   FLEX_ROW_CLASSES,
@@ -41,7 +42,7 @@ import {
   LabelBaseProps,
   StackedLabel
 } from './Label';
-import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton, IconTypes } from './Icon';
+import { TooltipIconButton, IconProps, isTooltipIconButton, NamedIconButton } from './Icon';
 import { useIntl } from 'react-intl';
 
 interface StyledTableToolbarProps {
@@ -298,9 +299,12 @@ const useStyleDataTable = makeStyles((theme) => ({
     top: 20,
     width: 1,
   },
+  paginationSelectIcon: {
+    color: 'white'
+  }
 }));
 
-const DataTable = (props: DataTableProps) => {
+const DataTable = forwardRef((props: DataTableProps, ref) => {
   const {
     data,
     title,
@@ -313,6 +317,7 @@ const DataTable = (props: DataTableProps) => {
     containerClasses,
     collapsibleContents
   } = props;
+
   const classes = useStyleDataTable();
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('id');
@@ -320,15 +325,21 @@ const DataTable = (props: DataTableProps) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [clicked, setClicked] = useState(false);
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-  const intl = useIntl();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<number | undefined>(0);
+  const intl = useIntl();
 
   useEffect(() => {
     containerRef?.current?.scrollTo({left: 0, top: scrollRef.current === undefined ? 0 : scrollRef.current});
     setClicked(false);
     return () => {}
   }, [clicked]);
+
+  useImperativeHandle(ref, () => ({
+    resetScroll() {
+      scrollRef.current = 0;
+    }
+  }));
 
   const handleScroll = (ref: React.MutableRefObject<HTMLDivElement | null>) => {
     scrollRef.current = containerRef?.current?.scrollTop;
@@ -410,16 +421,22 @@ const DataTable = (props: DataTableProps) => {
               component="div"
               count={data.length}
               rowsPerPage={rowsPerPage}
+              labelRowsPerPage={messages[intl.locale].rows_per_page}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               key={genRandomHex(8)}
+              backIconButtonProps={{ style: { color: 'white' } }}
+              nextIconButtonProps={{ style: { color: 'white' } }}
+              classes={{
+                selectIcon: classes.paginationSelectIcon
+              }}
             />
           : null
         }
       </Paper>
   );
-};
+});
 
 const useStlyeDataRow = makeStyles((theme) => ({
   root: {

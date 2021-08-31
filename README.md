@@ -76,8 +76,40 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-### Project Structure
+## Project Structure
 
+### Components
 Folder [Components](./Components) contains reusable components such as forms, input fields etc.\
+File [Appbar.tsx](./Components/Appbar.tsx) contains the appbar component.\
+File [Button.tsx](./Components/Button.tsx) contains a styled button component. So far isn't used.\
+File [Drawer.tsx](./Components/Drawer.tsx) contains the drawer component of the appbar.\
+File [Dropdown.tsx](./Components/Dropdown.tsx) contains a styled drop down menu component. So far isn't used.\
+File [Form.tsx](./Components/Form.tsx) contains the add order form and filter form components.\
+File [Icon.tsx](./Components/Icon.tsx) contains all icon buttons used accross the website.\
+File [InputField.tsx](./Components/InputField.tsx) contains a few different styled input fields, numeric updowns, and datetime pickers.\
+File [Label.tsx](./Components/Label.tsx) contains a few different types of labels, default, stacked, and composite.\
+File [Tab.tsx](./Components/Tab.tsx) contains the tab components for old design. So far deprecated.\
+File [Table.tsx](./Components/Table.tsx) contains components of data table.\
+File [WebSocket.tsx](./Components/WebSocket.tsx) contains websocket components for account update and price server.
+
+
+### Containers
 Folder [Containers](./Containers) contains major containers of the web client, such as summary, positions, orders etc.\
+File [Cash.tsx](./Containers/Cash.tsx) contains the tab of cash page of old design.\
+File [ClearTrade.tsx](./Containers/ClearTrade.tsx) contains the tab of clear trade page of old design.\
+File [Dashboard.tsx](./Containers/Dashboard.tsx) contains dashbaord component.\
+File [FxRate.tsx](./Containers/FxRate.tsx) contains the tab of FX rate page of old design.\
+File [LoginPage.tsx](./Containers/LoginPage.tsx) contains components of login page, including login form, 2FA form and account number form.\
+File [LogOut.tsx](./Containers/LogOut.tsx) contains a dummy component for loggin out.\
+File [Orders.tsx](./Containers/Orders.tsx) contains the component for displaying today's, working orders and order history.\
+File [Positions.tsx](./Containers/Positions.tsx) contains the component for displaying positions.\
+File [Profile.tsx](./Containers/Profile.tsx) contains the component for displaying accoutn summary.
+
+### Utility
 Folder [Util](./Util) contains script files that are NOT related to any of the above, such as helper functions, css layout classes, locale translations etc.
+File [Action.ts](./Util/Actions.ts)
+File [Layout.ts](./Util/Layout.ts)
+File [Locales.ts](./Util/Locales.ts)
+File [Reducers.ts](./Util/Reducers.ts)
+File [Store.ts](./Util/Store.ts)
+File [Util.ts](./Util/Util.ts)

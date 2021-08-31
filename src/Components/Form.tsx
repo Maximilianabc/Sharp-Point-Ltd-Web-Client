@@ -17,10 +17,8 @@ import {
   FormHelperText,
  } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
-import { useIntl } from 'react-intl';
 import { useSelector } from "react-redux";
 import {
-  AccOrderRecord,
   CARD_BUTTON_CLASSES,
   CARD_TITLE_CLASSES,
   dateFilters,
@@ -31,21 +29,16 @@ import {
   getOperatorDisplayText,
   getValidTypeNumber,
   LABEL_CLASSES,
-  messages,
-  NumberFilterOperator,
   numFilters,
   operations,
-  OrderHistoryRecordRow,
   OrderRecordRow,
   ROBOTO_SEMIBOLD,
-  StringFilterOperator,
   stringFilters,
   UserState,
   WHITE40,
   WHITE5,
   WHITE60,
-  WHITE80,
-  WorkingOrderRecordRow
+  WHITE80
 } from "../Util";
 import {
   FormInputField,
@@ -53,14 +46,10 @@ import {
 } from "./";
 import { TooltipIconButton } from "./Icon";
 import { CheckBoxField, WhiteDatePicker, WhiteSelectFormControl } from "./InputField";
-import { Event, KeyboardArrowDown, Refresh } from "@material-ui/icons";
+import { Event, KeyboardArrowDown } from "@material-ui/icons";
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-
-interface OrderFormWithButtonProps {
-  refresh: () => void;
-}
 
 interface OrderFormProps {
   refresh: () => void,
@@ -191,13 +180,12 @@ const OrderForm = (props: OrderFormProps) => {
   const [stopTriggerType, setStopTriggerType] = useState<''|'Stop Limit'|'Stop Market'|'Up Trigger Limit'|'Down Trigger Limit'>('');
   const [enhancedBuySell, setEnhancedBuySell] = useState<'Buy'|'Sell'|''>('');
   const [tPlusOne, setTPlusOne] = useState(false);
+  const [active, setActive] = useState(true);
   const [result, setResult] = useState<'success'|'failed'|''>('');
   const [failedReason, setFailedReason] = useState(undefined);
   const [fieldMissing, setFieldMissing] = useState<('acc'|'id')[]>([]);
-  const [backdropOpen, setBackdropOpen] = useState(true);
 
   useEffect(() => {
-    setBackdropOpen(open);
     if (!open) {
       setId('');
       setPrice(0);
@@ -207,6 +195,7 @@ const OrderForm = (props: OrderFormProps) => {
       setValidity('Today');
       setEnhancedBuySell('');
       setTPlusOne(false);
+      setActive(true);
       setResult('');
       setFailedReason(undefined);
       setFieldMissing([]);
@@ -214,6 +203,10 @@ const OrderForm = (props: OrderFormProps) => {
   }, [open]);
 
   const sendOrder = (event: React.MouseEvent<EventTarget>, buySell: 'buy' | 'sell') => {
+    setFieldMissing([]);
+    setResult('');
+    setFailedReason(undefined);
+
     let missingFields: ('acc'|'id')[] = [];
     if (newAccNo === '') {
       missingFields.push('acc');
@@ -225,7 +218,7 @@ const OrderForm = (props: OrderFormProps) => {
       setFieldMissing(missingFields);
       return;
     }
-    const payload = {
+    const payload: any = {
       accNo: newAccNo,
       prodCode: Id,
       qty: qty,
@@ -236,6 +229,9 @@ const OrderForm = (props: OrderFormProps) => {
       condType: getConditionTypeNumber(condition),
       validType: getValidTypeNumber(validity)
     };
+    if (!active) {
+      payload['status'] = 2;
+    }
     operations('order', 'add', payload, undefined, undefined).then(data => {
       if (data !== undefined && data.data !== undefined) {
         if (data.data.errorMsg === "No Error") {
@@ -251,10 +247,14 @@ const OrderForm = (props: OrderFormProps) => {
   };
 
   const editOrder = (event: React.MouseEvent<EventTarget>, order: OrderRecordRow) => {
+    setFieldMissing([]);
+    setResult('');
+    setFailedReason(undefined);
+
     const payload = {
       accNo: newAccNo,
       accOrderNo: +order.accOrderNo,
-      prodCode: Id,
+      prodCode: order.id,
       buySell: order.buySell,
       // downLevelInDec
       // downPriceInDec
@@ -282,7 +282,6 @@ const OrderForm = (props: OrderFormProps) => {
   };
 
   const handleClickAway = (event: React.MouseEvent<EventTarget>) => {
-    setBackdropOpen(false);
     setResult('');
     if (reset) {
       reset();
@@ -295,7 +294,7 @@ const OrderForm = (props: OrderFormProps) => {
   return (
     <Popover
       className={classes.popover}
-      open={backdropOpen} 
+      open={open} 
       anchorReference="anchorPosition"
       anchorPosition={{ top: window.screen.height / 2, left: window.screen.width / 2 }}
       anchorOrigin={{
@@ -326,7 +325,7 @@ const OrderForm = (props: OrderFormProps) => {
                 label="Id"
                 variant="standard"
                 onChange={(event: React.ChangeEvent) => setId((event?.target as HTMLInputElement)?.value)}
-                defaultValue={isEdit ? editContent?.id : ""}
+                defaultValue={isEdit ? editContent?.id ?? "" : ""}
                 disable={isEdit}
                 require
                 error={fieldMissing.findIndex(f => f === 'id') >= 0}
@@ -418,7 +417,7 @@ const OrderForm = (props: OrderFormProps) => {
                       disableToolbar
                       disablePast
                       variant="inline"
-                      format="dd/MM/yyyy"
+                      format="dd/MM/yyyy HH:mm:ss"
                       value={date}
                       onChange={setDate}
                       keyboardIcon={<Event style={{ fontSize: 24, color: 'white' }}/>}
@@ -500,12 +499,23 @@ const OrderForm = (props: OrderFormProps) => {
                 : null
               }
               <FormInputField label="Ref" variant="standard"/>
-              <CheckBoxField
-                label="T+1"
-                className={classes.checkbox}
-                control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
-                onChange={(event: React.ChangeEvent<{}>, checked: boolean) => setTPlusOne(checked)}
-              />
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <CheckBoxField
+                  label="T+1"
+                  className={classes.checkbox}
+                  checked={editContent?.valid?.includes("T+1") ?? isEdit ? false : undefined}
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  onChange={(event: React.ChangeEvent<{}>, checked: boolean) => setTPlusOne(checked)}
+                  disabled={isEdit}
+                />
+                <CheckBoxField
+                  label="Inactive"
+                  className={classes.checkbox}
+                  control={<Checkbox classes={{ colorSecondary: classes.checkboxHover }} style={{ color: WHITE60 }}/>}
+                  onChange={(event: React.ChangeEvent<{}>, checked: boolean) => setActive(!checked)}
+                  disabled={isEdit}
+                />
+              </div>
             </div>
           </FormControl>
           <FormControl style={{ display: 'flex', flexDirection: 'row' }}>
@@ -549,6 +559,13 @@ const useStyleFilterForm = makeStyles((theme) => ({
     ...CARD_TITLE_CLASSES,
     marginBottom: 0,
     fontSize: '1.25rem'
+  },
+  buttonDiv: {
+    display: 'flex',
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 0,
+    left: '40%'
   }
 }))
 
@@ -556,7 +573,6 @@ const FilterForm = (props: FilterFormProps) => {
   const { applyFilters, handleClickAway, handleToggle, backdropOpen } = props;
   const classes = useStyles();
   const formClasses = useStyleFilterForm();
-  const intl = useIntl();
 
   const newFilter: Filter = { property: '', operator: '', value: { lower: '', upper: '' } };
   const [filters, setFilters] = useState<{[index: number]: Filter}>({0: newFilter});
@@ -572,7 +588,7 @@ const FilterForm = (props: FilterFormProps) => {
   const validateFilters = (): boolean => {
     setErrorText({});
     let err: {[index: number]: error} = errorText;
-    Object.values(filters).map((f: Filter, index: number) => {
+    Object.values(filters).forEach((f: Filter, index: number) => {
       if (f.property === '') {
         err = {...err, [index]: { ...err[index], property: 'missing' }};
       } else {
@@ -633,7 +649,7 @@ const FilterForm = (props: FilterFormProps) => {
               const isError = (err: error, item: keyof error) => err !== undefined && err[item] !== '' && err[item] !== undefined;
 
               return (
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <div style={{ display: 'flex', flexDirection: 'row' }} /*key={`filter-${index}`}*/>
                   <WhiteSelectFormControl
                     required
                     className={formClasses.control}
@@ -747,7 +763,7 @@ const FilterForm = (props: FilterFormProps) => {
                             : null
                       }
                     </Select>
-                    {isError(errorText[+index], 'operator') ? <FormHelperText>{`Operator ${errorText[+index].operator}`}</FormHelperText> : null}
+                    {isError(errorText[+index], 'operator') ? <FormHelperText key={genRandomHex(8)}>{`Operator ${errorText[+index].operator}`}</FormHelperText> : null}
                   </WhiteSelectFormControl>
                   <div style={{ display: 'flex', flexDirection: 'row', minWidth: '28rem', alignItems: 'flex-end' }}>
                     {filter.property !== 'time'
@@ -759,13 +775,14 @@ const FilterForm = (props: FilterFormProps) => {
                           type={filter.property === 'price' ? 'number' : undefined}
                           variant="standard"
                           defaultValue={filter.value.lower}
+                          //key={genRandomHex(8)}
                           onChange={(event: React.ChangeEvent) => setFilters({
                             ...filters,
                             [+index]: {
                               ...filters[+index],
                               value: {
                                 ...filters[+index].value,
-                                lower: (event.target as HTMLInputElement).value
+                                lower: (event.target as HTMLInputElement).value.toUpperCase()
                               }
                             }
                           })}
@@ -777,7 +794,7 @@ const FilterForm = (props: FilterFormProps) => {
                             disableToolbar
                             disableFuture
                             variant="inline"
-                            format="dd/MM/yyyy"
+                            format="dd/MM/yyyy HH:mm:ss"
                             value={filter.value.lower === '' ? undefined : filter.value.lower}
                             onChange={(date: MaterialUiPickersDate) => setFilters({
                               ...filters,
@@ -799,6 +816,7 @@ const FilterForm = (props: FilterFormProps) => {
                       ?
                         <FormInputField
                           require
+                          //key={genRandomHex(8)}
                           error={isError(errorText[+index], 'upper')}
                           style={{ display: filter.operator !== 'between' ? 'none' : 'inline-flex' }}
                           label="Value"
@@ -822,8 +840,9 @@ const FilterForm = (props: FilterFormProps) => {
                           <WhiteDatePicker
                             disableToolbar
                             disableFuture
+                            key={genRandomHex(8)}
                             variant="inline"
-                            format="dd/MM/yyyy"
+                            format="dd/MM/yyyy HH:mm:ss"
                             value={filter.value.upper === '' ? undefined : filter.value.upper}
                             onChange={(date: MaterialUiPickersDate) => setFilters({
                               ...filters,
@@ -831,7 +850,7 @@ const FilterForm = (props: FilterFormProps) => {
                                 ...filters[+index],
                                 value: {
                                   ...filters[+index].value,
-                                  lower: date?.toString() ?? ''
+                                  upper: date?.toString() ?? ''
                                 }
                               }
                             })}
@@ -864,7 +883,7 @@ const FilterForm = (props: FilterFormProps) => {
             })]
           }
           </div>
-          <div style={{ display: 'flex', flexDirection: 'row', position: 'absolute', bottom: 0, left: '40%' }}>
+          <div className={formClasses.buttonDiv} key={genRandomHex(8)}>
             <Button
               className={formClasses.button}
               key={genRandomHex(8)}

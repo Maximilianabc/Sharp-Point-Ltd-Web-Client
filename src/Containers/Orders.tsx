@@ -1,7 +1,10 @@
 import React, {
   useState,
   useEffect,
-  useRef
+  useRef,
+  MutableRefObject,
+  ReactElement,
+  useCallback
 } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch, useSelector } from 'react-redux';
@@ -58,21 +61,18 @@ import {
   MarketDataLong,
   store,
   Filter,
-  FilterType,
-  getPredicate,
-  combineFilters
+  combineFilters,
+  getConditionTypeString
 } from '../Util';
 import { useHistory } from 'react-router';
 import { Box, Card, CardContent } from '@material-ui/core';
 import { ClassNameMap } from '@material-ui/core/styles/withStyles';
 import { useIntl } from 'react-intl';
 
-interface OrdersProps {
-
-}
-
 interface OrdersMinifiedProps {
-  setMessages?: (message: string[]) => void
+  setMessages?: (message: string[]) => void,
+  posRefreshRef: any,
+  refreshRef: any
 }
 
 const headCells: { [name: string]: LabelBaseProps } = {
@@ -106,13 +106,6 @@ const headCellsMinified : { [name: string]: LabelBaseProps } = {
     otherLabels: [ { id: 'qty', label: 'quantity', align: 'left', colorMode: 'ignored' }, headCells.traded ]
   } as StackedLabelProps
 };
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    position: "relative",
-    width: 'calc(100% - 2px)',
-  }
-}));
 
 const useStyleOrdersMinified = makeStyles((theme) => ({
   card: {
@@ -157,17 +150,19 @@ const useStyleCollapsibleContent = makeStyles((theme) => ({
 }));
 
 const OrdersMinified = (props: OrdersMinifiedProps) => {
-  const { setMessages } = props;
+  const { setMessages, refreshRef, posRefreshRef } = props;
   type OrderType = "working"|"todays"|"history";
   const classes = useStyleOrdersMinified();
   const collapsibleContentClasses = useStyleCollapsibleContent();
   const token = useSelector((state: UserState) => state.token);
   const accNo = useSelector((state: UserState) => state.accName);
+  const tableRef = useRef<any>(null);
 
   const [orders, setOrders] = useState<OrderRecordRow[]>([]);
   const [workingOrders, setWorkingOrders] = useState<WorkingOrderRecordRow[]>([]);
   const [orderHistory, setOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
-  const [displayedOrderHistory, setDisplayedOrderHistory] = useState<OrderHistoryRecordRow[]>([]);
+  const displayedOrderHistory = useRef<OrderHistoryRecordRow[]>([]);
+
   const [selectedOrderType, setSelectedOrderType] = useState<OrderType>("todays");
   const [currentOpen, setCurrentOpen] = useState<boolean[]>(new Array<boolean>(1024).fill(false));
   const [currentEdit, setCurrentEdit] = useState(-1);
@@ -187,6 +182,15 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const history = useHistory();
   const intl = useIntl();
   const dispatch = useDispatch();
+  const userState = store.getState();
+
+  const getStoreData = () => {
+    if (longMode) {
+      mktDataLong = userState.marketDataLong;
+    } else {
+      mktDataShort = userState.marketDataShort;
+    }
+  };
 
   const getStoreCallback = (type: OrderType): StoreCallbacks => {
     return type === 'todays'
@@ -245,9 +249,14 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     let o: OrderRecordRow[] = [];
     let products: string[] = prods;
     let messages: string[] = [];
-
+    
     if (orders) {
       Array.prototype.forEach.call(orders, (order: AccOrderRecord) => {
+        let prodName = longMode ? (mktDataLong?.[order?.prodCode ?? '']?.productName ?? '?') : '?';
+        if (prodName === '?') {
+          getStoreData();
+        }
+
         o.push({
           accOrderNo: order.accOrderNo ?? '?',
           id: order.prodCode ?? '?',
@@ -257,7 +266,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
           tradedQty: order.tradedQty ?? '?',
           price: order.orderPrice ?? '?',
           valid: `${getValidTypeString(order.validType ?? -1)}${order.tradeSession !== "T" ? `, ${order.tradeSession}` : ''}`,
-          condition: order.condTypeStr ?? '?',
+          condition: order.condType !== undefined ? getConditionTypeString(order.condType).toString() : order.condTypeStr ?? '?',
           status: getOrderStatusString(order.status ?? -1),
           initiator: order.sender ?? '?', // !! not present in API
           ref: order.ref ?? '?',
@@ -289,16 +298,21 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
 
     if (working) {
       Array.prototype.forEach.call(working, (work: WorkingOrderRecord)=> {
+        let prodName = longMode ? (mktDataLong?.[work?.prodCode ?? '']?.productName ?? '?') : '?';
+        if (prodName === '?') {
+          getStoreData();
+        }
+
         w.push({
           accOrderNo: work.accOrderNo ?? '?',
           id: work.prodCode ?? '?',
-          name: longMode ? (mktDataLong?.[working?.prodCode ?? '']?.productName ?? '?') : '?',
+          name: longMode ? (mktDataLong?.[work?.prodCode ?? '']?.productName ?? '?') : '?',
           buySell: work.buySell ?? '',
           qty: work.qty ?? '?',
           tradedQty: work.tradedQty ?? '?',
           price: work.orderPrice ?? '?',
           valid: `${getValidTypeString(work.validType ?? -1)}${work.tradeSession !== "T" ? `, ${work.tradeSession}` : ''}`,
-          condition: work.condTypeStr ?? '?',
+          condition: work.condType !== undefined ? getConditionTypeString(work.condType).toString() : work.condTypeStr ?? '?',
           status: getOrderStatusString(work.status ?? -1),
           traded: '?',
           initiator: work.sender ?? '?', // !! not present in API
@@ -332,6 +346,11 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     if (history) {
       Array.prototype.forEach.call(history, (hist: OrderHistoryRecord) => {
         //if (hist.timeStampStr && new Date(Date.parse(hist.timeStampStr)).getDate() === new Date(Date.now()).getDate()) {
+          let prodName = longMode ? (mktDataLong?.[hist?.prodCode ?? '']?.productName ?? '?') : '?';
+          if (prodName === '?') {
+            getStoreData();
+          }
+
           h.push({
             accOrderNo: hist.accOrderNo ?? '?',
             id: hist.prodCode ?? '?',
@@ -341,7 +360,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             tradedQty: hist.tradedQty ?? '?',
             price: hist.orderPrice ?? '?',
             valid: `${getValidTypeString(hist.validType ?? -1)}${hist.tradeSession !== "T" ? `, ${hist.tradeSession}` : ''}`,
-            condition: hist.condTypeStr ?? '?',
+            condition: hist.condType !== undefined ? getConditionTypeString(hist.condType).toString() : hist.condTypeStr ?? '?',
             status: getOrderStatusString(hist.status ?? -1),
             traded: '?',
             initiator: hist.sender ?? '?', // !! not present in API
@@ -450,7 +469,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             ? RowsToLabels(orders, locale as localeTypes) 
             : selectedOrderType === 'working' 
               ? workingOrderRowsToLabels(workingOrders, locale as localeTypes) 
-              : orderHistoryRowsToLabels(filterCount === 0 ? orderHistory : displayedOrderHistory, locale as localeTypes);
+              : orderHistoryRowsToLabels(filterCount === 0 ? orderHistory : displayedOrderHistory.current, locale as localeTypes);
   }
 
   const getCollapsibleContent = (
@@ -549,7 +568,6 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
   const applyFilters = (filters?: Filter[]) => {
     setFilterCount(0);
     if (filters === undefined) { 
-      setDisplayedOrderHistory(orderHistory);
       return;
     }
     let o: OrderHistoryRecordRow[] = [];
@@ -559,7 +577,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
         o.push(r);
       }
     });
-    setDisplayedOrderHistory(o);
+    displayedOrderHistory.current = o;
   };
 
   const handleToggle = (event: React.MouseEvent<EventTarget>) => {
@@ -574,10 +592,17 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     setFilterBackdropOpen(false);
   };
 
+  const refreshFunction = useCallback(() => {
+    workFunction('account', 'todays');
+    workFunction('reporting', 'working');
+    workFunction('reporting', 'history');
+  }, []);
+
   useEffect(() => {
     workFunction('account', 'todays');
     workFunction('reporting', 'working');
     workFunction('reporting', 'history');
+    refreshRef.current = refreshFunction;
     setRefresh(true);
     /*const work = setInterval(() => workFunction(getOperationType(selectedOrderType), selectedOrderType), 60000);*/
     return () => {
@@ -597,16 +622,11 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
     if (refresh) {
       workFunction(getOperationType(selectedOrderType), selectedOrderType);
       if (filterCount === 0) {
-        setDisplayedOrderHistory(orderHistory);
+        displayedOrderHistory.current = orderHistory;
       }
-      const userState = store.getState();
-      const getStoreData = () => {
-        if (longMode) {
-          mktDataLong = userState.marketDataLong;
-        } else {
-          mktDataShort = userState.marketDataShort;
-        }
-      };
+      if (posRefreshRef.current) {
+        posRefreshRef.current();
+      }
       getStoreData();
       setCurrentOpen(new Array<boolean>(1024).fill(false));
       setRefresh(false);
@@ -643,9 +663,9 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   refresh={() => setRefresh(true)}
                   reset={() => setReset(true)}
                   open={currentEdit !== -1}
-                  editContent={orders[currentEdit]}
+                  editContent={currentEdit !== -1 && currentEdit < orders.length ? orders[currentEdit] : undefined}
                 /> 
-              : <OrderForm refresh={() => setRefresh(true)} open={backdropOpen}/>
+              : <OrderForm refresh={() => setRefresh(true)} open={backdropOpen} resetToggle={() => setBackdropOpen(false)}/>
             }
             {selectedOrderType === 'history'
               ? 
@@ -676,6 +696,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   buttonStyle={{ padding: '0 1.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
                     setSelectedOrderType('working');
+                    tableRef?.current?.resetScroll();
                     setRefresh(true);
                   }}
                 />
@@ -689,6 +710,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   buttonStyle={{ padding: '0 1.5rem 0 0' }}
                   onClick={(event: React.MouseEvent<EventTarget>) => {
                     setSelectedOrderType("todays");
+                    tableRef?.current?.resetScroll();
                     setRefresh(true);
                   }}
                 />
@@ -702,6 +724,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
                   buttonStyle={{ padding: '0 0.5rem 0 0' }} 
                   onClick={(event: React.MouseEvent<EventTarget>) => {
                     setSelectedOrderType('history');
+                    tableRef?.current?.resetScroll();
                     setRefresh(true);
                   }}
                 />
@@ -709,6 +732,7 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
             }
           </StyledTableToolbar>
         <DataTable
+          ref={tableRef}
           headLabels={Object.values(headCellsMinified)}
           data={getLabels(intl.locale)}
           addPageControl
@@ -720,12 +744,12 @@ const OrdersMinified = (props: OrdersMinifiedProps) => {
               ? orders 
               : selectedOrderType === 'working' 
                 ? workingOrders
-                : displayedOrderHistory)}
+                : displayedOrderHistory.current)}
           containerClasses={classes.container}
           collapsibleContents={
             selectedOrderType === 'history'
-              ? displayedOrderHistory.map(h => getCollapsibleContent(h, collapsibleContentClasses))
-              : selectedOrderType == 'todays'
+              ? displayedOrderHistory.current.map(h => getCollapsibleContent(h, collapsibleContentClasses))
+              : selectedOrderType === 'todays'
                 ? orders.map(o => getCollapsibleContent(o, collapsibleContentClasses))
                 : workingOrders.map(w => getCollapsibleContent(w, collapsibleContentClasses))
           }

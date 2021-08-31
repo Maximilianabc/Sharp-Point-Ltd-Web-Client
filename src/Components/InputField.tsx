@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core';
 import { BaseTextFieldProps } from '@material-ui/core';
 import { LABEL_CLASSES, WHITE40, WHITE5, WHITE60, WHITE80 } from '../Util';
-import { KeyboardDatePicker } from '@material-ui/pickers';
+import { DateTimePicker, KeyboardDateTimePicker } from '@material-ui/pickers';
 
 interface DefaultInputFieldProps extends BaseTextFieldProps {
 	variant?: any,
@@ -251,15 +251,13 @@ const WhiteDatePicker = withStyles({
 			backgroundColor: WHITE5
 		}
   }
-})(KeyboardDatePicker);
+})(KeyboardDateTimePicker);
 
 const FormInputField = (props: FormInputFieldProps) => {
 	const { 
-		variant,
 		label,
 		style,
 		type,
-		labelProps,
 		defaultValue,
 		disable,
 		hidden,

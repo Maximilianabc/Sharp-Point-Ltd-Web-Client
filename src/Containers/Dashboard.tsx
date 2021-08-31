@@ -1,16 +1,15 @@
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   ClientPriceWS,
   ClientWS,
   DefaultAppbar,
-  DefaultDrawer,
-  DefaultTabControl
+  DefaultDrawer
 } from '../Components';
-import { ROBOTO_REGULAR, ROBOTO_SEMIBOLD, ROBOTO_SEMILIGHT, UserState, WHITE80, WHITE90 } from '../Util';
-import { Typography, Box } from '@material-ui/core/';
+import { ROBOTO_SEMILIGHT, UserState, WHITE80, WHITE90 } from '../Util';
+import { Typography } from '@material-ui/core/';
 import { ProfileMinified } from './Profile';
 import { PositionsMinified } from './Positions';
 import { OrdersMinified } from './Orders';
@@ -77,6 +76,8 @@ const Dashboard = (props: DashboardProps) => {
   const [messageToPriceServer, setMessageToPriceServer] = useState(['']);
   const userId = useSelector((state: any) => state.userId);
   const token = useSelector((state: UserState) => state.token);
+  const positionRefreshRef = useRef<() => void>(null);
+  const orderRefreshRef = useRef<() => void>(null);
 
   const handleDrawerOpen = () => {
     setSideMenuOpened(true);
@@ -92,7 +93,7 @@ const Dashboard = (props: DashboardProps) => {
 
   return (
     <div className={classes.root}>
-      <ClientWS />
+      <ClientWS orderRefreshRef={orderRefreshRef}/>
       <ClientPriceWS messages={messageToPriceServer}/>
       <DefaultAppbar
         title="Dashboard"
@@ -119,8 +120,8 @@ const Dashboard = (props: DashboardProps) => {
             </Typography>
           </div>
           <ProfileMinified />
-          <PositionsMinified setMessages={setMessages}/>
-          <OrdersMinified setMessages={setMessages}/>
+          <PositionsMinified setMessages={setMessages} refreshRef={positionRefreshRef}/>
+          <OrdersMinified setMessages={setMessages} refreshRef={orderRefreshRef} posRefreshRef={positionRefreshRef}/>
       </main>
     </div>
   );
